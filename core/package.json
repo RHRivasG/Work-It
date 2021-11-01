@@ -1,0 +1,19 @@
+{
+  "name": "core",
+  "version": "1.0.0",
+  "description": "Core components of Work-It software",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RHRivasG/Work-It.git"
+  },
+  "author": "Quality UCAB Team 1 Semester 2021-2022",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RHRivasG/Work-It/issues"
+  },
+  "homepage": "https://github.com/RHRivasG/Work-It#readme"
+}
