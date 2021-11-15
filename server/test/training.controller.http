@@ -1,0 +1,49 @@
+:baseUrl = http://localhost:5000/trainings
+:resourceUrl = http://localhost:5000/trainings/134556c2-8c03-475d-9bed-2d543418884c
+
+# Shows all trainings
+
+GET :baseUrl
+
+# Creates a new training
+
+POST :baseUrl
+Content-Type: application/json
+{
+  "name": "Some other training",
+  "description": "Some training",
+  "categories": [],
+  "trainerId": "27205e32-d428-46b7-b165-c09d385bdbb7",
+  "video": null
+}
+
+# Update an existing training
+
+PUT :resourceUrl
+Content-Type: application/json
+{
+  "data": {
+          "name": "Some updated arm training",
+          "description": "This is an updated strong arm training"
+  }
+}
+
+# Show one training
+
+GET :resourceUrl
+
+# Delete one training
+
+DELETE :resourceUrl
+
+######### Show an 404 http error ############
+
+GET http://localhost:5000/trainings/1
+
+#
+
+PUT http://localhost:5000/trainings/1
+
+#
+
+DELETE http://localhost:5000/trainings/1

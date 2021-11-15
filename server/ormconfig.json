@@ -1,0 +1,9 @@
+{
+  "type": "mongodb",
+  "host": "localhost",
+  "database": "fitness",
+  "port": 27017,
+  "entities": [
+    "dist/entities/**/*.entity.js"
+  ]
+}

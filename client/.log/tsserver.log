@@ -1722,3 +1722,5 @@ Info 1680 [18:32:51.060] -----------------------------------------------
 Info 1681 [18:32:51.067] Before ensureProjectForOpenFiles:
 Info 1682 [18:32:51.067] After ensureProjectForOpenFiles:
 Info 1683 [18:32:51.067] got projects updated in background, updating diagnostics for /home/syfers/Documents/Quality/client/src/app/app.module.ts,/home/syfers/Documents/Quality/client/src/app/app-routing.module.ts,/home/syfers/Documents/Quality/client/karma.conf.js
+Info 1684 [20:45:10.354] Search path: /home/syfers/Documents/Quality/client/src/environments
+Info 1685 [20:45:10.354] For info: /home/syfers/Documents/Quality/client/src/environments/environment.ts :: Config file name: /home/syfers/Documents/Quality/client/tsconfig.json

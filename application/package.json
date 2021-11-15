@@ -1,0 +1,19 @@
+{
+  "name": "application",
+  "version": "1.5.0",
+  "description": "Work It application layer",
+  "main": "index.js",
+  "repository": "https://github.com/RHRivasG/Work-It",
+  "author": "Quality UCAB Team 1 Semester 2021-2022",
+  "scripts": {
+    "build": "tsc"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^16.11.7",
+    "core": "../core"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.4"
+  }
+}
