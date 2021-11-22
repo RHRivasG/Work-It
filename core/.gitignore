@@ -1,7 +1,7 @@
 node_modules/
 .log/
 dist/
-package.lock.json
+package-lock.json
 yarn.lock
 **/*.d.ts
 **/*.js
