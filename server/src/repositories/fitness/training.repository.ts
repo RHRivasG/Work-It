@@ -81,7 +81,6 @@ export class TypeTrainingRepository implements TrainingRepository {
     async getVideo(training: Training): Promise<Buffer | undefined> {
         const metadata = training.trainingVideo
 
-        console.log(metadata)
         if (metadata?.name) {
             const gridfs = new GridFSBucket(this.connection.db as Db, { bucketName: 'trainingvideos' }),
                 chunks: Buffer[] = [],

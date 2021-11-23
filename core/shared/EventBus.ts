@@ -1,4 +1,4 @@
-import { filter, Observable, Subject } from "rxjs";
+import { map, filter, Observable, Subject } from "rxjs";
 export { Subscription } from "rxjs"
 
 type Constructor<T> = { new(...args: any[]): T; }
@@ -21,7 +21,8 @@ export class SynchronousEventBus implements EventBus {
 
     forEvents<T extends any[]>(...events: MappedConstructor<T>): Observable<AnyOrAll<T>> {
         return this.innerBus.asObservable().pipe(
-            filter((evt) => events.length == 0 || events.some(event => evt instanceof event))
+            filter((evt) => events.length == 0 || events.some(event => evt instanceof event)),
+            map((result: unknown) => result as AnyOrAll<T>)
         )
     }
 }

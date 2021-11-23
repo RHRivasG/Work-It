@@ -16,6 +16,7 @@ export abstract class Entity<T> {
 
     apply(event: T) {
         this.when(event)
+        if (this.publisher) this.publisher(event)
     }
 
     protected abstract when(event: T): void

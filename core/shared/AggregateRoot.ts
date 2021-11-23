@@ -13,8 +13,8 @@ export abstract class AggregateRoot<T> {
     }
 
     protected apply<K extends T>(event: K) {
-        this.when(event)
         this.invariants()
+        this.when(event)
         if (this.publisher) this.publisher(event)
     }
 
