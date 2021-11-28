@@ -47,3 +47,4 @@ Thumbs.db
 # Log files
 .log/**
 package-lock.json
+**/*.mp4

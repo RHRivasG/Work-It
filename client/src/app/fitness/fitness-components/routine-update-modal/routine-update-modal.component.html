@@ -1,0 +1,17 @@
+<div class="bg-white rounded-lg shadow-lg p-8 border-2 border-gray-500 z-50">
+  <div class="flex flex-row justify-between">
+    <h2 class="text-3xl text-black">Edit Routine</h2>
+    <fa-icon (click)="closeModal()" [icon]="closeIcon" class="text-lg cursor-pointer"></fa-icon>
+  </div>
+  <form class="flex flex-col gap-6 pt-4">
+    <div class="flex flex-col gap-2">
+      <label class="text-xl font-bold" for="name">Name</label>
+      <input class="border-2 border-gray-400 text-xl p-2 w-full rounded-lg focus:ring-4 focus:ring-primary focus:ring-opacity-50 focus:outline-none transition duration-400" name="name">
+    </div>
+    <div class="flex flex-col gap-2 h-48">
+      <label class="text-xl font-bold" for="description">Description</label>
+      <textarea class="border-2 flex-auto border-gray-400 text-xl p-2 w-full rounded-lg focus:ring-4 focus:ring-primary focus:ring-opacity-50 focus:outline-none transition duration-400" name="description"></textarea>
+    </div>
+    <button class="bg-blue-500 shadow-lg rounded p-4 text-xl text-white font-bold focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50">Save</button>
+  </form>
+</div>

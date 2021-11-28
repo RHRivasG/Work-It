@@ -1,0 +1,44 @@
+<wi-routine-modal (close)="overlayRef.detach()" *cdkPortal class="w-full"></wi-routine-modal>
+<div class="relative card bg-white w-full border-4 border-gray-400 py-4 rounded-lg shadow-md overflow-y-hidden">
+  <div class="flex flex-row px-8 pb-4">
+    <h3 class="flex-auto text-2xl">{{ training.name }}</h3>
+    <fa-icon class="flex-shrink flex flex-row items-center text-xl" [icon]="moreIcon"></fa-icon>
+  </div>
+  <div class="video-container w-full bg-black">
+    <video class="w-full h-full" src="assets/Famous Person Speech.mp4" controls></video>
+  </div>
+  <div class="grid grid-rows-2 grid-cols-2 px-8 gap-1 pt-8 py-6">
+    <p class="text-xl">Made by {{ training.trainerId  }}</p>
+    <div class="tag-list col-start-1 row-start-2 flex flex-row flex-wrap gap-x-4">
+      <div *ngFor="let category of training.categories" class="cursor-pointer rounded-3xl bg-gray-400 w-min whitespace-nowrap px-4 py-2 text-base items-center">
+        {{ category.value }}
+      </div>
+    </div>
+    <div class="row-span-full col-start-2 py-5 flex flex-row justify-end gap-4">
+      <button class="button bg-red-500 w-max px-4 rounded-lg shadow-lg text-white focus:ring-4 focus:ring-red-500 focus:ring-opacity-50">
+        <fa-icon [icon]="reportIcon"></fa-icon>
+        Report training
+      </button>
+
+      <button (click)="addToRoutine()" class="button bg-action w-max px-4 rounded-lg shadow-lg text-white focus:ring-4 focus:ring-action focus:ring-opacity-50">
+        <fa-icon [icon]="addIcon"></fa-icon>
+        Add to Routine
+      </button>
+    </div>
+  </div>
+  <div [ngClass]="descriptionShown ? 'shown': ''" class="description-container overflow-hidden relative px-8 text-lg">
+    <p>
+      {{ training.description }}
+    </p>
+    <div class="overlay absolute right-0 left-0 bottom-0 flex flex-row items-end justify-center transition duration-500">
+    </div>
+  </div>
+  <div class="py-2 text-center text-lg font-semibold text-gray-500 w-full">
+    <button (click)="toggleDescription()">
+      <fa-icon [ngClass]="descriptionShown ? 'rotate': ''" class="rotation mr-1" [icon]="showMoreIcon">
+
+      </fa-icon>
+      Show more
+    </button>
+  </div>
+</div>

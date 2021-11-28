@@ -6,13 +6,14 @@ module.exports = {
       colors: {
         primary: '#25040E',
         action: '#267DFF',
-      }
+      },
     },
   },
   variants: {
     extend: {
       textColor: ['group-focus'],
-      textOpacity: ['group-focus']
+      textOpacity: ['group-focus'],
+      animation: ['hover', 'group-hover']
     },
   },
   plugins: [],

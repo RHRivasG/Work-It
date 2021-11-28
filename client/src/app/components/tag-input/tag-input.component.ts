@@ -80,7 +80,6 @@ export class TagInputComponent implements ControlValueAccessor, AfterViewInit, O
   }
 
   setFocus() {
-    console.log('Focusing')
     this.inputControlRef.nativeElement.focus()
   }
 
@@ -109,17 +108,6 @@ export class TagInputComponent implements ControlValueAccessor, AfterViewInit, O
     e.preventDefault()
 
     this.removeTag(tag)
-  }
-
-  toggleUpdating(tag: string) {
-    if (tag == this.updatingTag) {
-      this.updatingTag = undefined
-      this.resetTagInput()
-      return
-    }
-
-    this.updatingTag = tag
-    this.tagInputForm.controls['tag'].setValue(this.updatingTag)
   }
 
   addTag(tag?: string) {
