@@ -1,6 +1,7 @@
 import express, { json, NextFunction, Request, Response } from "express"
 import { eventBus } from "./middlewares/event-bus.middleware";
 import TrainingController from "./controllers/training.controller";
+import RoutineController from "./controllers/routine.controller";
 import TrainingHandler from "./handlers/training.handler";
 import fileUpload from "express-fileupload";
 import morgan from "morgan";
@@ -19,6 +20,7 @@ app.use(eventBus())
 
 app.use(TrainingHandler.toMiddleware())
 app.use(TrainingController)
+app.use(RoutineController)
 app.use((error: Error, _: Request, res: Response, next: NextFunction) => {
     console.log(`Occured error: ${error.message}`)
     res.status(500).json({
