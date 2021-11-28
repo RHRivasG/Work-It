@@ -5,7 +5,7 @@ import { UpdateTrainingCommand } from "application/commands/fitness/trainings/Up
 import { CreateTrainingVideoCommand } from "application/commands/fitness/trainings/CreateTrainingVideoCommand"
 import { DeleteTrainingCommand } from "application/commands/fitness/trainings/DeleteTrainingCommand";
 import { trainingService } from "../services/training.service";
-import { trainingRepository } from "../services/training.repository.service";
+import { trainingRepository as trainingRepository } from "../services/training.repository.service";
 import { UpdateTrainingVideoCommand } from "application/commands/fitness/trainings/UpdateTrainingVideoCommand";
 
 interface TrainingRequest<Params = {}, Body = {}, Query = {}, Locals = {}>
