@@ -1,6 +1,7 @@
 import { Training } from "core/fitness/trainings/Training";
 import { TrainingTaxonomy } from "core/fitness/TrainingTaxonomy";
-import { model, ObjectId, Schema } from "mongoose";
+import { ObjectId, Schema } from "mongoose";
+import { connection as fitnessConnection } from "../../services/fitness.connection.service";
 
 export interface TrainingDO {
     id: string
@@ -37,4 +38,4 @@ TrainingEntity.method('asClassObject', function() {
     return training
 })
 
-export const TrainingModel = model<TrainingDO>("Training", TrainingEntity)
+export const TrainingModel = fitnessConnection.model<TrainingDO>("Training", TrainingEntity)
