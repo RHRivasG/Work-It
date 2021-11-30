@@ -2,7 +2,7 @@ import { TrainingVideo } from "core/fitness/trainings/TrainingVideo";
 import { Schema } from "mongoose";
 import { connection as fitnessConnection } from "../../services/fitness.connection.service";
 
-interface TrainingVideoDO {
+export interface TrainingVideoDO {
     id: string
     name: string
     ext: string
@@ -10,7 +10,7 @@ interface TrainingVideoDO {
     asClassObject: () => TrainingVideo
 }
 
-const TrainingVideoEntity = new Schema<TrainingVideoDO>({
+export const TrainingVideoEntity = new Schema<TrainingVideoDO>({
     id: { type: String, unique: true },
     name: { type: String },
     ext: { type: String },
@@ -26,5 +26,3 @@ TrainingVideoEntity.method('asClassObject', function() {
 
     return trainingVideo
 })
-
-export const TrainingVideoModel = fitnessConnection.model<TrainingVideoDO>("TrainingVideo", TrainingVideoEntity)

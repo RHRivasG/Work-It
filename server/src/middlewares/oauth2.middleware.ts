@@ -1,9 +1,6 @@
 import { randomUUID } from "crypto";
 import { createServer, exchange, grant } from "oauth2orize";
-import { AuthorizationCodeModel } from "../entities/auth/authorizationCode.entity";
-import { ClientDO, ClientModel } from "../entities/auth/client.entity";
-import { TokenModel } from "../entities/auth/token.entity";
-import { UserModel } from "../entities/auth/user.entity";
+import { AuthorizationCodeModel, ClientModel, TokenModel } from "../services/entities.service";
 
 let server = createServer()
 
@@ -18,14 +15,15 @@ server.deserializeClient(async (clientId, done) => {
     }
 })
 
-server.grant(grant.code(async (client, redirectUrl, user, _, done) => {
+server.grant(grant.code(async (client, redirectUrl, user, ares, done) => {
     try {
         let code = randomUUID()
         await AuthorizationCodeModel.create({
             clientId: client.clientId,
             userId: user.id,
             code,
-            redirectUrl
+            redirectUrl,
+            scope: ares.scope || ['*']
         })
         done(null, code)
     } catch (err: any) {
@@ -39,7 +37,8 @@ server.grant(grant.token(async (client, user, ares, done) => {
         await TokenModel.create({
             userId: user.id,
             clientId: client.clientId,
-            token
+            token,
+            scope: ares.scope || ['*']
         })
     } catch (err: any) {
         done(err)
@@ -54,8 +53,10 @@ server.exchange(exchange.code(async (client, code, redirectUrl, done) => {
         if (redirectUrl != authCode.redirectUrl) return done(null, false)
         const { token } = await TokenModel.create({
             clientId: authCode.clientId,
-            userId: authCode.userId
+            userId: authCode.userId,
+            scope: authCode.scope
         })
+        await authCode.delete()
 
         done(null, token)
     } catch (err: any) {
@@ -63,39 +64,7 @@ server.exchange(exchange.code(async (client, code, redirectUrl, done) => {
     }
 }))
 
-server.exchange(exchange.password(async (client, username, password, scope, done) => {
-    try {
-        const verifyedClient = await ClientModel.findOne({ clientId: client.clientId, secret: client.secret })
-        if (!verifyedClient) return done(null, false)
-        const user = await UserModel.findOne({ username, password })
-        if (!user) return done(null, false)
-        const { token } = await TokenModel.create({
-            clientId: client.id,
-            userId: user.id,
-        })
-
-        done(null, token)
-    } catch (err: any) {
-        done(err)
-    }
-}))
-
-server.exchange(exchange.clientCredentials(async (client, scope, done) => {
-    try {
-        const verifyedClient = await ClientModel.findOne({ clientId: client.clientId, secret: client.secret })
-        if (!verifyedClient) return done(null, false)
-        const { token } = await TokenModel.create({
-            clientId: verifyedClient.clientId,
-            userId: null,
-        })
-
-        done(null, token)
-    } catch (e: any) {
-        done(e)
-    }
-}))
-
-export const authorize = server.authorization(async (clientId, redirectUrl, done) => {
+export const authorize = (scopes: string[]) => server.authorization(async (clientId, redirectUrl, done) => {
     try {
         const client = await ClientModel.findOne({ clientId, redirectUrl })
         if (!client) return done(null, false)
@@ -105,11 +74,16 @@ export const authorize = server.authorization(async (clientId, redirectUrl, done
         done(err)
     }
 }, async (client, user, done: any) => {
-    const token = await TokenModel.findOne({ clientId: client.id, userId: user.id })
-    if (client.isTrusted) return done(null, true)
-    if (token) return done(null, true)
+    try {
+        const token = await TokenModel.findOne({ clientId: client.id, userId: user.id })
+        if (client.isTrusted) return done(null, true)
+        if (token && (scopes.length == 0 || scopes.every(scope => token.scope.includes(scope))))
+            return done(null, true)
 
-    return done(null, false)
+        return done(null, false)
+    } catch (e: any) {
+        done(e)
+    }
 })
 
 export const decision = server.decision()

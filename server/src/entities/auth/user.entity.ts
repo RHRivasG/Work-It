@@ -10,12 +10,10 @@ export interface UserDO {
     normalId?: string
 }
 
-const UserEntity = new Schema<UserDO>({
+export const UserEntity = new Schema<UserDO>({
     id: { type: String, default: randomUUID },
     username: String,
     password: String,
     trainerId: String,
     normalId: String
 })
-
-export const UserModel = authConnection.model<UserDO>("User", UserEntity)

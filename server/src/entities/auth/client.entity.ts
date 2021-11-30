@@ -1,5 +1,4 @@
 import { Schema } from "mongoose";
-import { connection as authConnection } from "../../services/auth.connection.service";
 
 export interface ClientDO {
     clientId: string,
@@ -8,11 +7,9 @@ export interface ClientDO {
     isTrusted: boolean
 }
 
-const ClientEntity = new Schema<ClientDO>({
+export const ClientEntity = new Schema<ClientDO>({
     clientId: String,
     redirectUrl: String,
     isTrusted: { type: Boolean, default: () => false },
     secret: String
 })
-
-export const ClientModel = authConnection.model<ClientDO>("Client", ClientEntity)

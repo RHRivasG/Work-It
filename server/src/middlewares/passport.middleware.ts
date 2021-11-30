@@ -3,9 +3,7 @@ import { Strategy as LocalStrategy } from "passport-local"
 import { BasicStrategy as BasicStrategy } from "passport-http"
 import { Strategy as ClientPasswordStrategy } from "passport-oauth2-client-password"
 import { Strategy as BearerStrategy } from "passport-http-bearer"
-import { ClientModel } from "../entities/auth/client.entity";
-import { TokenModel } from "../entities/auth/token.entity";
-import { UserModel } from "../entities/auth/user.entity";
+import { ClientModel, TokenModel, UserModel } from "../services/entities.service";
 
 declare global {
     namespace Express {

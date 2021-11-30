@@ -37,5 +37,3 @@ TrainingEntity.method('asClassObject', function() {
 
     return training
 })
-
-export const TrainingModel = fitnessConnection.model<TrainingDO>("Training", TrainingEntity)

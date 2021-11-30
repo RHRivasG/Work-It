@@ -2,9 +2,8 @@ import { TrainingRepository } from "application/repositories/fitness/training.re
 import { Training } from "core/fitness/trainings/Training";
 import { Db, GridFSBucket } from "mongodb";
 import { Connection } from "mongoose";
-import { TrainingModel } from "../../entities/fitness/training.entity";
-import { TrainingVideoModel } from "../../entities/fitness/trainingVideo.entity";
 import { Readable } from "node:stream"
+import { TrainingModel, TrainingVideoModel } from "../../services/entities.service";
 
 export class TypeTrainingRepository implements TrainingRepository {
     constructor(private connection: Connection) { }
