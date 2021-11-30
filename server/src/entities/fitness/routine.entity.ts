@@ -1,5 +1,5 @@
 import { Routine } from "core/fitness/routines/Routine"
-import { model, Schema } from "mongoose"
+import { Schema } from "mongoose"
 
 export interface RoutineDO {
 	id: string
@@ -12,15 +12,15 @@ export interface RoutineDO {
 }
 
 export const RoutineEntity = new Schema<RoutineDO>({
-	id: {type: String, unique: true },
+	id: { type: String, unique: true },
 	name: String,
 	order: Number,
 	userId: String,
 	trainings: [String],
 	description: String,
-},{ id: false })
+}, { id: false })
 
-RoutineEntity.method('asClassObject', function(){
+RoutineEntity.method('asClassObject', function() {
 	const routine = new Routine()
 	routine.id = this.id
 	routine.name = this.name
@@ -32,4 +32,3 @@ RoutineEntity.method('asClassObject', function(){
 	return routine
 })
 
-export const RoutineModel = model<RoutineDO>("Routine", RoutineEntity)
