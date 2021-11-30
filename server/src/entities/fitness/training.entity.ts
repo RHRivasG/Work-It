@@ -9,7 +9,7 @@ export interface TrainingDO {
     trainerId: string
     categories: TrainingTaxonomy[]
     trainingVideo: ObjectId
-    asClassObject: () => Training
+    asClassObject(): Training
 }
 
 const TrainingTaxonomyEntity = new Schema<TrainingTaxonomy>({
