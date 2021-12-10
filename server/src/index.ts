@@ -17,6 +17,8 @@ import { registerModels } from "./services/entities.service";
 import { eventBus, registerEventBus } from "./services/event-bus.service";
 import { registerUserRepository } from "./services/user.repository.service";
 import { registerUserService } from "./services/user.service";
+import { registerRoutineService } from "./services/routine.service";
+import { registerRoutineRepository } from "./services/routine.repository.service";
 
 const app = express()
 
@@ -45,6 +47,8 @@ app.listen(5000, () => {
     registerTrainingService()
     registerUserRepository()
     registerUserService()
+    registerRoutineRepository()
+    registerRoutineService()
 
     // Register command handlers
     const subscriptions = [

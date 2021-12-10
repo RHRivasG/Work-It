@@ -4,12 +4,11 @@ import { Connection } from "mongoose";
 import { RoutineModel } from "../../services/entities.service";
 
 export class MongoRoutineRepository implements RoutineRepository {
-	constructor(private connection: Connection) { }
+	constructor() { }
 
 	async save(routine: Routine) {
-		const model = new RoutineModel(routine)
-		await model.save();
-		return model.asClassObject()
+		const model = await RoutineModel.create(routine)
+		return routine
 	}
 }
 

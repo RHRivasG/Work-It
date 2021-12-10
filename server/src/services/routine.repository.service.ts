@@ -5,5 +5,5 @@ import { connection } from "./fitness.connection.service"
 export let routineRepository: RoutineRepository
 
 export const registerRoutineRepository = () => {
-	routineRepository = new MongoRoutineRepository(connection)
+	routineRepository = new MongoRoutineRepository()
 }

@@ -1,5 +1,6 @@
 import {CreateRoutineCommand} from "application/commands/fitness/routines/CreateRoutineCommand";
 import {CreateTrainingCommand} from "application/commands/fitness/trainings/CreateTrainingCommand";
+import {MongoRoutineRepository} from "../repositories/fitness/routine.repository"
 import {Router} from "express";
 import {routineService} from "../services/routine.service";
 
@@ -12,6 +13,8 @@ RoutineController.get("/routines",(req, res) => {
 })
 */
 
+const repository = new MongoRoutineRepository();
+
 RoutineController.route('/routines')
 	.post(async (req: any, res:any) => {
 		const { body: {name, order, userId, trainings, description} } = req,
@@ -23,7 +26,7 @@ RoutineController.route('/routines')
 				description
 			)
 		let routine = await routineService.handle(createCommand) 
-		res.json({ message: 'Ok', routine })
+		res.json({ message: 'Ok', routine})
 	})
 
 export default RoutineController
