@@ -1,4 +1,3 @@
-import { Training } from "core/fitness/trainings/Training";
 import { Request, Router } from "express";
 import { CreateTrainingCommand } from "application/commands/fitness/trainings/CreateTrainingCommand"
 import { UpdateTrainingCommand } from "application/commands/fitness/trainings/UpdateTrainingCommand"
@@ -7,11 +6,7 @@ import { DeleteTrainingCommand } from "application/commands/fitness/trainings/De
 import { trainingService } from "../services/training.service";
 import { trainingRepository as trainingRepository } from "../services/training.repository.service";
 import { UpdateTrainingVideoCommand } from "application/commands/fitness/trainings/UpdateTrainingVideoCommand";
-
-interface TrainingRequest<Params = {}, Body = {}, Query = {}, Locals = {}>
-    extends Request<Params, Body, Query, Locals> {
-    training?: Training
-}
+import { DeleteTrainingVideoCommand } from "application/commands/fitness/trainings/DeleteTrainingVideoCommand";
 
 interface TrainingRequestParameters {
     name: string,
@@ -24,22 +19,11 @@ interface TrainingRequestParameters {
     }
 }
 
-interface CreateTrainingRequest extends TrainingRequest<{}, {}, TrainingRequestParameters> { }
-interface UpdateTrainingRequest extends TrainingRequest<{ id: string }, {}, UpdateTrainingCommand> { }
-interface SetTrainingVideoRequest extends TrainingRequest<{ id: string }, {}, CreateTrainingVideoCommand> { }
+interface CreateTrainingRequest extends Request<{}, {}, TrainingRequestParameters> { }
+interface UpdateTrainingRequest extends Request<{ training: string }, {}, Omit<UpdateTrainingCommand, "id">> { }
+interface SetTrainingVideoRequest extends Request<{ training: string }, {}, CreateTrainingVideoCommand> { }
 
 const TrainingController = Router()
-
-TrainingController.param('training', async (req: TrainingRequest, _, next, value) => {
-    const training = await trainingRepository.find(value)
-
-    if (training) {
-        req.training = training
-        return next()
-    }
-
-    next(new Error(`Training with id ${value} not found`))
-})
 
 TrainingController.route('/trainings')
     .get(async (_, res) => {
@@ -68,65 +52,92 @@ TrainingController.route('/trainings')
     })
 
 TrainingController.route('/trainings/:training')
-    .get((req: TrainingRequest, res) => {
-        res.json(req.training!)
+    .get(async (req, res) => {
+        const result = await trainingRepository.find(req.params.training)
+
+        if (!result) return res
+            .status(404)
+            .json({ msg: `Training with id ${req.params.training} not found` })
+
+        res.json(result)
     })
     .put(async (req: UpdateTrainingRequest, res) => {
-        const training = await trainingService.handle(req.body)
+        const training = await trainingService.handle(new UpdateTrainingCommand(
+            req.params.training,
+            req.body.data
+        ))
 
-        if (training) res.json({ message: 'Ok', training })
+        console.log(training)
+
+        if (training)
+            res.json({
+                message: 'Ok',
+                training: {
+                    ...training,
+                    categories: Array.from(training.categories)
+                }
+            })
         else res.json({ message: 'Training was not found' })
     })
-    .delete(async (req: TrainingRequest, res) => {
-        const training = req.training!
-        await trainingService.handle(new DeleteTrainingCommand(training.id))
+    .delete(async (req, res) => {
+        await trainingService.handle(new DeleteTrainingCommand(
+            req.params.training
+        ))
 
         res.json({
             message: 'Ok',
-            id: training.id
+            id: req.params.training
         })
     })
 
 TrainingController.route('/trainings/:training/video')
-    .get(async (req: TrainingRequest, res, next) => {
-        try {
-            const training = req.training!,
-                video = await trainingRepository.getVideo(training)
+    .get(async (req, res) => {
+        const training = await trainingRepository.find(req.params.training)
 
-            if (video)
-                res.json({
+        if (!training) return res
+            .status(404)
+            .json({ msg: `Training with id ${req.params.training} not found` })
+
+        const video = await trainingRepository.getVideo(training)
+
+        if (video)
+            res
+                .json({
                     ...training.trainingVideo,
                     video: video.toString('base64')
                 })
-            else
-                throw new Error('The training has no video')
-        } catch (e) {
-            next(e)
-        }
+        else
+            res
+                .status(404)
+                .json({ msg: `Training video not found for training with id: ${req.params.training}` })
     })
     .patch(async (req: SetTrainingVideoRequest, res) => {
-        const training = req.training!,
-            result = await trainingService.handle(new UpdateTrainingVideoCommand(
-                training.id,
-                req.body.filename,
-                req.body.video,
-                req.body.ext
-            ))
+        const result = await trainingService.handle(new UpdateTrainingVideoCommand(
+            req.params.training,
+            req.body.filename,
+            req.body.video,
+            req.body.ext
+        ))
 
         if (result)
-            res.json({
-                message: 'Ok',
-                training: result
-            })
+            res
+                .json({
+                    message: 'Ok',
+                    training: result
+                })
         else
-            throw new Error("Training does not have a video and you didn't provide one")
+            res
+                .status(404)
+                .json({ msg: "Training does not have a video and you didn't provide one" })
 
     })
-    .delete(async (req: TrainingRequest, res) => {
-        const training = req.training!
+    .delete(async (req, res) => {
+        await trainingService.handle(new DeleteTrainingVideoCommand(
+            req.params.training
+        ))
 
         res.json({
-            message: 'Ok'
+            msg: 'Ok'
         })
     })
 

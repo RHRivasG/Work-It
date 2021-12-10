@@ -1,7 +1,7 @@
 import { Training } from "core/fitness/trainings/Training";
 import { TrainingTaxonomy } from "core/fitness/TrainingTaxonomy";
 import { ObjectId, Schema } from "mongoose";
-import { connection as fitnessConnection } from "../../services/fitness.connection.service";
+import { TrainingTaxonomyEntity } from "../trainingTaxonomy.entity";
 
 export interface TrainingDO {
     id: string
@@ -12,10 +12,6 @@ export interface TrainingDO {
     trainingVideo: ObjectId
     asClassObject(): Training
 }
-
-const TrainingTaxonomyEntity = new Schema<TrainingTaxonomy>({
-    value: { type: String }
-})
 
 export const TrainingEntity = new Schema<TrainingDO>({
     id: { type: String, unique: true },

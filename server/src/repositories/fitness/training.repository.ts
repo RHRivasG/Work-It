@@ -9,14 +9,14 @@ export class TypeTrainingRepository implements TrainingRepository {
     constructor(private connection: Connection) { }
 
     async save(training: Training) {
-        const exists = await this.find(training.id),
-            { trainingVideo, ...toUpdate } = training,
-            model = exists ? await TrainingModel
-                .findOneAndUpdate({ id: training.id }, toUpdate)
-                .populate('trainingVideo') :
-                await new TrainingModel(training).populate('trainingVideo')
-        await model!.save();
-        return model!.asClassObject()
+        const { trainingVideo, ...toUpdate } = training
+        await TrainingModel.findOneAndUpdate(
+            { id: training.id },
+            { $set: { ...toUpdate, categories: Array.from(toUpdate.categories) } },
+            { upsert: true }
+        )
+
+        return training
     }
 
     async find(id: string) {
@@ -27,7 +27,7 @@ export class TypeTrainingRepository implements TrainingRepository {
     }
 
     async getAll() {
-        const all = await TrainingModel.find({}).populate('trainingVideo')
+        const all = await TrainingModel.find().populate('trainingVideo')
         return all.map(f => f.asClassObject())
     }
 
@@ -37,21 +37,11 @@ export class TypeTrainingRepository implements TrainingRepository {
     }
 
     private async saveTrainingVideo(training: Training) {
-        const savedTrainingVideo = await TrainingVideoModel.findOne({ id: training.trainingVideo!.id })
-        if (savedTrainingVideo) {
-            await savedTrainingVideo.updateOne(training.trainingVideo)
-            return training = await this.save(training)
-        }
-        else {
-            const video = await new TrainingVideoModel(training.trainingVideo).save()
-            const updatedTraining =
-                await TrainingModel
-                    .findOneAndUpdate({ id: training.id }, { trainingVideo: video._id })
-                    .populate('trainingVideo')
+        const trainingVideo = training.trainingVideo!
+        const trainingVideoDO = await TrainingVideoModel.findOneAndUpdate({ id: trainingVideo.id }, { $set: trainingVideo }, { upsert: true, new: true })
+        await TrainingModel.findOneAndUpdate({ id: training.id }, { $set: { trainingVideo: trainingVideoDO!._id } })
 
-            return updatedTraining!.asClassObject()
-        }
-
+        return training
     }
 
     addVideo(training: Training, video: Buffer): Promise<Training>
@@ -59,7 +49,7 @@ export class TypeTrainingRepository implements TrainingRepository {
     async addVideo(training: Training, video?: Buffer) {
         if (video) {
             const videoStream = Readable.from(video),
-                gridfs = new GridFSBucket(this.connection.db as Db, { bucketName: 'trainingvideos' }),
+                gridfs = new GridFSBucket(this.connection.db, { bucketName: 'trainingvideos' }),
                 storedVideo = await gridfs
                     .find({ filename: `${training.trainingVideo!.id}` })
                     .next()
@@ -81,7 +71,7 @@ export class TypeTrainingRepository implements TrainingRepository {
         const metadata = training.trainingVideo
 
         if (metadata?.name) {
-            const gridfs = new GridFSBucket(this.connection.db as Db, { bucketName: 'trainingvideos' }),
+            const gridfs = new GridFSBucket(this.connection.db, { bucketName: 'trainingvideos' }),
                 chunks: Buffer[] = [],
                 stream = gridfs.openDownloadStreamByName(`${training.trainingVideo!.id}`)
 
@@ -95,7 +85,7 @@ export class TypeTrainingRepository implements TrainingRepository {
     }
 
     private async deletePhysicalVideo(training: Training) {
-        const gridfs = new GridFSBucket(this.connection.db as Db, { bucketName: 'trainingvideos' }),
+        const gridfs = new GridFSBucket(this.connection.db, { bucketName: 'trainingvideos' }),
             fileMeta = await gridfs.find({ filename: `${training.trainingVideo!.id}` }).next(),
             fileId = fileMeta!._id
         await gridfs.delete(fileId)

@@ -45,7 +45,7 @@ export class MongoUserRepository implements UserRepository {
     }
     async save(user: User) {
         const userDO = user.toDO()
-        await UserModel.findOneAndUpdate({ id: userDO.id }, userDO, { upsert: true })
+        await UserModel.findOneAndUpdate({ id: userDO.id }, { $set: userDO }, { upsert: true })
     }
     async getAll() {
         const documents = await UserModel.find({})

@@ -1,6 +1,5 @@
 import { TrainingVideo } from "core/fitness/trainings/TrainingVideo";
 import { Schema } from "mongoose";
-import { connection as fitnessConnection } from "../../services/fitness.connection.service";
 
 export interface TrainingVideoDO {
     id: string

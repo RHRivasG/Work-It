@@ -3,7 +3,6 @@ import { AggregateRoot } from "../../shared/AggregateRoot"
 import { CreatedTrainingEvent } from "./events/CreatedTrainingEvent"
 import { UpdatedTrainingEvent } from "./events/UpdatedTrainingEvent"
 import { DeletedTrainingEvent } from "./events/DeletedTrainingEvent"
-import { DuplicatedTaxonomiesError } from "./errors/DuplicatedTaxonomiesError"
 import { TrainingVideo } from "./TrainingVideo"
 import { TrainingVideoSetToTraining } from "./events/TrainingVideoSetToTraining"
 import { DeletedTrainingVideoEvent } from "./events/DeletedTrainingVideoEvent"
@@ -24,11 +23,11 @@ type TrainingProperties = Omit<{
 type UpdatedTrainingProperties = Partial<TrainingProperties>
 
 export class Training extends AggregateRoot<TrainingEvents> {
-    public categories: TrainingTaxonomy[] = []
+    public categories: Set<TrainingTaxonomy> = new Set()
     public trainerId: string = ''
     public name: string = ''
     public description: string = ''
-    public trainingVideo: TrainingVideo | undefined = undefined
+    public trainingVideo?: TrainingVideo
 
     static create(data: TrainingProperties) {
         const training = new Training(),
@@ -73,8 +72,18 @@ export class Training extends AggregateRoot<TrainingEvents> {
     }
 
     protected when(event: TrainingEvents) {
-        if (event instanceof CreatedTrainingEvent) Object.assign(this, event)
-        if (event instanceof UpdatedTrainingEvent) Object.assign(this, event)
+        if (event instanceof CreatedTrainingEvent) {
+            this.name = event.name
+            this.description = event.description
+            this.trainerId = event.trainerId
+            this.categories = event.categories
+        }
+        if (event instanceof UpdatedTrainingEvent) {
+            this.name = event.data?.name || this.name
+            this.description = event.data?.description || this.description
+            this.trainerId = event.data?.trainerId || this.trainerId
+            this.categories = event.data?.categories || this.categories
+        }
         if (event instanceof TrainingVideoSetToTraining) {
             if (this.trainingVideo) {
                 this.trainingVideo.update(event.filename, event.video, event.ext)
@@ -93,9 +102,6 @@ export class Training extends AggregateRoot<TrainingEvents> {
     }
 
     protected invariants() {
-        const duplicatedCategories = this.categories.flatMap(c => this.categories.filter(ct => c.value == ct.value))
-        if (duplicatedCategories.length > 0)
-            throw new DuplicatedTaxonomiesError(this.id, duplicatedCategories)
         if (!this.name || this.name.trim() == "")
             throw new Error("The name of the training cannot be blank")
         if (this.trainingVideo) {

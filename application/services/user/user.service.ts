@@ -63,7 +63,8 @@ export class UserService implements
         } else if (command instanceof UpdateUserCommand) {
             const user = await this.repo.get(command.userId)
             if (user) {
-                user.update(command.userData)
+                const { password, id, ...data } = command.userData
+                user.update(data)
                 await this.repo.save(user)
             }
         } else if (command instanceof RemoveUserCommand) {

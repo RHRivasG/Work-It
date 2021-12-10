@@ -40,7 +40,7 @@ export class TrainingService implements
                 name: command.name,
                 description: command.description,
                 trainerId: command.trainerId,
-                categories: command.categories
+                categories: new Set(command.categories)
             })
             await this.repository.save(training)
 
@@ -48,7 +48,10 @@ export class TrainingService implements
         } else if (command instanceof UpdateTrainingCommand) {
             const training = await this.repository.find(command.id)
             if (training) {
-                training.update(command.data)
+                training.update({
+                    ...command.data,
+                    categories: new Set(command.data.categories || [])
+                })
                 await this.repository.save(training)
 
                 return training
@@ -77,13 +80,14 @@ export class TrainingService implements
                 const videoBuffer = await this.repository.getVideo(training)
                 if (!videoBuffer) return
                 training.setVideo(command.filename, videoBuffer, command.ext)
-                return await this.repository.addVideo(training)
+                await this.repository.addVideo(training)
             } else {
                 const videoBuffer = Buffer.from(command.video, 'base64')
                 training.setVideo(command.filename, videoBuffer, command.ext)
-                return await this.repository.addVideo(training, videoBuffer)
+                await this.repository.addVideo(training, videoBuffer)
             }
 
+            return training
         } else if (command instanceof DeleteTrainingVideoCommand) {
             const training = await this.repository.find(command.trainingId)
             if (training) {
