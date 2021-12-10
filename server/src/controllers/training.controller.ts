@@ -104,7 +104,7 @@ TrainingController.route('/trainings/:training/video')
             next(e)
         }
     })
-    .patch(async (req: SetTrainingVideoRequest, res, next) => {
+    .patch(async (req: SetTrainingVideoRequest, res) => {
         const training = req.training!,
             result = await trainingService.handle(new UpdateTrainingVideoCommand(
                 training.id,

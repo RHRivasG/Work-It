@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { createServer, exchange, grant } from "oauth2orize";
+import { createServer, exchange, grant, IssueGrantCodeFunction } from "oauth2orize";
 import { AuthorizationCodeModel, ClientModel, TokenModel } from "../services/entities.service";
 
 let server = createServer()
@@ -15,7 +15,7 @@ server.deserializeClient(async (clientId, done) => {
     }
 })
 
-server.grant(grant.code(async (client, redirectUrl, user, ares, done) => {
+server.grant(grant.code((async (client: any, redirectUrl: string, user: any, ares: any, areq: any, done: any) => {
     try {
         let code = randomUUID()
         await AuthorizationCodeModel.create({
@@ -23,27 +23,13 @@ server.grant(grant.code(async (client, redirectUrl, user, ares, done) => {
             userId: user.id,
             code,
             redirectUrl,
-            scope: ares.scope || ['*']
+            scope: ares.scope || ((areq.scope?.length || 0) == 0 ? ['*'] : areq.scope)
         })
         done(null, code)
     } catch (err: any) {
         done(err)
     }
-}))
-
-server.grant(grant.token(async (client, user, ares, done) => {
-    try {
-        const token = randomUUID()
-        await TokenModel.create({
-            userId: user.id,
-            clientId: client.clientId,
-            token,
-            scope: ares.scope || ['*']
-        })
-    } catch (err: any) {
-        done(err)
-    }
-}))
+}) as unknown as IssueGrantCodeFunction))
 
 server.exchange(exchange.code(async (client, code, redirectUrl, done) => {
     try {
@@ -64,7 +50,7 @@ server.exchange(exchange.code(async (client, code, redirectUrl, done) => {
     }
 }))
 
-export const authorize = (scopes: string[]) => server.authorization(async (clientId, redirectUrl, done) => {
+export const authorize = server.authorization(async (clientId, redirectUrl, done) => {
     try {
         const client = await ClientModel.findOne({ clientId, redirectUrl })
         if (!client) return done(null, false)
@@ -77,8 +63,7 @@ export const authorize = (scopes: string[]) => server.authorization(async (clien
     try {
         const token = await TokenModel.findOne({ clientId: client.id, userId: user.id })
         if (client.isTrusted) return done(null, true)
-        if (token && (scopes.length == 0 || scopes.every(scope => token.scope.includes(scope))))
-            return done(null, true)
+        if (token) return done(null, true)
 
         return done(null, false)
     } catch (e: any) {

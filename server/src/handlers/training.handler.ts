@@ -1,10 +1,10 @@
 import { EventBus } from "core/shared/EventBus";
-import { EventHandlerBuilder } from "..//middlewares/event-bus.middleware";
 import { CreateTrainingCommand } from "application/commands/fitness/trainings/CreateTrainingCommand"
 import { UpdateTrainingCommand } from "application/commands/fitness/trainings/UpdateTrainingCommand"
 import { CreateTrainingVideoCommand } from "application/commands/fitness/trainings/CreateTrainingVideoCommand"
 import { DeleteTrainingCommand } from "application/commands/fitness/trainings/DeleteTrainingCommand";
 import { trainingService } from "../services/training.service";
+import { EventHandlerBuilder } from "../services/event-bus.service";
 
 const TrainingHandler = new EventHandlerBuilder()
 

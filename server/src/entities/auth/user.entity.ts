@@ -1,6 +1,5 @@
 import { randomUUID } from "crypto";
 import { Schema } from "mongoose";
-import { connection as authConnection } from "../../services/auth.connection.service";
 
 export interface UserDO {
     id: string
