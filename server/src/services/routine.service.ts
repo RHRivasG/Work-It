@@ -3,6 +3,6 @@ import { routineRepository } from "./routine.repository.service"
 
 export let routineService: RoutineService
 
-export const registerRoutineRepository = () => {
+export const registerRoutineService = () => {
 	routineService = new RoutineService(routineRepository)
 }

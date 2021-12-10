@@ -9,6 +9,8 @@ import { registerTrainingService } from "./services/training.service";
 import { registerConnection as registerFitnessConnection } from "./services/fitness.connection.service";
 import { registerConnection as registerAuthConnecetion } from "./services/auth.connection.service";
 import { registerTrainingRepository } from "./services/training.repository.service";
+import { registerRoutineService } from "./services/routine.service";
+import {registerRoutineRepository} from "./services/routine.repository.service";
 import passport from "passport";
 import login from "connect-ensure-login";
 import { authorize, decision, token } from "./middlewares/oauth2.middleware";
@@ -60,5 +62,7 @@ app.listen(5000, () => {
     registerModels()
     registerTrainingRepository()
     registerTrainingService()
+	registerRoutineRepository()
+	registerRoutineService()
     console.log('Server listening at 5000')
 })

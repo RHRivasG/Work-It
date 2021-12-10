@@ -54,6 +54,13 @@ export class Routine extends AggregateRoot<any>{
 	*/
 
 	protected when(event: any){
+		if (event instanceof CreatedRoutineEvent){
+			this.name = event.name
+			this.order = event.order
+			this.userId = event.userId
+			this.trainings = event.trainings
+			this.description = event.description
+		}
 	}
 
 	protected invariants(){
