@@ -1,1 +1,18 @@
 /* You can add global styles to this file, and also import other style files */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+@import '@angular/cdk/overlay-prebuilt.css';
+
+body {
+  @apply font-sans;
+}
+
+
+.rotation > * {
+  @apply transition-transform duration-500;
+}
+
+.rotation.rotate > * {
+  @apply transform rotate-180;
+}

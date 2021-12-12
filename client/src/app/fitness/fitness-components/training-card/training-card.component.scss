@@ -1,0 +1,22 @@
+.video-container {
+  height: 320px;
+}
+
+.description-container {
+  max-height: 125px;
+  @apply transition-all duration-500;
+}
+
+.description-container.shown {
+  max-height: 100vh!important;
+}
+
+.description-container.shown > .overlay {
+  opacity: 0;
+}
+
+.overlay {
+  top: 25%;
+  background: linear-gradient(rgba(255, 255, 255, 0), white);
+  filter: blur();
+}

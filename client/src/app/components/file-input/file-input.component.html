@@ -1,0 +1,6 @@
+<div tabindex="0" (click)="loading ? null : openFileDialog()" class="group cursor-pointer flex flex-row items-center border-2 border-gray-400 text-lg p-2 w-full rounded-lg focus:ring-4 focus:ring-primary focus:ring-opacity-50 focus:outline-none transition duration-400">
+  <input #fileInput hidden type="file" name="video">
+  <br *ngIf="fileInfo.trim() == ''">{{ fileInfo }}
+  <fa-icon *ngIf="loading" [icon]="loadingIcon" class="animate-spin ml-auto text-primary text-opacity-50 text-xl h-full px-1"></fa-icon>
+  <fa-icon *ngIf="!loading" class="group-focus:text-primary group-focus:text-opacity-50 transition duration-400 ml-auto flex flex-row items-center text-xl text-gray-400 h-full px-1" [icon]="uploadIcon"></fa-icon>
+</div>
