@@ -1,8 +1,8 @@
 package routine
 
 import (
-	"fitness-dimension/routines/events"
-	valuesObjects "fitness-dimension/routines/routine/values-objects"
+	"fitness-dimension-core/routines/events"
+	valuesObjects "fitness-dimension-core/routines/routine/values-objects"
 )
 
 type Routine struct {
@@ -44,9 +44,9 @@ func CreateRoutine(
 
 func (r *Routine) AddTrainingVideo(trainingID valuesObjects.RoutineTrainingID) {
 	r.TrainingsID = append(r.TrainingsID, trainingID)
-	r.AddEvent(events.RoutineTrainingAdded{
-		ID:                r.ID,
-		RoutineTrainingID: trainingID,
+	r.AddEvent(events.TrainingAdded{
+		ID:         r.ID,
+		TrainingID: trainingID,
 	})
 }
 
@@ -61,9 +61,9 @@ func (r *Routine) RemoveTrainingVideo(trainingID valuesObjects.RoutineTrainingID
 
 	r.TrainingsID = trainings
 
-	r.AddEvent(events.RoutineTrainingRemoved{
-		ID:                r.ID,
-		RoutineTrainingID: trainingID,
+	r.AddEvent(events.TrainingRemoved{
+		ID:         r.ID,
+		TrainingID: trainingID,
 	})
 }
 

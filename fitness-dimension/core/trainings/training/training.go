@@ -1,9 +1,9 @@
 package training
 
 import (
-	"fitness-dimension/trainings/events"
-	entities "fitness-dimension/trainings/training/entities"
-	valuesObjects "fitness-dimension/trainings/training/values-objects"
+	"fitness-dimension-core/trainings/events"
+	entities "fitness-dimension-core/trainings/training/entities"
+	valuesObjects "fitness-dimension-core/trainings/training/values-objects"
 )
 
 type Training struct {
@@ -53,11 +53,25 @@ func (t *Training) SetVideo(
 
 	v := entities.CreateVideo(filename, ext, video)
 	t.Video = &v
-	t.AddEvent(events.TrainingVideoUpdated{
+	t.AddEvent(events.TrainingVideoCreated{
 		ID:    v.ID,
 		Name:  v.Name,
 		Ext:   v.Ext,
 		Video: v.Buff,
+	})
+}
+
+func (t *Training) UpdateVideo(
+	filename valuesObjects.TrainingVideoName,
+	video valuesObjects.TrainingVideoVideo,
+	ext valuesObjects.TrainingVideoExt,
+) {
+	t.Video.Update(filename, ext, video)
+	t.AddEvent(events.TrainingVideoUpdated{
+		ID:    t.Video.ID,
+		Name:  filename,
+		Ext:   ext,
+		Video: video,
 	})
 }
 
