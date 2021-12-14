@@ -1,6 +1,6 @@
 package events
 
-import valuesObjects "fitness-dimension-core/routines/routine/values-objects"
+import valuesObjects "fitness-dimension/core/routines/routine/values-objects"
 
 type RoutineCreated struct {
 	ID          valuesObjects.RoutineID

@@ -1,9 +1,9 @@
 package training
 
 import (
-	"fitness-dimension-core/trainings/events"
-	entities "fitness-dimension-core/trainings/training/entities"
-	valuesObjects "fitness-dimension-core/trainings/training/values-objects"
+	"fitness-dimension/core/trainings/events"
+	entities "fitness-dimension/core/trainings/training/entities"
+	valuesObjects "fitness-dimension/core/trainings/training/values-objects"
 )
 
 type Training struct {

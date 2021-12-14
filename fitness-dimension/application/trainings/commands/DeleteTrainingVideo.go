@@ -3,5 +3,6 @@ package commands
 import "github.com/google/uuid"
 
 type DeleteTrainingVideo struct {
-	ID uuid.UUID
+	TrainingID uuid.UUID
+	ID         uuid.UUID
 }

@@ -1,4 +1,4 @@
-module fitness-dimension-core
+module fitness-dimension
 
 go 1.17
 
