@@ -1,0 +1,19 @@
+{
+  "name": "auth-proxy",
+  "version": "1.0.0",
+  "description": "Auth Proxy for Work It system",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RHRivasG/Work-It.git#microservices-development"
+  },
+  "author": "UCAB SQA 93 Team 1",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RHRivasG/Work-It/issues"
+  },
+  "homepage": "https://github.com/RHRivasG/Work-It/tree/microservices-development#readme"
+}
