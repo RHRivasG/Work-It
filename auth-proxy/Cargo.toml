@@ -1,0 +1,42 @@
+[package]
+name = "auth-proxy"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.rand]
+version = "*"
+
+[dependencies.tokio]
+version = "1"
+features = ["full"]
+
+[dependencies.futures]
+version = "0.3.19"
+
+[dependencies.warp]
+version = "*"
+
+[dependencies.warp-reverse-proxy]
+version = "*"
+
+[dependencies.redis]
+version = "0.21.4"
+features = ["tokio-comp"]
+
+[dependencies.sha2]
+version = "*"
+
+[dependencies.hmac]
+version = "*"
+
+[dependencies.hex]
+version = "*"
+
+[dependencies.serde]
+version = "*"
+features = ["derive"]
+
+[dependencies.toml]
+version = "*"

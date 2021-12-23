@@ -1,0 +1,9 @@
+authority = "social"
+
+[servers.social]
+from = "/api/social"
+to = "http://localhost:5000"
+
+[servers.fitness]
+from = "/api/fitness"
+to = "http://localhost:5050"

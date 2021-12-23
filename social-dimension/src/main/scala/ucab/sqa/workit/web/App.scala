@@ -30,7 +30,7 @@ object QuickstartApp {
     import system.executionContext
 
     val futureBinding = Http()
-      .newServerAt("localhost", 8082)
+      .newServerAt("localhost", 5000)
       .bind(
         routes
       )
