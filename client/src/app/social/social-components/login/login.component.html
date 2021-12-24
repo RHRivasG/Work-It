@@ -1,0 +1,34 @@
+<div class="container mx-auto grid grid-cols-5 h-screen">
+  <form [formGroup]="loginForm" (ngSubmit)="login()" class="col-span-3 my-auto">
+    <div class="border-r-2 border-gray-400 gap-10 py-16 px-16 grid grid-cols-3">
+      <label class="font-semibold text-3xl my-auto">Username</label>
+      <div class="col-span-2">
+        <input formControlName="username" class="w-full border-2 border-gray-400 text-xl px-2 py-3 w-full rounded-lg focus:ring-4 focus:ring-primary focus:ring-opacity-50 focus:outline-none transition duration-400">
+        <small class="error" *ngIf="loginForm.get('username')?.errors?.required">Username cannot be empty!</small>
+        <small class="error" *ngIf="loginForm.get('username')?.errors?.maxlength">Username should be less than 50 characters</small>
+      </div>
+      <label class="font-semibold text-3xl my-auto">Password</label>
+      <div class="col-span-2">
+        <input formControlName="password" type="password" class="border-2 border-gray-400 text-xl px-2 py-3 w-full rounded-lg focus:ring-4 focus:ring-primary focus:ring-opacity-50 focus:outline-none transition duration-400 col-span-2">
+        <small clasS="error">Password cannot be empty!</small>
+      </div>
+      <a href="#" class="text-xl underline text-center text-black pt-4 col-span-full">
+        Don't have an account? Register now!
+      </a>
+      <a href="#" class="text-xl underline text-center text-black pt-4 col-span-full">
+        Are you a trainer? Log in as trainer!
+      </a>
+      <div class="pt-4 col-span-full">
+        {{ loginForm.status == 'INVALID'  }}
+        <button
+          [disabled]="loginForm.status == 'INVALID'"
+          class="bg-action w-full px-4 py-3 rounded-lg text-2xl font-semibold text-white focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 focus:outline-none shadow-lg disabled:bg-gray-500">
+          Sign Up
+        </button>
+      </div>
+    </div>
+  </form>
+  <div class="col-span-2 items-center flex">
+      <img class="logo m-auto object-contain w-4/5" src="assets/login-logo.svg">
+  </div>
+</div>

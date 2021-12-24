@@ -23,7 +23,7 @@ import _root_.ucab.sqa.workit.web.infrastructure
 import _root_.ucab.sqa.workit.web.trainers.TrainerRoutes
 import _root_.ucab.sqa.workit.web.auth.AuthRoutes
 
-object QuickstartApp {
+object App {
   private def startHttpServer(routes: Route)(implicit
       system: ActorSystem[_]
   ): Unit = {
