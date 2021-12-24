@@ -1,7 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { faEllipsisV, faGripLines, faPlayCircle, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { moveItemInArray } from "@angular/cdk/drag-drop"
-import { TrainingDTO } from 'core/fitness/trainings/TrainingDTO';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { CdkPortal } from '@angular/cdk/portal';
 
@@ -18,7 +17,7 @@ export class ShowRoutineComponent implements OnInit {
   updateRef: OverlayRef
   @ViewChild(CdkPortal)
   updatePortal!: CdkPortal
-  trainings: Partial<TrainingDTO>[] = [
+  trainings = [
     {
       name: 'Workout Name',
       trainerId: 'Pepe Ramírez',

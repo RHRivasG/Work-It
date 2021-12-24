@@ -2,7 +2,6 @@ import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { CdkPortal } from '@angular/cdk/portal';
 import { AfterViewInit, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { faAngleDown, faEllipsisV, faFlag, faPlus } from '@fortawesome/free-solid-svg-icons';
-import { TrainingDTO } from "core/fitness/trainings/TrainingDTO"
 
 @Component({
   selector: 'wi-training-card',
@@ -17,7 +16,7 @@ export class TrainingCardComponent implements OnInit, OnDestroy, AfterViewInit {
   descriptionShown = false;
   overlayRef: OverlayRef
   @Input()
-  training!: TrainingDTO
+  training!: any
   @ViewChild(CdkPortal)
   modal!: CdkPortal
 

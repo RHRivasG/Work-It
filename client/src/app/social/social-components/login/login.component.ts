@@ -1,5 +1,7 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'wi-login',
@@ -30,8 +32,9 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup
+  loading: boolean = false
 
-  constructor(formBuilder: FormBuilder) {
+  constructor(formBuilder: FormBuilder, private http: HttpClient) {
     this.loginForm = formBuilder.group({
       username: ['', Validators.compose([Validators.required, Validators.maxLength(50)])],
       password: ['', Validators.required]
@@ -47,6 +50,21 @@ export class LoginComponent implements OnInit {
   }
 
   login() {
-    console.log("Login issued!")
+    let credentials = `${this.loginForm.get('username')?.value || ''}:${this.loginForm.get('password')?.value || ''}`
+    console.log(btoa(credentials))
+
+    this.loading = true
+    this.http.post(environment.socialApiUrl + "/login/participants", "", {
+      headers: {
+        'Authorization': `Basic ${btoa(credentials)}`,
+        'Content-Type': 'text/plain'
+      },
+      responseType: 'text'
+    })
+      .subscribe(result => {
+        this.loading = false
+      }, (e) => {
+        this.loading = false
+      })
   }
 }

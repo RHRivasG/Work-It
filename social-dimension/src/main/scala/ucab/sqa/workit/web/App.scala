@@ -9,6 +9,7 @@ import akka.util.Timeout
 import akka.http.scaladsl.server.RejectionHandler
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.headers._
 import scala.util.Failure
 import scala.util.Success
 import cats.instances.future.catsStdInstancesForFuture
@@ -24,6 +25,16 @@ import _root_.ucab.sqa.workit.web.trainers.TrainerRoutes
 import _root_.ucab.sqa.workit.web.auth.AuthRoutes
 
 object App {
+  private val corsHeaders = Seq(
+    `Access-Control-Allow-Origin`.*,
+    `Access-Control-Allow-Credentials`(true),
+    `Access-Control-Allow-Headers`(
+      "Authorization",
+      "Content-Type",
+      "X-Requested-With"
+    )
+  )
+
   private def startHttpServer(routes: Route)(implicit
       system: ActorSystem[_]
   ): Unit = {
@@ -120,8 +131,10 @@ object App {
         new AuthRoutes(participantActor, trainerActor).authRoutes
 
       startHttpServer(
-        handleRejections(infrastructureHandler) {
-          authRoutes ~ participantRoutes ~ trainerRoutes
+        (handleRejections(infrastructureHandler) & respondWithHeaders(
+          corsHeaders
+        )) {
+          optionsPath ~ authRoutes ~ participantRoutes ~ trainerRoutes
         }
       )
 
@@ -131,4 +144,3 @@ object App {
       ActorSystem[Nothing](rootBehavior, "WorkItSocialDimensionAPIServer")
   }
 }
-//#main-class

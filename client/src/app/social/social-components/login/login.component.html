@@ -19,10 +19,9 @@
         Are you a trainer? Log in as trainer!
       </a>
       <div class="pt-4 col-span-full">
-        {{ loginForm.status == 'INVALID'  }}
         <button
-          [disabled]="loginForm.status == 'INVALID'"
-          class="bg-action w-full px-4 py-3 rounded-lg text-2xl font-semibold text-white focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 focus:outline-none shadow-lg disabled:bg-gray-500">
+          [disabled]="loginForm.status == 'INVALID' || loading"
+          class="bg-action w-full px-4 py-3 rounded-lg text-2xl font-semibold text-white focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 focus:outline-none shadow-lg disabled:bg-gray-300 disabled:border-500 disabled:shadow-none">
           Sign Up
         </button>
       </div>

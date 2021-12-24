@@ -50,6 +50,7 @@ object helpers {
         case Left(e: Error) => reject(DomainRejection(e))
         case Right(e)       => complete(e)
       }
+
     def handleFuture[R](
         future: => Future[Either[Error, R]],
         msg: String
@@ -61,6 +62,10 @@ object helpers {
         case Right(_)       => complete(msg)
       }
 
+    def optionsPath =
+      options {
+        complete("API Options")
+      }
   }
 
   object auth {

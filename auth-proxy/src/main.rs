@@ -61,7 +61,7 @@ fn configure_auth_token_storage(
                         .await
                         .expect("Insertion in redis failed");
 
-                    Response::builder()
+                    let mut proxy_response = Response::builder()
                         .header(
                             "Set-Cookie",
                             format!(
@@ -70,7 +70,15 @@ fn configure_auth_token_storage(
                             ),
                         )
                         .body(Bytes::from_static(b"Authentication completed"))
-                        .unwrap()
+                        .unwrap();
+
+                    response.headers().iter().for_each(|(k, v)| {
+                        proxy_response.headers_mut().append(k, v.clone());
+                    });
+
+                    proxy_response.headers_mut().remove("content-length");
+
+                    proxy_response
                 } else {
                     response
                 }
