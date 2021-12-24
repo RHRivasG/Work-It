@@ -62,4 +62,24 @@ object helpers {
       }
 
   }
+
+  object auth {
+    sealed trait AuthResult[T] {
+      def has(f: PartialFunction[T, Boolean]): Boolean
+    }
+
+    final case class UserFound[T](user: T) extends AuthResult[T] {
+      def has(f: PartialFunction[T, Boolean]) =
+        f(user)
+    }
+
+    final case class Admin[T]() extends AuthResult[T] {
+      def has(f: PartialFunction[T, Boolean]) = true
+    }
+
+    def user[T](participant: T): AuthResult[T] = UserFound(participant)
+
+    def admin[T]: AuthResult[T] = Admin[T]()
+
+  }
 }

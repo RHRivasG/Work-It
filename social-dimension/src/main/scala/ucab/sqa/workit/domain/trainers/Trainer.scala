@@ -14,27 +14,23 @@ case class Trainer private[trainers] (
   def update(name: TrainerName, preferences: TrainerPreferences) = {
     val currentPreferences = Set(this.preferences.preferences: _*)
     val newPreferences = Set(preferences.preferences: _*)
-    val addedPreferences = (newPreferences -- currentPreferences).toList
     val deletedPreferences = (currentPreferences -- newPreferences).toList
+    val addedPreferences = (newPreferences -- currentPreferences).toList
+    val addPreferencesEvent = TrainerPreferencesAddedEvent(
+      this.id,
+      TrainerPreferences(addedPreferences)
+    )
+    val deletedPreferencesEvent =
+      TrainerPreferencesRemovedEvent(
+        this.id,
+        TrainerPreferences(deletedPreferences)
+      )
     val events =
       List(TrainerUpdatedEvent(this.id, name)) ++
-        (if (!addedPreferences.isEmpty)
-           List(
-             TrainerPreferencesAddedEvent(
-               this.id,
-               TrainerPreferences(addedPreferences)
-             )
-           )
+        (if (!addedPreferences.isEmpty) List(addPreferencesEvent)
          else List()) ++
-        (if (!deletedPreferences.isEmpty)
-           List(
-             TrainerPreferencesRemovedEvent(
-               this.id,
-               TrainerPreferences(deletedPreferences)
-             )
-           )
-         else
-           List())
+        (if (!deletedPreferences.isEmpty) List(deletedPreferencesEvent)
+         else List())
 
     (events, this.copy(name = name, preferences = preferences))
   }

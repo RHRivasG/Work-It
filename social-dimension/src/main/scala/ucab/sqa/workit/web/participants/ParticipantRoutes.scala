@@ -31,6 +31,16 @@ import ucab.sqa.workit.application.participants.ParticipantModel
 import ucab.sqa.workit.application.participants.PreferenceModel
 import ucab.sqa.workit.web.JsonSupport
 import ucab.sqa.workit.application.participants.ChangeParticipantPasswordCommand
+import akka.http.scaladsl.server.directives.Credentials
+import akka.http.scaladsl.server.directives.Credentials.Provided
+import pdi.jwt.JwtCirce
+import javax.crypto.SecretKey
+import pdi.jwt.JwtAlgorithm
+import cats.data.OptionT
+import akka.http.scaladsl.server.MethodRejection
+import akka.http.scaladsl.server.Rejection
+import akka.http.scaladsl.server.directives.AuthenticationDirective
+import ucab.sqa.workit.web.helpers
 
 class ParticipantRoutes(
     participantService: ActorRef[
@@ -46,20 +56,25 @@ class ParticipantRoutes(
 
   private def getParticipants: Future[Either[Error, List[ParticipantModel]]] =
     participantService.ask(Query(GetAllParticipantsQuery(), _))
+
   private def getPreferences: Future[Either[Error, List[PreferenceModel]]] =
     participantService.ask(Query(GetAllPreferencesQuery(), _))
+
   private def getParticipant(
       id: String
   ): Future[Either[Error, ParticipantModel]] =
     participantService.ask(Query(GetParticipantQuery(id), _))
+
   private def getParticipantWithRequest(
       id: String
   ): Future[Either[Error, ParticipantModel]] =
     participantService.ask(Query(GetParticipantWithRequestIssuedQuery(id), _))
+
   private def createParticipant(command: CreateParticipantCommand) =
     participantService.ask((rp: ActorRef[Either[Error, Unit]]) =>
       Command(command, rp)
     )
+
   private def updateParticipant(
       id: String,
       name: String,
@@ -71,6 +86,7 @@ class ParticipantRoutes(
         rp
       )
     )
+
   private def changeParticipantPassword(
       id: String,
       password: String
@@ -81,21 +97,58 @@ class ParticipantRoutes(
         rp
       )
     )
+
   private def deleteParticipant(command: DeleteParticipantCommand) =
     participantService.ask((rp: ActorRef[Either[Error, Unit]]) =>
       Command(command, rp)
     )
+
   private def issueRequest(id: String) =
     participantService.ask((rp: ActorRef[Either[Error, Unit]]) =>
       Command(IssueRequestParticipantToTrainerCommand(id), rp)
     )
+
   private def acceptRequest(id: String) =
     participantService.ask((rp: ActorRef[Either[Error, Unit]]) =>
       Command(AcceptRequestParticipantToTrainerCommand(id), rp)
     )
+
   private def rejectRequest(id: String) =
     participantService.ask((rp: ActorRef[Either[Error, Unit]]) =>
       Command(RejectRequestParticipantToTrainerCommand(id), rp)
+    )
+
+  private def authenticateParticipantWithCredentials(
+      cred: Credentials
+  ) = (
+    cred match {
+      case Provided(token) =>
+        for {
+          payload <- OptionT.fromOption[Future](
+            JwtCirce.decode(token, "secret", Seq(JwtAlgorithm.HS256)).toOption
+          )
+          subject <- OptionT.fromOption[Future](payload.subject)
+          user <-
+            OptionT(getParticipant(subject).map(_.toOption))
+              .map[helpers.auth.AuthResult[ParticipantModel]](
+                helpers.auth.user(_)
+              )
+              .orElse {
+                if (subject == "admin")
+                  OptionT.pure[Future](helpers.auth.admin)
+                else
+                  OptionT
+                    .none[Future, helpers.auth.AuthResult[ParticipantModel]]
+              }
+        } yield user
+      case _ => OptionT.none[Future, helpers.auth.AuthResult[ParticipantModel]]
+    }
+  ).value
+
+  private def authenticateParticipant =
+    authenticateOAuth2Async(
+      "Participant Visible",
+      authenticateParticipantWithCredentials
     )
 
   val participantRoutes: Route =
@@ -103,7 +156,11 @@ class ParticipantRoutes(
       concat(
         (pathEnd & rejectDomainErrorAsBadRequest) {
           concat(
-            get(handleFuture(getParticipants)),
+            (get & authenticateParticipant) { user =>
+              authorize(user.has({ _ => false })) {
+                handleFuture(getParticipants)
+              }
+            },
             (post & entity(as[CreateParticipantCommand])) { command =>
               handleFuture(
                 createParticipant(command),
@@ -119,29 +176,34 @@ class ParticipantRoutes(
           concat(
             pathEnd {
               concat(
-                (get & rejectDomainErrorAsNotFound) {
-                  handleFuture(getParticipant(id))
+                (get & authenticateParticipant & rejectDomainErrorAsNotFound) {
+                  user =>
+                    authorize(user.has(_.id == id)) {
+                      handleFuture(getParticipant(id))
+                    }
                 },
-                rejectDomainErrorAsBadRequest {
-                  concat(
-                    (put & entity(as[PartialUpdateParticipantCommand])) {
-                      command =>
-                        handleFuture(
-                          updateParticipant(
-                            id,
-                            command.name,
-                            command.preferences
-                          ),
-                          "Participant updated"
-                        )
-                    },
-                    delete {
+                (put & authenticateParticipant & rejectDomainErrorAsBadRequest &
+                  entity(as[PartialUpdateParticipantCommand])) {
+                  (user, command) =>
+                    authorize(user.has(_.id == id)) {
+                      handleFuture(
+                        updateParticipant(
+                          id,
+                          command.name,
+                          command.preferences
+                        ),
+                        "Participant updated"
+                      )
+                    }
+                },
+                (delete & authenticateParticipant & rejectDomainErrorAsBadRequest) {
+                  user =>
+                    authorize(user.has(_.id == id)) {
                       handleFuture(
                         deleteParticipant(DeleteParticipantCommand(id)),
                         "Participant deleted"
                       )
                     }
-                  )
                 }
               )
             },
@@ -149,35 +211,47 @@ class ParticipantRoutes(
               concat(
                 pathEnd {
                   concat(
-                    (get & rejectDomainErrorAsNotFound) {
-                      handleFuture(getParticipantWithRequest(id))
+                    (get & rejectDomainErrorAsNotFound & authenticateParticipant) {
+                      user =>
+                        authorize(user.has(_.id == id)) {
+                          handleFuture(getParticipantWithRequest(id))
+                        }
                     },
-                    (post & rejectDomainErrorAsBadRequest) {
-                      handleFuture(issueRequest(id), "Request issued!")
+                    (post & rejectDomainErrorAsBadRequest & authenticateParticipant) {
+                      user =>
+                        authorize(user.has(_.id == id)) {
+                          handleFuture(issueRequest(id), "Request issued!")
+                        }
                     }
                   )
                 },
-                (post & rejectDomainErrorAsBadRequest) {
-                  concat(
-                    path("accept") {
-                      handleFuture(acceptRequest(id), "Request accepted!")
-                    },
-                    path("reject") {
-                      post {
-                        handleFuture(rejectRequest(id), "Request rejected!")
-                      }
+                (post & rejectDomainErrorAsBadRequest & authenticateParticipant) {
+                  user =>
+                    authorize(user.has({ _ => false })) {
+                      concat(
+                        path("accept") {
+                          handleFuture(acceptRequest(id), "Request accepted!")
+                        },
+                        path("reject") {
+                          post {
+                            handleFuture(rejectRequest(id), "Request rejected!")
+                          }
+                        }
+                      )
                     }
-                  )
                 }
               )
             },
-            (path("password") & put & rejectDomainErrorAsBadRequest & entity(
-              as[PartialChangePasswordParticipantCommand]
-            )) { command =>
-              handleFuture(
-                changeParticipantPassword(id, command.password),
-                "Participant updated"
-              )
+            (path("password") & put & rejectDomainErrorAsBadRequest &
+              authenticateParticipant & entity(
+                as[PartialChangePasswordParticipantCommand]
+              )) { (user, command) =>
+              authorize(user.has(_.id == id)) {
+                handleFuture(
+                  changeParticipantPassword(id, command.password),
+                  "Participant updated"
+                )
+              }
             }
           )
         }

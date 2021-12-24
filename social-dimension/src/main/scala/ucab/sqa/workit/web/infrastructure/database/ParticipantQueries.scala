@@ -159,7 +159,7 @@ object ParticipantQueries {
   } yield ()
 
   def issueParticipantRequest(id: UUID, requestId: UUID) = for {
-    _ <- toTrainerRequests += ((id, requestId))
+    _ <- toTrainerRequests += ((requestId, id))
   } yield ()
 
   def removeParticipantRequest(id: UUID) = for {

@@ -71,7 +71,7 @@ object TrainerQueries {
     raw <- trainers
       .filter(f)
       .joinLeft(preferences)
-      .on(_.id === _.participantId)
+      .on(_.id === _.trainerId)
       .map(t => (t._1, t._2.map(_.value)))
       .result
   } yield groupTrainerWithPreferencesWithSingleResult(raw)

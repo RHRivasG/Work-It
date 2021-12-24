@@ -24,49 +24,58 @@ fn configure_auth_token_storage(
     proxy: impl Filter<Error = Rejection, Extract = (Response<Bytes>,)> + Clone,
 ) -> impl Filter<Error = Rejection, Extract = (Response<Bytes>,)> + Clone {
     proxy
-    .and(full())
-    .map(move |resp, uri: FullPath| {
-        (
-            store.clone(),
-            uri.as_str().contains("login"),
-            resp,
+        .and(full())
+        .map(move |resp, uri: FullPath| (store.clone(), uri.as_str().contains("login"), resp))
+        .untuple_one()
+        .and(optional("work-it-session"))
+        .then(
+            |store: Arc<dyn TokenStore + Send + Sync>,
+             is_login,
+             response: Response<Bytes>,
+             key: Option<String>| async move {
+                if is_login && response.status().is_success() {
+                    if let Some(session_key) = key {
+                        store
+                            .remove(session_key)
+                            .await
+                            .expect("Could not delete session key")
+                    }
+
+                    let token = String::from_utf8(response.body().to_vec()).unwrap();
+                    let rand_key: String = thread_rng()
+                        .sample_iter(&Alphanumeric)
+                        .take(64)
+                        .map(char::from)
+                        .collect();
+
+                    let mut encryption = Encryption::new_from_slice(b"Secret key")
+                        .expect("Encryption creation failed");
+
+                    encryption.update(rand_key.as_bytes());
+
+                    let cookie_session_key =
+                        hex::encode(encryption.finalize().into_bytes().to_vec());
+
+                    store
+                        .set(cookie_session_key.clone(), token)
+                        .await
+                        .expect("Insertion in redis failed");
+
+                    Response::builder()
+                        .header(
+                            "Set-Cookie",
+                            format!(
+                                "work-it-session={}; Path=/api; HttpOnly",
+                                cookie_session_key
+                            ),
+                        )
+                        .body(Bytes::from_static(b"Authentication completed"))
+                        .unwrap()
+                } else {
+                    response
+                }
+            },
         )
-    })
-    .untuple_one()
-    .then(
-        |store: Arc<dyn TokenStore + Send + Sync>, is_login, response: Response<Bytes>| async move {
-            if is_login {
-                let token = String::from_utf8(response.body().to_vec()).unwrap();
-                let rand_key: String = thread_rng()
-                    .sample_iter(&Alphanumeric)
-                    .take(64)
-                    .map(char::from)
-                    .collect();
-
-                let mut encryption =
-                    Encryption::new_from_slice(b"Secret key").expect("Encryption creation failed");
-
-                encryption.update(rand_key.as_bytes());
-
-                let cookie_session_key = hex::encode(encryption.finalize().into_bytes().to_vec());
-
-                store
-                    .set(cookie_session_key.clone(), token)
-                    .await
-                    .expect("Insertion in redis failed");
-
-                Response::builder()
-                    .header(
-                        "Set-Cookie",
-                        format!("work-it-session={}; Path=/api; HttpOnly", cookie_session_key),
-                    )
-                    .body(Bytes::from_static(b"Authentication completed"))
-                    .unwrap()
-            } else {
-                response
-            }
-        },
-    )
 }
 
 fn configure_token(
@@ -108,15 +117,13 @@ fn configure_token(
                   body| async move {
                 if !validate_auth || !is_login {
                     if let Some(key) = session_key {
-                        let token = store
-                            .get(key)
-                            .await
-                            .expect("Token not found even though cookie is present");
-
-                        headers.append(
-                            "Authorization",
-                            format!("Bearer {}", token).parse().unwrap(),
-                        );
+                        let token = store.get(key).await;
+                        if let Ok(token) = token {
+                            headers.append(
+                                "Authorization",
+                                format!("Bearer {}", token).parse().unwrap(),
+                            );
+                        }
                     }
                 }
                 (proxy, base, uri, params, method, headers, body)
@@ -143,6 +150,10 @@ fn logout(
                         .expect("Failed deleting session key");
 
                     Response::builder()
+                        .header(
+                            "Set-Cookie",
+                            "work-it-session=deleted; Path=/api; HttpOnly; Max-Age=0",
+                        )
                         .body(Bytes::from_static(b"Logout successful"))
                         .expect("Failed building response")
                 } else {

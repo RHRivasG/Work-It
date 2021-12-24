@@ -23,6 +23,9 @@ import java.time.Instant
 import pdi.jwt.JwtClaim
 import pdi.jwt.JwtAlgorithm
 import pdi.jwt.JwtCirce
+import akka.http.scaladsl.server.RequestContext
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.AttributeKeys
 
 class AuthRoutes[C1, C2](
     participantService: ActorRef[Request[C1, ParticipantQuery, _]],
@@ -37,7 +40,7 @@ class AuthRoutes[C1, C2](
 
   private def issueJWT(subject: String) = {
     val claims = JwtClaim(
-      expiration = Some(Instant.now.plusSeconds(600).getEpochSecond),
+      expiration = Some(Instant.now.plusSeconds(1200).getEpochSecond),
       issuedAt = Some(Instant.now.getEpochSecond),
       subject = Some(subject),
       audience = Some(Set("auth", "social", "fitness"))
@@ -92,8 +95,15 @@ class AuthRoutes[C1, C2](
         authenticate(getParticipant(_)) { _.password.password }
       )) { participant =>
         complete(issueJWT(participant.id.id.toString))
+      },
+      (path("admin") & authorize { request =>
+        val ip = request.request.getAttribute(AttributeKeys.remoteAddress)
+        ip.flatMap(_.getAddress())
+          .filter(addr => addr.isAnyLocalAddress() || addr.isLoopbackAddress())
+          .isPresent()
+      }) {
+        complete(issueJWT("admin"))
       }
-      // (path("admin") & authenticateBasicAsync("All")) {}
     )
   }
 }

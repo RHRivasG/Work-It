@@ -22,6 +22,11 @@ import ucab.sqa.workit.application.trainers.ChangePasswordTrainerCommand
 import ucab.sqa.workit.application.trainers.DeleteTrainerCommand
 import ucab.sqa.workit.web.JsonSupport
 import ucab.sqa.workit.application.trainers.TrainerModel
+import ucab.sqa.workit.web.helpers
+import cats.data.OptionT
+import pdi.jwt.JwtAlgorithm
+import pdi.jwt.JwtCirce
+import akka.http.scaladsl.server.directives.Credentials
 
 class TrainerRoutes(
     trainersService: ActorRef[Request[TrainerCommand, TrainerQuery, _]]
@@ -55,13 +60,48 @@ class TrainerRoutes(
   private def deleteTrainer(id: String): Future[Either[Error, Unit]] =
     trainersService.ask(Command(DeleteTrainerCommand(id), _))
 
+  private def authenticateTrainerWithCredentials(
+      cred: Credentials
+  ) = (
+    cred match {
+      case Credentials.Provided(token) =>
+        for {
+          payload <- OptionT.fromOption[Future](
+            JwtCirce.decode(token, "secret", Seq(JwtAlgorithm.HS256)).toOption
+          )
+          subject <- OptionT.fromOption[Future](payload.subject)
+          user <-
+            OptionT(getTrainer(subject).map(_.toOption))
+              .map[helpers.auth.AuthResult[TrainerModel]](
+                helpers.auth.user(_)
+              )
+              .orElse {
+                if (subject == "admin")
+                  OptionT.pure[Future](helpers.auth.admin)
+                else
+                  OptionT
+                    .none[Future, helpers.auth.AuthResult[TrainerModel]]
+              }
+        } yield user
+      case _ => OptionT.none[Future, helpers.auth.AuthResult[TrainerModel]]
+    }
+  ).value
+
+  private def authenticateTrainer =
+    authenticateOAuth2Async(
+      "Participant Visible",
+      authenticateTrainerWithCredentials
+    )
+
   def trainerRoutes: Route =
     pathPrefix("trainers") {
       concat(
         pathEnd {
           rejectDomainErrorAsBadRequest {
-            get {
-              handleFuture(getAllTrainers)
+            (get & authenticateTrainer) { user =>
+              authorize(user.has(_ => false)) {
+                handleFuture(getAllTrainers)
+              }
             }
           }
         },
@@ -69,33 +109,48 @@ class TrainerRoutes(
           concat(
             pathEnd {
               concat(
-                rejectDomainErrorAsNotFound {
-                  get(handleFuture(getTrainer(id)))
+                (get & rejectDomainErrorAsNotFound & authenticateTrainer) {
+                  user =>
+                    authorize(user.has(_.id == id))(
+                      handleFuture(getTrainer(id))
+                    )
                 },
                 rejectDomainErrorAsBadRequest {
                   concat(
-                    put {
-                      entity(as[PartialUpdateTrainerCommand]) { command =>
-                        handleFuture(
-                          updateTrainer(id, command.name, command.preferences),
-                          "Trainer Updated!"
-                        )
+                    (put & authenticateTrainer) { user =>
+                      authorize(user.has(_.id == id)) {
+                        entity(as[PartialUpdateTrainerCommand]) { command =>
+                          handleFuture(
+                            updateTrainer(
+                              id,
+                              command.name,
+                              command.preferences
+                            ),
+                            "Trainer Updated!"
+                          )
+                        }
                       }
                     },
-                    delete {
-                      handleFuture(deleteTrainer(id), "Trainer deleted!")
+                    (delete & authenticateTrainer) { user =>
+                      authorize(user.has(_.id == id)) {
+                        handleFuture(deleteTrainer(id), "Trainer deleted!")
+                      }
                     }
                   )
                 }
               )
             },
-            (path("password") & put & rejectDomainErrorAsBadRequest & entity(
+            (path(
+              "password"
+            ) & put & authenticateTrainer & rejectDomainErrorAsBadRequest & entity(
               as[PartialChangePasswordTraninerCommand]
-            )) { command =>
-              handleFuture(
-                changeTrainerPassword(id, command.password),
-                "Trainer Password Changed!"
-              )
+            )) { (user, command) =>
+              authorize(user.has(_.id == id)) {
+                handleFuture(
+                  changeTrainerPassword(id, command.password),
+                  "Trainer Password Changed!"
+                )
+              }
             }
           )
         }
