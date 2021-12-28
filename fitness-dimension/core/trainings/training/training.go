@@ -16,6 +16,10 @@ type Training struct {
 	eventRecorder []interface{}
 }
 
+func (t *Training) GetEvents() []interface{} {
+	return t.eventRecorder
+}
+
 func (t *Training) AddEvent(event interface{}) {
 	t.eventRecorder = append(t.eventRecorder, event)
 }

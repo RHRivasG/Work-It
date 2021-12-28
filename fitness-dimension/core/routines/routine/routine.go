@@ -14,6 +14,10 @@ type Routine struct {
 	eventRecorder []interface{}
 }
 
+func (r *Routine) GetEvents() []interface{} {
+	return r.eventRecorder
+}
+
 func (r *Routine) AddEvent(event interface{}) {
 	r.eventRecorder = append(r.eventRecorder, event)
 }
@@ -26,7 +30,10 @@ func CreateRoutine(
 	description valuesObjects.RoutineDescription,
 ) Routine {
 
+	id := valuesObjects.RoutineID{Value: uuid.New()}
+
 	r := Routine{
+		ID:          id,
 		Name:        name,
 		UserID:      userID,
 		TrainingsID: trainings,
@@ -34,6 +41,7 @@ func CreateRoutine(
 	}
 
 	r.AddEvent(events.RoutineCreated{
+		ID:          r.ID,
 		Name:        r.Name,
 		UserID:      r.UserID,
 		TrainingsID: r.TrainingsID,
