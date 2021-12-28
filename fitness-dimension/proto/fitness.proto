@@ -27,7 +27,7 @@ message Response{
 message TrainingCreated{
     string id = 1;
     repeated string categories = 2;
-    string traineId = 3;
+    string trainerId = 3;
     string name = 4;
     string description = 5;
     string videoId = 6;
@@ -36,7 +36,7 @@ message TrainingCreated{
 message TrainingUpdated{
     string id = 1;
     repeated string categories = 2;
-    string traineId = 3;
+    string trainerId = 3;
     string name = 4;
     string description = 5;
 }
@@ -47,16 +47,18 @@ message TrainingDeleted{
 
 message TrainingVideoCreated{
     string id = 1;
-    string name = 2;
-    string ext = 3;
-    string video = 4;
+    string trainingId = 2;
+    string name = 3;
+    string ext = 4;
+    string video = 5;
 }
 
 message TrainingVideoUpdated{
     string id = 1;
-    string name = 2;
-    string ext = 3;
-    string video = 4;
+    string trainingId = 2;
+    string name = 3;
+    string ext = 4;
+    string video = 5;
 }
 
 message TrainingVideoDeleted{

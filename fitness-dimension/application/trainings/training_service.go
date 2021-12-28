@@ -14,7 +14,7 @@ type TrainingService struct {
 	Publisher               TrainingPublisher
 }
 
-func (s *TrainingService) handle(c interface{}) (interface{}, error) {
+func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 	switch c.(type) {
 	case commands.CreateTraining:
 		command := c.(commands.CreateTraining)

@@ -1,11 +1,8 @@
 package commands
 
-import "github.com/google/uuid"
-
 type CreateTraining struct {
-	ID          uuid.UUID
-	Categories  []string
-	TrainerID   string
-	Name        string
-	Description string
+	Categories  []string `json:"categories"`
+	TrainerID   string   `json:"trainerID"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
 }
