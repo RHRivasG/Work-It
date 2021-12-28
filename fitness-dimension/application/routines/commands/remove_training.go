@@ -3,6 +3,6 @@ package commands
 import "github.com/google/uuid"
 
 type RemoveRoutineTraining struct {
-	ID         uuid.UUID
-	TrainingID uuid.UUID
+	ID         uuid.UUID `json:"id"`
+	TrainingID uuid.UUID `json:"trainingID"`
 }
