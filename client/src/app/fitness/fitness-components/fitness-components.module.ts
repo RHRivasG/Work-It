@@ -13,6 +13,8 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FullscreenOverlayContainer, OverlayContainer, OverlayModule } from '@angular/cdk/overlay';
 import { PortalModule } from '@angular/cdk/portal';
 import { RoutineUpdateModalComponent } from './routine-update-modal/routine-update-modal.component';
+import { FitnessLayoutComponent } from './fitness-layout/fitness-layout.component';
+import { FitnessRoutingModule } from '../fitness-routing.module';
 
 
 
@@ -24,7 +26,8 @@ import { RoutineUpdateModalComponent } from './routine-update-modal/routine-upda
     ShowRoutineComponent,
     RoutineIndexComponent,
     RoutineModalComponent,
-    RoutineUpdateModalComponent
+    RoutineUpdateModalComponent,
+    FitnessLayoutComponent
   ],
   exports: [
     NewTrainingComponent
@@ -36,7 +39,8 @@ import { RoutineUpdateModalComponent } from './routine-update-modal/routine-upda
     ReactiveFormsModule,
     PortalModule,
     OverlayModule,
-    DragDropModule
+    DragDropModule,
+    FitnessRoutingModule
   ],
   providers: [
     {

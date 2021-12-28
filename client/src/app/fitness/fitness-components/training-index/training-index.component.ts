@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { TrainingDTO } from 'core/fitness/trainings/TrainingDTO';
 
 @Component({
   selector: 'wi-training-index',
@@ -7,7 +6,7 @@ import { TrainingDTO } from 'core/fitness/trainings/TrainingDTO';
   styleUrls: ['./training-index.component.scss']
 })
 export class TrainingIndexComponent implements OnInit {
-  trainingList: TrainingDTO[] = [
+  trainingList = [
     {
       name: 'Bulgarian Squat',
       trainerId: 'Pepe Ramirez',

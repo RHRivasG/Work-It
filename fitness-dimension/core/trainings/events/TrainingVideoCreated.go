@@ -1,6 +1,6 @@
 package events
 
-import valuesObjects "fitness-dimension-core/trainings/training/values-objects"
+import valuesObjects "fitness-dimension/core/trainings/training/values-objects"
 
 type TrainingVideoCreated struct {
 	ID    valuesObjects.TrainingVideoID

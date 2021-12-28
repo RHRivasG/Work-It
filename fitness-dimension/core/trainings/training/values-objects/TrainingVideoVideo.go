@@ -1,5 +1,5 @@
 package valuesObjects
 
 type TrainingVideoVideo struct {
-	value []byte
+	Value []byte
 }

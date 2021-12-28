@@ -1,7 +1,7 @@
 package entities
 
 import (
-	valuesObjects "fitness-dimension-core/trainings/training/values-objects"
+	valuesObjects "fitness-dimension/core/trainings/training/values-objects"
 )
 
 type TrainingVideo struct {
