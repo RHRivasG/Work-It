@@ -30,5 +30,55 @@ func (p *RoutinePublisher) Publish(e interface{}) {
 		}
 
 		fmt.Println(res)
+	case *events.RoutineUpdated:
+		event := e.(events.RoutineUpdated)
+		res, err := p.Client.Update(context.Background(), &pb.RoutineUpdated{
+			Id:          event.ID.Value.String(),
+			Name:        event.Name.Value,
+			UserId:      event.UserID.Value,
+			Description: event.Description.Value,
+		})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println(res)
+	case *events.RoutineDeleted:
+		event := e.(events.RoutineDeleted)
+		res, err := p.Client.Delete(context.Background(), &pb.RoutineDeleted{
+			Id: event.ID.Value.String(),
+		})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println(res)
+	case *events.TrainingAdded:
+		event := e.(events.TrainingAdded)
+		res, err := p.Client.AddTraining(context.Background(), &pb.TrainingAdded{
+			RoutineId:  event.ID.Value.String(),
+			TrainingId: event.TrainingID.Value.String(),
+		})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println(res)
+	case *events.TrainingRemoved:
+		event := e.(events.TrainingRemoved)
+		res, err := p.Client.RemoveTraining(context.Background(), &pb.TrainingRemoved{
+			RoutineId:  event.ID.Value.String(),
+			TrainingId: event.TrainingID.Value.String(),
+		})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println(res)
 	}
+
 }

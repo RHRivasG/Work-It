@@ -3,13 +3,15 @@ package routine
 import (
 	"fitness-dimension/core/routines/events"
 	valuesObjects "fitness-dimension/core/routines/routine/values-objects"
+
+	"github.com/google/uuid"
 )
 
 type Routine struct {
 	ID            valuesObjects.RoutineID
 	Name          valuesObjects.RoutineName
 	UserID        valuesObjects.RoutineUserID
-	TrainingsID   []valuesObjects.RoutineTrainingID
+	TrainingsID   valuesObjects.RoutineTrainingIDs
 	Description   valuesObjects.RoutineDescription
 	eventRecorder []interface{}
 }
@@ -26,7 +28,7 @@ func CreateRoutine(
 	id valuesObjects.RoutineID,
 	name valuesObjects.RoutineName,
 	userID valuesObjects.RoutineUserID,
-	trainings []valuesObjects.RoutineTrainingID,
+	trainings valuesObjects.RoutineTrainingIDs,
 	description valuesObjects.RoutineDescription,
 ) Routine {
 
@@ -52,7 +54,7 @@ func CreateRoutine(
 }
 
 func (r *Routine) AddTraining(trainingID valuesObjects.RoutineTrainingID) {
-	r.TrainingsID = append(r.TrainingsID, trainingID)
+	r.TrainingsID = append(r.TrainingsID.Values, trainingID)
 	r.AddEvent(events.TrainingAdded{
 		ID:         r.ID,
 		TrainingID: trainingID,
@@ -61,8 +63,8 @@ func (r *Routine) AddTraining(trainingID valuesObjects.RoutineTrainingID) {
 
 func (r *Routine) RemoveTraining(trainingID valuesObjects.RoutineTrainingID) {
 
-	trainings := []valuesObjects.RoutineTrainingID{}
-	for _, id := range r.TrainingsID {
+	trainings := []valuesObjects.RoutineTrainingIDs{}
+	for _, id := range r.TrainingsID.Values {
 		if id != trainingID {
 			trainings = append(trainings, id)
 		}
@@ -79,7 +81,7 @@ func (r *Routine) RemoveTraining(trainingID valuesObjects.RoutineTrainingID) {
 func (r *Routine) Update(
 	name valuesObjects.RoutineName,
 	userID valuesObjects.RoutineUserID,
-	trainings []valuesObjects.RoutineTrainingID,
+	trainings []valuesObjects.RoutineTrainingIDs,
 	description valuesObjects.RoutineDescription,
 ) {
 

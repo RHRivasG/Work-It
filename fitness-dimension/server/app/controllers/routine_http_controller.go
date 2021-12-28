@@ -20,7 +20,6 @@ func (c *RoutineHttpController) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *RoutineHttpController) Create(w http.ResponseWriter, r *http.Request) {
-
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -32,13 +31,45 @@ func (c *RoutineHttpController) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *RoutineHttpController) Update(w http.ResponseWriter, r *http.Request) {
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	command := commands.UpdateRoutine{}
+	json.Unmarshal(reqBody, &command)
+	c.Service.Handle(command)
 }
 
 func (c *RoutineHttpController) Delete(w http.ResponseWriter, r *http.Request) {
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	command := commands.DeleteRoutine{}
+	json.Unmarshal(reqBody, &command)
+	c.Service.Handle(command)
 }
 
 func (c *RoutineHttpController) AddTraining(w http.ResponseWriter, r *http.Request) {
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	command := commands.AddRoutineTraining{}
+	json.Unmarshal(reqBody, &command)
+	c.Service.Handle(command)
 }
 
 func (c *RoutineHttpController) RemoveTraining(w http.ResponseWriter, r *http.Request) {
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	command := commands.RemoveRoutineTraining{}
+	json.Unmarshal(reqBody, &command)
+	c.Service.Handle(command)
 }
