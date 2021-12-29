@@ -11,9 +11,9 @@ import (
 	"google.golang.org/grpc"
 )
 
-func HttpTrainingServe(router *mux.Router, r repositories.TrainingRepository) {
+func HttpTrainingServe(router *mux.Router, r repositories.TrainingRepository, p trainings.TrainingPublisher) {
 
-	service := trainings.TrainingService{TrainingRepository: r}
+	service := trainings.TrainingService{Repository: r, Publisher: p}
 	c := controllers.TrainingHttpController{Service: service}
 
 	router.HandleFunc("/trainings", c.Create).Methods("POST")

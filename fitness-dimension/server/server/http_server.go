@@ -25,9 +25,11 @@ func HttpServe(l net.Listener, db *pg.DB) error {
 
 	//Clients
 	routineClient := pb.NewRoutineAPIClient(conn)
+	trainingClient := pb.NewTrainingAPIClient(conn)
 
 	//Publishers
 	routinePublisher := publishers.RoutinePublisher{Client: routineClient}
+	trainingPublisher := publishers.TrainingPublisher{Client: trainingClient}
 
 	//Repositories
 	routineRepository := repositories.PgRoutineRepository{DB: db}
@@ -35,7 +37,7 @@ func HttpServe(l net.Listener, db *pg.DB) error {
 
 	//Routes
 	HttpRoutineServe(router, routineRepository, &routinePublisher)
-	HttpTrainingServe(router, trainingRepository)
+	HttpTrainingServe(router, trainingRepository, &trainingPublisher)
 
 	s := &http.Server{Handler: router}
 	return s.Serve(l)
