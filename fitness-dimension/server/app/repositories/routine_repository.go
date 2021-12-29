@@ -48,7 +48,6 @@ func (r PgRoutineRepository) GetAll() []routine.Routine {
 	}
 
 	var routines []routine.Routine
-
 	for _, routineItem := range routineList {
 		id, err := uuid.Parse(routineItem.ID)
 		if err != nil {
