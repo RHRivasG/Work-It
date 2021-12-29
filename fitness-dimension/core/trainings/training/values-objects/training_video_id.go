@@ -1,5 +1,7 @@
 package valuesObjects
 
+import "github.com/google/uuid"
+
 type TrainingVideoID struct {
-	Value string
+	Value uuid.UUID
 }

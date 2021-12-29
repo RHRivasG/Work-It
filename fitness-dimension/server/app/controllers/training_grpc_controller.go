@@ -19,7 +19,7 @@ func (s *TrainingApiServer) Save(ctx context.Context, req *pb.TrainingCreated) (
 
 	training := &models.Training{
 		ID:          req.Id,
-		TrainerID:   req.TraineId,
+		TrainerID:   req.TrainerId,
 		Name:        req.Name,
 		Description: req.Description,
 		VideoID:     req.VideoId,

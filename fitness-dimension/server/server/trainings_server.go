@@ -16,11 +16,11 @@ func HttpTrainingServe(router *mux.Router, r repositories.TrainingRepository) {
 	service := trainings.TrainingService{TrainingRepository: r}
 	c := controllers.TrainingHttpController{Service: service}
 
-	router.HandleFunc("/training", c.Create).Methods("POST")
+	router.HandleFunc("/trainings", c.Create).Methods("POST")
 	router.HandleFunc("/trainings", c.GetAll).Methods("GET")
-	router.HandleFunc("/training/{id}", c.Get).Methods("GET")
-	router.HandleFunc("/training/{id}", c.Update).Methods("PUT")
-	router.HandleFunc("/training/{id}", c.Delete).Methods("DELETE")
+	router.HandleFunc("/trainings/{id}", c.Get).Methods("GET")
+	router.HandleFunc("/trainings/{id}", c.Update).Methods("PUT")
+	router.HandleFunc("/trainings/{id}", c.Delete).Methods("DELETE")
 
 }
 

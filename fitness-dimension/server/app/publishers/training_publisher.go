@@ -70,7 +70,7 @@ func (p *TrainingPublisher) Publish(e interface{}) {
 	case events.TrainingVideoUpdated:
 		event := e.(events.TrainingVideoUpdated)
 		res, err := p.Client.UpdateVideo(context.Background(), &pb.TrainingVideoUpdated{
-			Id:         event.ID.Value,
+			Id:         event.ID.Value.String(),
 			TrainingId: event.TrainingID.Value.String(),
 			Name:       event.Name.Value,
 			Ext:        event.Ext.Value,
@@ -84,7 +84,7 @@ func (p *TrainingPublisher) Publish(e interface{}) {
 	case events.TrainingVideoDeleted:
 		event := e.(events.TrainingVideoDeleted)
 		res, err := p.Client.DeleteVideo(context.Background(), &pb.TrainingVideoDeleted{
-			Id: event.ID.Value,
+			Id: event.ID.Value.String(),
 		})
 
 		if err != nil {
