@@ -6,6 +6,6 @@ type RoutineUpdated struct {
 	ID          valuesObjects.RoutineID
 	Name        valuesObjects.RoutineName
 	UserID      valuesObjects.RoutineUserID
-	TrainingsID []valuesObjects.RoutineTrainingID
+	TrainingsID valuesObjects.RoutineTrainingIDs
 	Description valuesObjects.RoutineDescription
 }

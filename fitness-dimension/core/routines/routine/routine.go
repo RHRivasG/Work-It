@@ -25,7 +25,6 @@ func (r *Routine) AddEvent(event interface{}) {
 }
 
 func CreateRoutine(
-	id valuesObjects.RoutineID,
 	name valuesObjects.RoutineName,
 	userID valuesObjects.RoutineUserID,
 	trainings valuesObjects.RoutineTrainingIDs,
@@ -34,7 +33,7 @@ func CreateRoutine(
 
 	id := valuesObjects.RoutineID{Value: uuid.New()}
 
-	r := Routine{
+	routine := Routine{
 		ID:          id,
 		Name:        name,
 		UserID:      userID,
@@ -42,19 +41,19 @@ func CreateRoutine(
 		Description: description,
 	}
 
-	r.AddEvent(events.RoutineCreated{
-		ID:          r.ID,
-		Name:        r.Name,
-		UserID:      r.UserID,
-		TrainingsID: r.TrainingsID,
-		Description: r.Description,
+	routine.AddEvent(events.RoutineCreated{
+		ID:          routine.ID,
+		Name:        routine.Name,
+		UserID:      routine.UserID,
+		TrainingsID: routine.TrainingsID,
+		Description: routine.Description,
 	})
 
-	return r
+	return routine
 }
 
 func (r *Routine) AddTraining(trainingID valuesObjects.RoutineTrainingID) {
-	r.TrainingsID = append(r.TrainingsID.Values, trainingID)
+	r.TrainingsID.Values = append(r.TrainingsID.Values, trainingID.Value)
 	r.AddEvent(events.TrainingAdded{
 		ID:         r.ID,
 		TrainingID: trainingID,
@@ -63,10 +62,10 @@ func (r *Routine) AddTraining(trainingID valuesObjects.RoutineTrainingID) {
 
 func (r *Routine) RemoveTraining(trainingID valuesObjects.RoutineTrainingID) {
 
-	trainings := []valuesObjects.RoutineTrainingIDs{}
+	trainings := valuesObjects.RoutineTrainingIDs{}
 	for _, id := range r.TrainingsID.Values {
-		if id != trainingID {
-			trainings = append(trainings, id)
+		if id != trainingID.Value {
+			trainings.Values = append(trainings.Values, id)
 		}
 	}
 
@@ -81,7 +80,7 @@ func (r *Routine) RemoveTraining(trainingID valuesObjects.RoutineTrainingID) {
 func (r *Routine) Update(
 	name valuesObjects.RoutineName,
 	userID valuesObjects.RoutineUserID,
-	trainings []valuesObjects.RoutineTrainingIDs,
+	trainings valuesObjects.RoutineTrainingIDs,
 	description valuesObjects.RoutineDescription,
 ) {
 
