@@ -22,7 +22,7 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		trainerID := valuesObjects.TrainerID{Value: command.TrainerID}
 		name := valuesObjects.TrainingName{Value: command.Name}
 		description := valuesObjects.TrainingDescription{Value: command.Description}
-		categories := []valuesObjects.TrainingTaxonomy{}
+		categories := valuesObjects.TrainingTaxonomies{}
 
 		t, _ := training.CreateTraining(categories, trainerID, name, description)
 		for _, i := range t.GetEvents() {
@@ -35,7 +35,7 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		trainerID := valuesObjects.TrainerID{Value: command.TrainerID}
 		name := valuesObjects.TrainingName{Value: command.Name}
 		description := valuesObjects.TrainingDescription{Value: command.Description}
-		categories := []valuesObjects.TrainingTaxonomy{}
+		categories := valuesObjects.TrainingTaxonomies{}
 
 		t := s.TrainingRepository.Find(command.ID)
 
@@ -58,10 +58,10 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		command := c.(commands.CreateTrainingVideo)
 
 		filename := valuesObjects.TrainingVideoName{Value: command.Name}
-		video := valuesObjects.TrainingVideoVideo{Value: command.Video}
+		video := valuesObjects.TrainingVideoBuffer{Value: command.Video}
 		ext := valuesObjects.TrainingVideoExt{Value: command.Ext}
 
-		t := s.TrainingRepository.Find(command.ID)
+		t := s.TrainingRepository.Find(command.TrainingID)
 
 		t.SetVideo(filename, video, ext)
 		for _, i := range t.GetEvents() {
@@ -72,7 +72,7 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		command := c.(commands.UpdateTrainingVideo)
 
 		filename := valuesObjects.TrainingVideoName{Value: command.Name}
-		video := valuesObjects.TrainingVideoVideo{Value: command.Video}
+		video := valuesObjects.TrainingVideoBuffer{Value: command.Video}
 		ext := valuesObjects.TrainingVideoExt{Value: command.Ext}
 
 		t := s.TrainingRepository.Find(command.TrainingID)

@@ -21,7 +21,7 @@ func (s *RoutineService) Handle(c interface{}) {
 		name := valuesObjects.RoutineName{Value: command.Name}
 		userId := valuesObjects.RoutineUserID{Value: command.UserID}
 		description := valuesObjects.RoutineDescription{Value: command.Description}
-		trainingsId := []valuesObjects.RoutineTrainingID{}
+		trainingsId := valuesObjects.RoutineTrainingIDs{}
 
 		r := routine.CreateRoutine(name, userId, trainingsId, description)
 		for _, i := range r.GetEvents() {
@@ -34,7 +34,7 @@ func (s *RoutineService) Handle(c interface{}) {
 		name := valuesObjects.RoutineName{Value: command.Name}
 		userId := valuesObjects.RoutineUserID{Value: command.UserID}
 		description := valuesObjects.RoutineDescription{Value: command.Description}
-		trainings := []valuesObjects.RoutineTrainingID{}
+		trainings := valuesObjects.RoutineTrainingIDs{}
 
 		r := s.Repository.Find(command.ID)
 		r.Update(name, userId, trainings, description)

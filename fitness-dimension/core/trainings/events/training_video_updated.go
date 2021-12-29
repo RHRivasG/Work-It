@@ -7,5 +7,5 @@ type TrainingVideoUpdated struct {
 	TrainingID valuesObjects.TrainingID
 	Name       valuesObjects.TrainingVideoName
 	Ext        valuesObjects.TrainingVideoExt
-	Video      valuesObjects.TrainingVideoVideo
+	Video      valuesObjects.TrainingVideoBuffer
 }
