@@ -3,8 +3,9 @@ package events
 import valuesObjects "fitness-dimension/core/trainings/training/values-objects"
 
 type TrainingVideoCreated struct {
-	TrainingID valuesObjects.TrainingID
+	ID         valuesObjects.TrainingVideoID
 	Name       valuesObjects.TrainingVideoName
 	Ext        valuesObjects.TrainingVideoExt
-	Video      valuesObjects.TrainingVideoVideo
+	Buff       valuesObjects.TrainingVideoBuffer
+	TrainingID valuesObjects.TrainingID
 }

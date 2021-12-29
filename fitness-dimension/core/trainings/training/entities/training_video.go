@@ -9,13 +9,13 @@ type TrainingVideo struct {
 	Name   valuesObjects.TrainingVideoName
 	Ext    valuesObjects.TrainingVideoExt
 	Length valuesObjects.TrainingVideoLength
-	Buff   valuesObjects.TrainingVideoVideo
+	Buff   valuesObjects.TrainingVideoBuffer
 }
 
 func CreateVideo(
 	name valuesObjects.TrainingVideoName,
 	ext valuesObjects.TrainingVideoExt,
-	buff valuesObjects.TrainingVideoVideo,
+	buff valuesObjects.TrainingVideoBuffer,
 ) TrainingVideo {
 
 	v := TrainingVideo{
@@ -30,7 +30,7 @@ func CreateVideo(
 func (v *TrainingVideo) Update(
 	name valuesObjects.TrainingVideoName,
 	ext valuesObjects.TrainingVideoExt,
-	buff valuesObjects.TrainingVideoVideo,
+	buff valuesObjects.TrainingVideoBuffer,
 ) {
 	v.Name = name
 	v.Ext = ext

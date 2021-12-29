@@ -4,7 +4,7 @@ import valuesObjects "fitness-dimension/core/trainings/training/values-objects"
 
 type TrainingCreated struct {
 	ID          valuesObjects.TrainingID
-	Categories  []valuesObjects.TrainingTaxonomy
+	Categories  valuesObjects.TrainingTaxonomies
 	TrainerID   valuesObjects.TrainerID
 	Name        valuesObjects.TrainingName
 	Description valuesObjects.TrainingDescription
