@@ -3,14 +3,17 @@ package routines
 import (
 	"fitness-dimension/application/routines/commands"
 	"fitness-dimension/application/routines/repositories"
+	"log"
 
 	"fitness-dimension/core/routines/routine"
 	valuesObjects "fitness-dimension/core/routines/routine/values-objects"
+
+	"github.com/google/uuid"
 )
 
 type RoutineService struct {
-	Repository repositories.RoutineRepository
 	Publisher  RoutinePublisher
+	Repository repositories.RoutineRepository
 }
 
 func (s *RoutineService) Handle(c interface{}) {
@@ -59,4 +62,17 @@ func (s *RoutineService) Handle(c interface{}) {
 		r := s.Repository.Find(command.ID)
 		r.RemoveTraining(trainingID)
 	}
+}
+
+func (s *RoutineService) Get(id string) routine.Routine {
+	routineId, err := uuid.Parse(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return s.Repository.Find(routineId)
+}
+
+func (s *RoutineService) GetAll() []routine.Routine {
+	return s.Repository.GetAll()
 }
