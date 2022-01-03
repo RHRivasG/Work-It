@@ -8,7 +8,7 @@ import (
 
 type Training struct {
 	ID            valuesObjects.TrainingID
-	Categories    []valuesObjects.TrainingTaxonomy
+	Categories    valuesObjects.TrainingTaxonomies
 	TrainerID     valuesObjects.TrainerID
 	Name          valuesObjects.TrainingName
 	Description   valuesObjects.TrainingDescription
@@ -16,12 +16,16 @@ type Training struct {
 	eventRecorder []interface{}
 }
 
+func (t *Training) GetEvents() []interface{} {
+	return t.eventRecorder
+}
+
 func (t *Training) AddEvent(event interface{}) {
 	t.eventRecorder = append(t.eventRecorder, event)
 }
 
 func CreateTraining(
-	categories []valuesObjects.TrainingTaxonomy,
+	categories valuesObjects.TrainingTaxonomies,
 	trainerID valuesObjects.TrainerID,
 	name valuesObjects.TrainingName,
 	description valuesObjects.TrainingDescription,
@@ -47,23 +51,23 @@ func CreateTraining(
 
 func (t *Training) SetVideo(
 	filename valuesObjects.TrainingVideoName,
-	video valuesObjects.TrainingVideoVideo,
+	video valuesObjects.TrainingVideoBuffer,
 	ext valuesObjects.TrainingVideoExt,
 ) {
 
 	v := entities.CreateVideo(filename, ext, video)
 	t.Video = &v
 	t.AddEvent(events.TrainingVideoCreated{
-		ID:    v.ID,
-		Name:  v.Name,
-		Ext:   v.Ext,
-		Video: v.Buff,
+		ID:   v.ID,
+		Name: v.Name,
+		Ext:  v.Ext,
+		Buff: v.Buff,
 	})
 }
 
 func (t *Training) UpdateVideo(
 	filename valuesObjects.TrainingVideoName,
-	video valuesObjects.TrainingVideoVideo,
+	video valuesObjects.TrainingVideoBuffer,
 	ext valuesObjects.TrainingVideoExt,
 ) {
 	t.Video.Update(filename, ext, video)
@@ -81,7 +85,7 @@ func (t *Training) DestroyVideo() {
 }
 
 func (t *Training) Update(
-	categories []valuesObjects.TrainingTaxonomy,
+	categories valuesObjects.TrainingTaxonomies,
 	trainerID valuesObjects.TrainerID,
 	name valuesObjects.TrainingName,
 	description valuesObjects.TrainingDescription,

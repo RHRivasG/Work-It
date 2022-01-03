@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package main;
+option go_package = "./proto";
+
+service trainingAPI{
+    rpc Save(TrainingCreated) returns (Response){}
+    rpc Update(TrainingUpdated) returns(Response){}
+    rpc Delete(TrainingDeleted) returns (Response){}
+    rpc SaveVideo(TrainingVideoCreated) returns (Response){}
+    rpc UpdateVideo(TrainingVideoUpdated) returns (Response){}
+    rpc DeleteVideo(TrainingVideoDeleted) returns (Response){}
+}
+
+service routineAPI{
+    rpc Save(RoutineCreated) returns (Response){}
+    rpc Update(RoutineUpdated) returns(Response){}
+    rpc Delete(RoutineDeleted) returns (Response){}
+    rpc AddTraining(TrainingAdded) returns (Response){}
+    rpc RemoveTraining(TrainingRemoved) returns (Response){}
+}
+
+message Response{
+    string msg = 1;
+}
+
+message TrainingCreated{
+    string id = 1;
+    repeated string categories = 2;
+    string trainerId = 3;
+    string name = 4;
+    string description = 5;
+    string videoId = 6;
+}
+
+message TrainingUpdated{
+    string id = 1;
+    repeated string categories = 2;
+    string trainerId = 3;
+    string name = 4;
+    string description = 5;
+}
+
+message TrainingDeleted{
+    string id = 1;
+}
+
+message TrainingVideoCreated{
+    string id = 1;
+    string trainingId = 2;
+    string name = 3;
+    string ext = 4;
+    string video = 5;
+}
+
+message TrainingVideoUpdated{
+    string id = 1;
+    string trainingId = 2;
+    string name = 3;
+    string ext = 4;
+    string video = 5;
+}
+
+message TrainingVideoDeleted{
+    string id = 1;
+}
+
+message RoutineCreated{
+    string id = 1;
+    string name = 2;
+    string userId = 3;
+    string description = 4;
+    repeated string trainingsId = 5;
+}
+
+message RoutineUpdated{
+    string id = 1;
+    string name = 2;
+    string userId = 3;
+    string description = 4;
+    repeated string trainingsId = 5;
+}
+
+message RoutineDeleted{
+    string id = 1;
+}
+
+message TrainingAdded{
+    string routineId = 1;
+    string trainingId = 2;
+}
+
+message TrainingRemoved{
+    string routineId = 1;
+    string trainingId = 2;
+}
