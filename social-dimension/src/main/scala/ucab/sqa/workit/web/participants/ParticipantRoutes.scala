@@ -3,6 +3,7 @@ package ucab.sqa.workit.web.participants
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import cats.data.EitherT
+import cats.data.OptionT
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
@@ -33,19 +34,19 @@ import ucab.sqa.workit.web.JsonSupport
 import ucab.sqa.workit.application.participants.ChangeParticipantPasswordCommand
 import akka.http.scaladsl.server.directives.Credentials
 import akka.http.scaladsl.server.directives.Credentials.Provided
-import pdi.jwt.JwtCirce
+import pdi.jwt.JwtSprayJson
 import javax.crypto.SecretKey
 import pdi.jwt.JwtAlgorithm
-import cats.data.OptionT
 import akka.http.scaladsl.server.MethodRejection
 import akka.http.scaladsl.server.Rejection
 import akka.http.scaladsl.server.directives.AuthenticationDirective
 import ucab.sqa.workit.web.helpers
+import ucab.sqa.workit.web.auth
+import ucab.sqa.workit.domain.participants.Participant
 
 class ParticipantRoutes(
-    participantService: ActorRef[
-      Request[ParticipantCommand, ParticipantQuery, _]
-    ]
+    participantService: ActorRef[Request[ParticipantCommand, ParticipantQuery, _]],
+    authorityService: ActorRef[auth.AuthorityActions]
 )(implicit val system: ActorSystem[_])
     extends JsonSupport {
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -118,32 +119,11 @@ class ParticipantRoutes(
       Command(RejectRequestParticipantToTrainerCommand(id), rp)
     )
 
-  private def authenticateParticipantWithCredentials(
-      cred: Credentials
-  ) = (
+  private def authenticateParticipantWithCredentials(cred: Credentials): Future[Option[helpers.auth.AuthResult[ParticipantModel]]] =
     cred match {
-      case Provided(token) =>
-        for {
-          payload <- OptionT.fromOption[Future](
-            JwtCirce.decode(token, "secret", Seq(JwtAlgorithm.HS256)).toOption
-          )
-          subject <- OptionT.fromOption[Future](payload.subject)
-          user <-
-            OptionT(getParticipant(subject).map(_.toOption))
-              .map[helpers.auth.AuthResult[ParticipantModel]](
-                helpers.auth.user(_)
-              )
-              .orElse {
-                if (subject == "admin")
-                  OptionT.pure[Future](helpers.auth.admin)
-                else
-                  OptionT
-                    .none[Future, helpers.auth.AuthResult[ParticipantModel]]
-              }
-        } yield user
-      case _ => OptionT.none[Future, helpers.auth.AuthResult[ParticipantModel]]
+      case Provided(token) => authorityService.ask(auth.ValidateToken(token, getParticipant(_), _))
+      case _ => Future(None)
     }
-  ).value
 
   private def authenticateParticipant =
     authenticateOAuth2Async(
@@ -178,6 +158,7 @@ class ParticipantRoutes(
               concat(
                 (get & authenticateParticipant & rejectDomainErrorAsNotFound) {
                   user =>
+                    system.log.info(f"$user")
                     authorize(user.has(_.id == id)) {
                       handleFuture(getParticipant(id))
                     }

@@ -1,6 +1,7 @@
 package ucab.sqa.workit.web
 
 import java.util.UUID
+import akka.actor._
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
@@ -9,30 +10,34 @@ import akka.util.Timeout
 import akka.http.scaladsl.server.RejectionHandler
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.headers._
 import scala.util.Failure
 import scala.util.Success
 import cats.instances.future.catsStdInstancesForFuture
-import _root_.ucab.sqa.workit.web.helpers.routes._
-import _root_.ucab.sqa.workit.domain.participants.ParticipantEvent
-import _root_.ucab.sqa.workit.web.participants.ParticipantRoutes
-import _root_.ucab.sqa.workit.domain.participants.ParticipantDeletedEvent
-import _root_.ucab.sqa.workit.domain.participants.valueobjects.ParticipantId
-import _root_.ucab.sqa.workit.application.participants.ParticipantApplicationService
-import _root_.ucab.sqa.workit.application.trainers.TrainerApplicationService
-import _root_.ucab.sqa.workit.web.infrastructure
-import _root_.ucab.sqa.workit.web.trainers.TrainerRoutes
-import _root_.ucab.sqa.workit.web.auth.AuthRoutes
+import ucab.sqa.workit.web.helpers.routes._
+import ucab.sqa.workit.domain.participants.ParticipantEvent
+import ucab.sqa.workit.web.participants.ParticipantRoutes
+import ucab.sqa.workit.domain.participants.ParticipantDeletedEvent
+import ucab.sqa.workit.domain.participants.valueobjects.ParticipantId
+import ucab.sqa.workit.application.participants.ParticipantApplicationService
+import ucab.sqa.workit.application.trainers.TrainerApplicationService
+import ucab.sqa.workit.web.infrastructure
+import ucab.sqa.workit.web.trainers.TrainerRoutes
+import ucab.sqa.workit.web.auth.AuthRoutes
+import akka.http.scaladsl.server.MethodRejection
+import akka.http.scaladsl.server.TransformationRejection
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
+import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
+import akka.http.scaladsl.model.HttpMethods
+import akka.http.scaladsl.model.headers._
+import akka.actor.DeadLetter
+import akka.actor.typed.eventstream.EventStream
 
 object App {
-  private val corsHeaders = Seq(
+  private def corsHeaders = Seq(
     `Access-Control-Allow-Origin`.*,
     `Access-Control-Allow-Credentials`(true),
-    `Access-Control-Allow-Headers`(
-      "Authorization",
-      "Content-Type",
-      "X-Requested-With"
-    )
+    `Access-Control-Allow-Headers`("Authorization",
+      "Content-Type", "X-Requested-With")
   )
 
   private def startHttpServer(routes: Route)(implicit
@@ -58,11 +63,12 @@ object App {
         system.terminate()
     }
   }
+
   def main(args: Array[String]): Unit = {
     def infrastructureHandler(implicit system: ActorSystem[_]) = {
       val logger = system.log
       RejectionHandler
-        .newBuilder()
+        .newBuilder
         .handle { case InfrastructureRejection(e) =>
           logger.error("Error occured processing request!", e)
           complete(
@@ -72,16 +78,29 @@ object App {
         }
         .result
     }
+
     val rootBehavior = Behaviors.setup[Nothing] { context =>
       implicit val system = context.system
+
       implicit val timeout = Timeout.create(
         system.settings.config.getDuration("work-it-app.ipc.ask-timeout")
+      )
+
+      val authorityActor = context.spawn(
+        auth.AuthorityActor("CDulchjJLbzSGsePItkZUiyTYrMXdAawQmKpxVRnOEqNfWvFBgoHmvgrePCNyBfb"),
+        "AuthorityActor"
+      )
+
+      val deadLetterActor = context.system.systemActorOf(
+        infrastructure.log.DeadLetterActor.apply,
+        "DeadLetterActor"
       )
 
       implicit val databaseActor = context.spawn(
         infrastructure.database.DatabaseActor("work-it-db"),
         "DatabaseActor"
       )
+
       implicit val trainerInfrastructure =
         infrastructure.trainers.InfrastructureHandler(
           infrastructure.trainers.Infrastructure.findTrainer,
@@ -94,11 +113,13 @@ object App {
           infrastructure.trainers.Infrastructure.preferencesAddedHandler,
           infrastructure.trainers.Infrastructure.preferencesRemovedHandler
         )
+
       implicit val trainerActor =
         context.spawn(
           ApplicationActor(TrainerApplicationService),
           "TrainerActor"
         )
+
       implicit val participantInfrastructure =
         infrastructure.participants.InfrastructureHandler(
           infrastructure.participants.Infrastructure.findParticipant,
@@ -115,26 +136,37 @@ object App {
           infrastructure.participants.Infrastructure.requestApprovedHandler,
           infrastructure.participants.Infrastructure.requestRejectedHandler
         )
+
       val participantActor =
         context.spawn(
           ApplicationActor(ParticipantApplicationService),
           "ParticipantActor"
         )
+
+      context.watch(databaseActor)
       context.watch(trainerActor)
       context.watch(participantActor)
+      context.watch(authorityActor)
+      context.watch(deadLetterActor)
 
       val trainerRoutes =
-        new TrainerRoutes(trainerActor).trainerRoutes
+        new TrainerRoutes(trainerActor, authorityActor).trainerRoutes
+
       val participantRoutes =
-        new ParticipantRoutes(participantActor).participantRoutes
+        new ParticipantRoutes(participantActor, authorityActor).participantRoutes
+
       val authRoutes =
-        new AuthRoutes(participantActor, trainerActor).authRoutes
+        new AuthRoutes(participantActor, trainerActor, authorityActor).authRoutes
+
+      system.eventStream ! EventStream.Subscribe[DeadLetter](deadLetterActor)
 
       startHttpServer(
-        (handleRejections(infrastructureHandler) & respondWithHeaders(
-          corsHeaders
-        )) {
-          optionsPath ~ authRoutes ~ participantRoutes ~ trainerRoutes
+        (cors(CorsSettings(system.settings.config.getConfig("work-it-app"))) & helpers.auth.delegateAuthenticationEntryPoint) {
+          Route.seal(
+            handleRejections(infrastructureHandler) {
+              authRoutes ~ participantRoutes ~ trainerRoutes
+            }
+          )
         }
       )
 

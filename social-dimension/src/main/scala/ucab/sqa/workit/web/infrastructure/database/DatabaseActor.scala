@@ -49,19 +49,21 @@ object DatabaseActor {
 
   private def replyAfterFuture[R](replyTo: ActorRef[Either[Error, R]])(
       f: => Future[Either[Error, R]]
-  ) =
-    f.andThen {
+  ) = {
+    f andThen {
       case Success(e) => replyTo ! e
       case Failure(e) => replyTo ! Left(new InfrastructureError(e))
     }
+  }
 
   private def execute[R](actions: => DBIOAction[R, NoStream, Nothing])(implicit
       db: DatabaseDef
-  ) =
+  ) = {
     db
       .run(actions)
       .map(Right(_))
       .recover { e => Left(new InfrastructureError(e)) }
+  }
 
   private def executeFalible[E, R](
       actions: => DBIOAction[Either[Error, R], NoStream, Nothing]

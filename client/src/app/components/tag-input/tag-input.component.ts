@@ -1,8 +1,9 @@
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, ViewChildren } from '@angular/core';
-import { FormBuilder, FormGroup, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import { fromEvent, merge, Subscription } from 'rxjs';
-import { mapTo } from 'rxjs/operators';
+import { FormBuilder, FormGroup, ControlValueAccessor, NG_VALUE_ACCESSOR, Validator, AbstractControl, ValidationErrors, NG_VALIDATORS } from '@angular/forms';
+import { faTags, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { fromEvent, merge, of, Subscription } from 'rxjs';
+import { map, mapTo } from 'rxjs/operators';
 
 @Component({
   selector: 'wi-tag-input',
@@ -13,23 +14,38 @@ import { mapTo } from 'rxjs/operators';
       provide: NG_VALUE_ACCESSOR,
       multi: true,
       useExisting: TagInputComponent
+    },
+    {
+      provide: NG_VALIDATORS,
+      multi: true,
+      useExisting: TagInputComponent
     }
   ]
 })
-export class TagInputComponent implements ControlValueAccessor, AfterViewInit, OnDestroy, OnInit {
+export class TagInputComponent implements ControlValueAccessor, AfterViewInit, OnDestroy, OnInit, Validator {
   closeIcon = faTimes
   tagList: string[] = []
+  tagIcon = faTags
   tagInputForm: FormGroup
   updatingTag?: string
   onChange: (_: string[]) => void = () => { }
   onTouched: () => void = () => { }
-  touched = true
+  touched = false
   disabled = false
   focused = false
 
   @ViewChild('input') inputRef!: ElementRef<HTMLInputElement>
   @ViewChild('inputControl') inputControlRef!: ElementRef<HTMLInputElement>
-  @Input() allTagsList!: string[]
+  @Input() allTagsList: string[] = []
+  @Input('placeholder') inputPlaceholder: string = ''
+
+  get placeholder() {
+    return this.breakpointObserver
+      .observe(['(max-width: 1023px)'])
+      .pipe(
+        map(state => state.matches ? this.inputPlaceholder : '')
+      )
+  }
 
   get validTagList() {
     return this.allTagsList.filter(tag => !this.tagList.includes(tag))
@@ -37,10 +53,17 @@ export class TagInputComponent implements ControlValueAccessor, AfterViewInit, O
 
   private subscription!: Subscription
 
-  constructor(fBuilder: FormBuilder) {
+  constructor(fBuilder: FormBuilder, private breakpointObserver: BreakpointObserver) {
     this.tagInputForm = fBuilder.group({
       tag: ['']
     })
+  }
+
+  validate(control: AbstractControl): ValidationErrors | null {
+    let tags = control.value
+
+    if (tags.length < 3) return { minlength: true }
+    else return null
   }
 
   ngOnDestroy(): void {
@@ -48,24 +71,26 @@ export class TagInputComponent implements ControlValueAccessor, AfterViewInit, O
   }
 
   ngAfterViewInit(): void {
+    const icons = document.querySelectorAll('fa-icon')
+    const iconEvents = icons && icons.length != 0 ? fromEvent(icons, 'focus') : of()
     this.subscription = merge(
       fromEvent(this.inputRef.nativeElement, 'focusin').pipe(mapTo(true)),
       fromEvent(this.inputRef.nativeElement, 'focusout').pipe(mapTo(false)),
-      fromEvent(document.querySelectorAll('fa-icon')!, 'focus').pipe(mapTo(false))
+      iconEvents.pipe(mapTo(false))
     ).subscribe(val => {
       if (val && this.inputRef.nativeElement.matches(':focus-within')) {
         this.focused = true
-        this.markAsTouched()
       }
       else if (!val && !this.inputRef.nativeElement.matches(':focus-within')) {
         this.focused = false
+        this.markAsTouched()
       }
     })
   }
 
-  writeValue(val: string | string[]): void {
-    if (Array.isArray(val)) this.tagList.concat(val)
-    else this.tagList.push(val)
+  writeValue(val: string[] | string): void {
+    if (Array.isArray(val)) this.tagList = val
+    else this.tagInputForm.get('tag')!.setValue(val)
   }
 
   registerOnChange(fn: any): void {

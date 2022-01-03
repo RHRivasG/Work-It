@@ -1,0 +1,23 @@
+<div class="container mx-auto grid grid-cols-5 h-screen">
+  <ng-container *ngIf="!mobile else mobileView">
+    <div class="grid col-span-3 divisor items-center px-16 fade-in">
+      <ng-container *ngTemplateOutlet="content"></ng-container>
+    </div>
+    <div class="col-span-2 items-center flex">
+        <img class="logo m-auto h-full object-contain w-4/5" src="assets/login-logo.svg">
+    </div>
+  </ng-container>
+</div>
+<ng-template #mobileView>
+  <div class="col-span-5 block lg:hidden flex flex-col">
+    <div class="mx-auto px-16 py-8">
+      <img class="logo-img object-contain" src="assets/login-logo.svg">
+    </div>
+    <div class="px-8 flex-auto fade-in">
+      <ng-container *ngTemplateOutlet="content"></ng-container>
+    </div>
+  </div>
+</ng-template>
+<ng-template #content>
+  <ng-content></ng-content>
+</ng-template>

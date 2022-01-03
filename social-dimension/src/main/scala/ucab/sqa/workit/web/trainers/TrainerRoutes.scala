@@ -23,13 +23,13 @@ import ucab.sqa.workit.application.trainers.DeleteTrainerCommand
 import ucab.sqa.workit.web.JsonSupport
 import ucab.sqa.workit.application.trainers.TrainerModel
 import ucab.sqa.workit.web.helpers
+import ucab.sqa.workit.web.auth
 import cats.data.OptionT
-import pdi.jwt.JwtAlgorithm
-import pdi.jwt.JwtCirce
 import akka.http.scaladsl.server.directives.Credentials
 
 class TrainerRoutes(
-    trainersService: ActorRef[Request[TrainerCommand, TrainerQuery, _]]
+    trainersService: ActorRef[Request[TrainerCommand, TrainerQuery, _]],
+    authorityService: ActorRef[auth.AuthorityActions]
 )(implicit system: ActorSystem[_])
     extends JsonSupport {
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -60,32 +60,11 @@ class TrainerRoutes(
   private def deleteTrainer(id: String): Future[Either[Error, Unit]] =
     trainersService.ask(Command(DeleteTrainerCommand(id), _))
 
-  private def authenticateTrainerWithCredentials(
-      cred: Credentials
-  ) = (
+  private def authenticateTrainerWithCredentials(cred: Credentials): Future[Option[helpers.auth.AuthResult[TrainerModel]]] =
     cred match {
-      case Credentials.Provided(token) =>
-        for {
-          payload <- OptionT.fromOption[Future](
-            JwtCirce.decode(token, "secret", Seq(JwtAlgorithm.HS256)).toOption
-          )
-          subject <- OptionT.fromOption[Future](payload.subject)
-          user <-
-            OptionT(getTrainer(subject).map(_.toOption))
-              .map[helpers.auth.AuthResult[TrainerModel]](
-                helpers.auth.user(_)
-              )
-              .orElse {
-                if (subject == "admin")
-                  OptionT.pure[Future](helpers.auth.admin)
-                else
-                  OptionT
-                    .none[Future, helpers.auth.AuthResult[TrainerModel]]
-              }
-        } yield user
-      case _ => OptionT.none[Future, helpers.auth.AuthResult[TrainerModel]]
+      case Credentials.Provided(token) => authorityService.ask(auth.ValidateToken(token, getTrainer(_), _))
+      case _ => Future(None)
     }
-  ).value
 
   private def authenticateTrainer =
     authenticateOAuth2Async(

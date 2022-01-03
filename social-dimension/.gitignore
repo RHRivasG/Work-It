@@ -3,3 +3,6 @@
 target/
 .bloop/
 .metals/
+null/
+.vscode/
+.bsp/
