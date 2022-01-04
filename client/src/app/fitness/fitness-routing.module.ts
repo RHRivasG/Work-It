@@ -17,11 +17,17 @@ const routes: Routes = [
       },
       {
         path: 'trainings',
-        component: TrainingIndexComponent
+        component: TrainingIndexComponent,
+        data: {
+          animation: 'searchable'
+        }
       },
       {
         path: 'routines',
-        component: RoutineIndexComponent
+        component: RoutineIndexComponent,
+        data: {
+          animation: 'searchable'
+        }
       },
       {
         path: 'routines/:id',

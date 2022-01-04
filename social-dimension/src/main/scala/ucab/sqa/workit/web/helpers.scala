@@ -15,10 +15,14 @@ import akka.http.scaladsl.server.RejectionHandler
 import akka.event.Logging
 import akka.http.scaladsl.server.RouteResult
 import akka.http.scaladsl.server.Directive
+import akka.http.javadsl.server.RejectionHandlerBuilder
+import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.model.HttpResponse
 
 object helpers {
   object routes {
     case class InfrastructureRejection(e: Throwable) extends Rejection {}
+
     private case class DomainRejection(e: Throwable) extends Rejection {}
 
     val rejectDomainErrorAsBadRequest: Directive[Unit] = {
@@ -61,14 +65,19 @@ object helpers {
         case Left(e: Error) => reject(DomainRejection(e))
         case Right(_)       => complete(msg)
       }
-
-    def optionsPath =
-      options {
-        complete("API Options")
-      }
   }
 
   object auth {
+
+    def delegateAuthenticationEntryPoint = {
+      optionalHeaderValueByName("X-Requested-With").flatMap { (requested) =>
+        if (requested.filter(_ == "XMLHttpRequest").isDefined)
+          mapResponseHeaders { _.filterNot(_.name == "WWW-Authenticate") }
+        else
+          pass
+      }
+    }
+
     sealed trait AuthResult[T] {
       def has(f: PartialFunction[T, Boolean]): Boolean
     }

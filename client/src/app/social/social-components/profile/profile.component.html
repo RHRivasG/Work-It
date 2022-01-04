@@ -1,0 +1,45 @@
+<div class="container mx-auto py-8 px-6 w-full lg:px-0 lg:w-4/6 h-full flex flex-col">
+  <h1 class="font-bold text-3xl text-center">Profile settings</h1>
+  <div *ngIf="updateResult" class="status-message text-center text-green-500 text-lg font-bold pt-6">Success! Profile updated!</div>
+  <div *ngIf="updateResult === false" class="status-message text-center text-red-500 text-lg font-bold pt-6">Oops! Something happened, try again later!</div>
+  <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" [ngClass]="updateResult || updateResult === false ? 'pt-4' : 'pt-8'" class="grid grid-cols-1 gap-4 lg:gap-0 lg:auto-rows-auto lg:grid-cols-3 pt-8 flex-auto">
+    <label class="font-semibold text-3xl my-auto hidden lg:block" for="name">Username</label>
+    <div class="lg:col-span-2 my-auto">
+      <wi-input formControlName="username" placeholder="Username"></wi-input>
+      <small class="error" *ngIf="profileForm.get('username')?.errors?.required">Your username cannot be empty!</small>
+      <small class="error" *ngIf="profileForm.get('username')?.errors?.maxlength">Your username should be less than 50 characters</small>
+    </div>
+    <label class="font-semibold text-3xl my-auto hidden lg:block" for="tags">Training Preferences</label>
+    <div class="lg:col-span-2 text-2xl my-auto">
+      <wi-tag-input [allTagsList]="preferences" formControlName="preferences" name="tags"></wi-tag-input>
+      <small class="error" *ngIf="profileForm.get('preferences')?.errors?.minlength">You must input at least 3 training preferences!</small>
+    </div>
+    <div class="lg:col-span-2 my-auto text-center lg:text-left" [ngSwitch]="participant.requestStatus">
+      <button
+        type="button"
+        (click)="sendRequest()"
+        [disabled]="sendingRequest"
+        *ngSwitchCase="0"
+        class="underline text-xl lg:text-2xl disabled:text-gray-500">
+        <fa-icon class="mr-1" [icon]="loadingIcon" [spin]="true" *ngIf="sendingRequest"></fa-icon>
+        Would you like to be a trainer?
+      </button>
+      <span class="text-xl lg:text-2xl text-left text-yellow-600 underline" *ngSwitchCase="1">Your request has been issued!</span>
+    </div>
+    <div class="lg:col-span-1 my-auto text-center lg:text-right">
+      <a [routerLink]="['/social/auth/change-password', participant.id]" class="underline text-xl lg:text-2xl my-auto">Change Password</a>
+    </div>
+    <div class="lg:col-span-3 flex flex-col gap-4 mt-auto">
+      <wi-submit-button [loading]="deletionInProgress" submit="button" (click)="deleteAccount()">
+        Delete Account
+      </wi-submit-button>
+      <wi-submit-button
+        submit
+        [disabled]="profileForm.status == 'INVALID'"
+        type="action"
+        [loading]="updateResult === null">
+        Save
+      </wi-submit-button>
+    </div>
+  </form>
+</div>

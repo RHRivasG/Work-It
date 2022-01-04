@@ -4,8 +4,9 @@
     <fa-icon [icon]="closeIcon" (click)="removeTagFromInput($event, value)" class="flex flex-row items-center h-full"></fa-icon>
   </div>
 
-  <form class="text-lg flex-auto" [formGroup]="tagInputForm" (ngSubmit)="addTagFromInput($event)">
-    <input #inputControl (keydown.backspace)="removeLastTagFromInputWhenInputEmpty()" [ngClass]="disabled ? 'bg-gray-300 bg-opacity-50' : ''" formControlName="tag" class="border-0 h-full w-full focus:outline-none">
+  <form class="flex-auto basis-1/12 flex flex-row" [formGroup]="tagInputForm" (ngSubmit)="addTagFromInput($event)">
+    <fa-icon class="pr-2 text-gray-400 text-lg" *ngIf="(placeholder | async) != '' && tagList.length == 0" [icon]="tagIcon"></fa-icon>
+    <input [placeholder]="(placeholder | async) != '' && tagList.length == 0 ? (placeholder | async) : ''" #inputControl (keydown.backspace)="removeLastTagFromInputWhenInputEmpty()" [ngClass]="disabled ? 'bg-gray-300 bg-opacity-50' : ''" formControlName="tag" class="text-xl border-0 w-full focus:outline-none">
   </form>
 
   <ng-container *ngIf="focused">
