@@ -6,7 +6,7 @@ import (
 
 func ConnectDatabase() (*pg.DB, error) {
 
-	opt, err := pg.ParseURL("postgres://postgres:admin@localhost:5432/WorkItDB")
+	opt, err := pg.ParseURL("postgres://postgres:postgres@localhost:5432/WorkItDB")
 	if err != nil {
 		return nil, err
 	}

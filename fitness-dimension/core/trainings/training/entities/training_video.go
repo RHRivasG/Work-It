@@ -2,6 +2,8 @@ package entities
 
 import (
 	valuesObjects "fitness-dimension/core/trainings/training/values-objects"
+
+	"github.com/google/uuid"
 )
 
 type TrainingVideo struct {
@@ -18,7 +20,10 @@ func CreateVideo(
 	buff valuesObjects.TrainingVideoBuffer,
 ) TrainingVideo {
 
+	id := valuesObjects.TrainingVideoID{Value: uuid.New()}
+
 	v := TrainingVideo{
+		ID:   id,
 		Name: name,
 		Ext:  ext,
 		Buff: buff,

@@ -4,6 +4,8 @@ import (
 	"fitness-dimension/core/trainings/events"
 	entities "fitness-dimension/core/trainings/training/entities"
 	valuesObjects "fitness-dimension/core/trainings/training/values-objects"
+
+	"github.com/google/uuid"
 )
 
 type Training struct {
@@ -31,7 +33,10 @@ func CreateTraining(
 	description valuesObjects.TrainingDescription,
 ) (Training, error) {
 
+	id := valuesObjects.TrainingID{Value: uuid.New()}
+
 	t := Training{
+		ID:          id,
 		Categories:  categories,
 		TrainerID:   trainerID,
 		Name:        name,

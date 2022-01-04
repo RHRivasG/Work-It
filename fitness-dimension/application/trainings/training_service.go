@@ -110,3 +110,5 @@ func (s *TrainingService) Get(id string) training.Training {
 func (s *TrainingService) GetAll() []training.Training {
 	return s.Repository.GetAll()
 }
+
+//func (s *TrainingService) GetVideo

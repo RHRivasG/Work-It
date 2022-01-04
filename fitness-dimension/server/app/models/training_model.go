@@ -6,11 +6,9 @@ type Training struct {
 	TrainerID   string   `pg:"trainer_id"`
 	Name        string   `pg:"name"`
 	Description string   `pg:"description"`
-	VideoID     string   `pg:"video_id"`
 }
 
 type Taxonomy struct {
-	ID         string
-	Name       string
-	TrainingID string
+	ID   string `pg:"id,pk"`
+	Name string `pg:"name"`
 }
