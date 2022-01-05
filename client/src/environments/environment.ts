@@ -9,6 +9,7 @@ const fixedAuthBuilder = new FixedIdentityProviderService("eyJ0eXAiOiJKV1QiLCJhb
 export const environment = {
   production: false,
   socialApiUrl: 'http://localhost:5000',
+  fitnessApiUrl: 'http://localhost:8080',
   authInterceptor: fixedAuthBuilder.authProvider,
   identityProviderService: fixedAuthBuilder.identityProvider
 };

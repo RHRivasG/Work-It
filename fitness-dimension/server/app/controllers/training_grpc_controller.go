@@ -22,6 +22,7 @@ func (s *TrainingApiServer) Save(ctx context.Context, req *pb.TrainingCreated) (
 		TrainerID:   req.TrainerId,
 		Name:        req.Name,
 		Description: req.Description,
+		Categories:  req.Categories,
 	}
 	_, err := s.DB.Model(training).Insert()
 	if err != nil {
@@ -65,10 +66,11 @@ func (s *TrainingApiServer) SaveVideo(ctx context.Context, req *pb.TrainingVideo
 	fmt.Println(req)
 
 	video := &models.TrainingVideo{
-		ID:   req.Id,
-		Name: req.Name,
-		Ext:  req.Ext,
-		Buff: []byte(req.Video),
+		ID:         req.Id,
+		Name:       req.Name,
+		Ext:        req.Ext,
+		Buff:       []byte(req.Video),
+		TrainingID: req.TrainingId,
 	}
 	_, err := s.DB.Model(video).Insert()
 	if err != nil {

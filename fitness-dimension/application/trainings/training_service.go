@@ -25,7 +25,7 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		trainerID := valuesObjects.TrainerID{Value: command.TrainerID}
 		name := valuesObjects.TrainingName{Value: command.Name}
 		description := valuesObjects.TrainingDescription{Value: command.Description}
-		categories := valuesObjects.TrainingTaxonomies{}
+		categories := valuesObjects.TrainingTaxonomies{Values: command.Categories}
 
 		t, _ := training.CreateTraining(categories, trainerID, name, description)
 		for _, i := range t.GetEvents() {
