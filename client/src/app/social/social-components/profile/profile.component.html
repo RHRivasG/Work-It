@@ -14,7 +14,7 @@
       <wi-tag-input [allTagsList]="preferences" formControlName="preferences" name="tags"></wi-tag-input>
       <small class="error" *ngIf="profileForm.get('preferences')?.errors?.minlength">You must input at least 3 training preferences!</small>
     </div>
-    <div class="lg:col-span-2 my-auto text-center lg:text-left" [ngSwitch]="participant.requestStatus">
+    <div class="lg:col-span-2 my-auto text-center lg:text-left" *ngIf="requestStatus != null" [ngSwitch]="requestStatus">
       <button
         type="button"
         (click)="sendRequest()"
@@ -26,8 +26,8 @@
       </button>
       <span class="text-xl lg:text-2xl text-left text-yellow-600 underline" *ngSwitchCase="1">Your request has been issued!</span>
     </div>
-    <div class="lg:col-span-1 my-auto text-center lg:text-right">
-      <a [routerLink]="['/social/auth/change-password', participant.id]" class="underline text-xl lg:text-2xl my-auto">Change Password</a>
+    <div [ngClass]="requestStatus == null ? 'lg:col-span-full' : 'lg:col-span-1 lg:text-right'" class="my-auto text-center">
+      <a [routerLink]="['/social/auth/change-password', profile.id]" class="underline text-xl lg:text-2xl my-auto">Change Password</a>
     </div>
     <div class="lg:col-span-3 flex flex-col gap-4 mt-auto">
       <wi-submit-button [loading]="deletionInProgress" submit="button" (click)="deleteAccount()">

@@ -1,21 +1,27 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { conditionallyCreateMapObjectLiteral } from '@angular/compiler/src/render3/view/util';
+import { Inject, Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, CanLoad, Route, Router, RouterStateSnapshot, UrlSegment, UrlTree } from '@angular/router';
-import { Observable, of } from 'rxjs';
-import { catchError, mapTo } from 'rxjs/operators';
+import { identity, Observable, of } from 'rxjs';
+import { catchError, map, mapTo, switchMap, switchMapTo, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { IdentityProvider, WI_IDENTITY_PROVIDER } from './identity-provider';
 
 @Injectable({
   providedIn: 'root'
 })
-export class CanActivateDashboardGuard implements CanActivate, CanLoad {
-  constructor(private http: HttpClient, private router: Router) {}
+export class CanActivateDashboardGuard implements CanActivate {
+  constructor(private http: HttpClient, private router: Router, @Inject(WI_IDENTITY_PROVIDER) private identityProvider: IdentityProvider) {}
 
-  private isAdmin() {
-    return this.http.post(environment.socialApiUrl + "/login/admin", {})
-    .pipe(
-      mapTo(true),
-      catchError(_ => of(this.router.createUrlTree(['/social', 'auth', 'login'], { queryParams: { as: 'Participant' }})))
+  get isAdmin() {
+    return this.identityProvider.identity.pipe(
+      map(identity => identity == "admin"),
+      catchError(_ =>
+        this.http.post(environment.socialApiUrl + "/login/admin", {}).pipe(
+          mapTo(true),
+          catchError(_ => of(false))
+        )
+      )
     )
   }
 
@@ -23,11 +29,6 @@ export class CanActivateDashboardGuard implements CanActivate, CanLoad {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree
   {
-    return this.isAdmin()
-  }
-  canLoad(
-    route: Route,
-    segments: UrlSegment[]): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    return this.isAdmin();
+    return this.isAdmin
   }
 }

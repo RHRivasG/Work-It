@@ -16,6 +16,7 @@ import cats.instances.future.catsStdInstancesForFuture
 import ucab.sqa.workit.web.helpers.routes._
 import ucab.sqa.workit.domain.participants.ParticipantEvent
 import ucab.sqa.workit.web.participants.ParticipantRoutes
+import ucab.sqa.workit.web.participants.ParticipantStreamActor
 import ucab.sqa.workit.domain.participants.ParticipantDeletedEvent
 import ucab.sqa.workit.domain.participants.valueobjects.ParticipantId
 import ucab.sqa.workit.application.participants.ParticipantApplicationService
@@ -31,8 +32,20 @@ import akka.http.scaladsl.model.HttpMethods
 import akka.http.scaladsl.model.headers._
 import akka.actor.DeadLetter
 import akka.actor.typed.eventstream.EventStream
+import akka.actor.typed.receptionist.ServiceKey
+import ucab.sqa.workit.application.participants.ParticipantQuery
+import ucab.sqa.workit.application.participants.ParticipantCommand
+import ucab.sqa.workit.web.participants.ParticipantStreamMessage
+import akka.actor.typed.receptionist.Receptionist
+import ucab.sqa.workit.application.trainers.TrainerCommand
+import ucab.sqa.workit.application.trainers.TrainerQuery
+import ucab.sqa.workit.web.trainers.TrainerStreamActor
+import ucab.sqa.workit.web.profile.ProfileRoutes
 
 object App {
+  implicit val participantServiceKey: ServiceKey[Request[ParticipantCommand, ParticipantQuery, _]] = ServiceKey("Participants")
+  implicit val trainerServiceKey: ServiceKey[Request[TrainerCommand, TrainerQuery, _]] = ServiceKey("Trainers")
+
   private def corsHeaders = Seq(
     `Access-Control-Allow-Origin`.*,
     `Access-Control-Allow-Credentials`(true),
@@ -86,20 +99,32 @@ object App {
         system.settings.config.getDuration("work-it-app.ipc.ask-timeout")
       )
 
-      val authorityActor = context.spawn(
-        auth.AuthorityActor("CDulchjJLbzSGsePItkZUiyTYrMXdAawQmKpxVRnOEqNfWvFBgoHmvgrePCNyBfb"),
-        "AuthorityActor"
-      )
-
       val deadLetterActor = context.system.systemActorOf(
         infrastructure.log.DeadLetterActor.apply,
         "DeadLetterActor"
+      )
+
+      implicit val authorityActor = context.spawn(
+        auth.AuthorityActor("CDulchjJLbzSGsePItkZUiyTYrMXdAawQmKpxVRnOEqNfWvFBgoHmvgrePCNyBfb"),
+        "AuthorityActor"
       )
 
       implicit val databaseActor = context.spawn(
         infrastructure.database.DatabaseActor("work-it-db"),
         "DatabaseActor"
       )
+      
+      implicit val participantStreamActor = 
+        context.spawn(
+          ParticipantStreamActor(),
+          "ParticipantStreamActor"
+        )
+      
+      implicit val trainerStreamActor = 
+        context.spawn(
+          TrainerStreamActor(),
+          "TrainerStreamActor"
+        )
 
       implicit val trainerInfrastructure =
         infrastructure.trainers.InfrastructureHandler(
@@ -137,23 +162,31 @@ object App {
           infrastructure.participants.Infrastructure.requestRejectedHandler
         )
 
-      val participantActor =
+      implicit val participantActor =
         context.spawn(
           ApplicationActor(ParticipantApplicationService),
           "ParticipantActor"
         )
 
+      system.receptionist ! Receptionist.Register(participantServiceKey, participantActor)
+      system.receptionist ! Receptionist.Register(trainerServiceKey, trainerActor)
+
+      context.watch(trainerStreamActor)
+      context.watch(participantStreamActor)
       context.watch(databaseActor)
       context.watch(trainerActor)
       context.watch(participantActor)
       context.watch(authorityActor)
       context.watch(deadLetterActor)
 
+      val profileRoutes =
+        ProfileRoutes(participantActor, trainerActor)
+
       val trainerRoutes =
-        new TrainerRoutes(trainerActor, authorityActor).trainerRoutes
+        new TrainerRoutes(trainerActor).trainerRoutes
 
       val participantRoutes =
-        new ParticipantRoutes(participantActor, authorityActor).participantRoutes
+        new ParticipantRoutes(participantActor).participantRoutes
 
       val authRoutes =
         new AuthRoutes(participantActor, trainerActor, authorityActor).authRoutes
@@ -164,7 +197,7 @@ object App {
         (cors(CorsSettings(system.settings.config.getConfig("work-it-app"))) & helpers.auth.delegateAuthenticationEntryPoint) {
           Route.seal(
             handleRejections(infrastructureHandler) {
-              authRoutes ~ participantRoutes ~ trainerRoutes
+              authRoutes ~ profileRoutes ~ participantRoutes ~ trainerRoutes
             }
           )
         }

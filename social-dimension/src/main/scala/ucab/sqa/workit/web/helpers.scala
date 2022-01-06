@@ -1,5 +1,7 @@
 package ucab.sqa.workit.web
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import akka.actor.typed.scaladsl.AskPattern._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import scala.concurrent.Future
@@ -18,6 +20,19 @@ import akka.http.scaladsl.server.Directive
 import akka.http.javadsl.server.RejectionHandlerBuilder
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.server.directives.Credentials
+import ucab.sqa.workit.application.participants.ParticipantModel
+import akka.actor.typed.ActorRef
+import ucab.sqa.workit.web.auth.AuthorityActions
+import ucab.sqa.workit.web.auth.ValidateToken
+import ucab.sqa.workit.application.participants.ParticipantCommand
+import ucab.sqa.workit.application.participants.ParticipantQuery
+import ucab.sqa.workit.application.participants.GetParticipantQuery
+import akka.util.Timeout
+import ucab.sqa.workit.application.trainers.TrainerCommand
+import ucab.sqa.workit.application.trainers.TrainerQuery
+import ucab.sqa.workit.application.trainers.TrainerModel
+import ucab.sqa.workit.application.trainers.GetTrainerQuery
 
 object helpers {
   object routes {
@@ -77,6 +92,57 @@ object helpers {
           pass
       }
     }
+
+    private def authenticateParticipantWithCredentials(participantService: ActorRef[Request[ParticipantCommand, ParticipantQuery, _]])(cred: Credentials)(
+      implicit authorityService: ActorRef[AuthorityActions],
+      timeout: Timeout,
+      system: ActorSystem[_]
+    ): Future[Option[helpers.auth.AuthResult[ParticipantModel]]] =
+      cred match {
+        case Credentials.Provided(token) => authorityService.ask(
+          ValidateToken(
+            token, 
+            id => participantService.ask((ref: ActorRef[Either[Error, ParticipantModel]]) => Query(GetParticipantQuery(id), ref)), 
+          _)
+        )
+        case _ => Future(None)
+      }
+
+  private def authenticateTrainerWithCredentials(trainerService: ActorRef[Request[TrainerCommand, TrainerQuery, _]])(cred: Credentials)(
+    implicit authorityService: ActorRef[AuthorityActions],
+    timeout: Timeout,
+    system: ActorSystem[_]
+  ): Future[Option[helpers.auth.AuthResult[TrainerModel]]] =
+    cred match {
+      case Credentials.Provided(token) => 
+        authorityService.ask(
+        ValidateToken(
+          token, 
+            id => trainerService.ask((ref: ActorRef[Either[Error, TrainerModel]]) => Query(GetTrainerQuery(id), ref)), 
+          _)
+        )
+      case _ => Future(None)
+    }
+
+  def authenticateParticipant(participantService: ActorRef[Request[ParticipantCommand, ParticipantQuery, _]])(
+      implicit authorityService: ActorRef[AuthorityActions],
+      timeout: Timeout,
+      system: ActorSystem[_]
+    ) =
+    authenticateOAuth2Async(
+      "Participant Visible",
+      authenticateParticipantWithCredentials(participantService)
+    )
+
+  def authenticateTrainer(trainerService: ActorRef[Request[TrainerCommand, TrainerQuery, _]])(
+    implicit authorityService: ActorRef[AuthorityActions],
+    timeout: Timeout,
+    system: ActorSystem[_]
+  ) =
+    authenticateOAuth2Async(
+      "Participant Visible",
+      authenticateTrainerWithCredentials(trainerService)
+    )
 
     sealed trait AuthResult[T] {
       def has(f: PartialFunction[T, Boolean]): Boolean

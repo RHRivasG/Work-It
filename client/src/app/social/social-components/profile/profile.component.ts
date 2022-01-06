@@ -3,11 +3,16 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
-import { throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Participant } from '../../models/participant';
 import { RequestStatus } from '../../models/request-status';
+import { Trainer } from '../../models/trainer';
+
+type Profile = Trainer | Participant
+
+function isParticipant(profile: Trainer | Participant): profile is Participant {
+  return "requestStatus" in profile
+}
 
 @Component({
   selector: 'wi-profile',
@@ -28,7 +33,7 @@ export class ProfileComponent implements OnInit {
   preferences!: string[]
   loadingIcon = faCircleNotch
   sendingRequest: boolean = false
-  participant!: Participant
+  profile!: Profile
 
   constructor(private builder: FormBuilder, private route: ActivatedRoute, private http: HttpClient, private router: Router) {
     this.profileForm = builder.group({
@@ -36,19 +41,30 @@ export class ProfileComponent implements OnInit {
       preferences: ['']
     })
     route.data.subscribe(data => {
-      this.participant = data.profile
+      this.profile = data.profile
       this.preferences = data.preferences
-      this.profileForm.get('username')?.setValue(this.participant.name)
-      this.profileForm.get('preferences')?.setValue(this.participant.preferences)
+      this.profileForm.get('username')?.setValue(this.profile.name)
+      this.profileForm.get('preferences')?.setValue(this.profile.preferences)
     })
   }
 
   ngOnInit(): void {
   }
 
+  get slug() {
+    console.log(isParticipant(this.profile))
+    if (isParticipant(this.profile)) return "participants"
+    else return "trainers"
+  }
+
+  get requestStatus() {
+    if (isParticipant(this.profile)) return this.profile.requestStatus
+    else return undefined
+  }
+
   updateProfile() {
     this.updateResult = null
-    this.http.put(environment.socialApiUrl + "/participants/" + this.participant.id, {
+    this.http.put(environment.socialApiUrl + `/${this.slug}/` + this.profile.id, {
       name: this.profileForm.get('username')?.value || '',
       preferences: this.profileForm.get('preferences')?.value || ''
     }, { responseType: 'text' })
@@ -60,7 +76,7 @@ export class ProfileComponent implements OnInit {
 
   deleteAccount() {
     this.deletionInProgress = true
-    this.http.delete(environment.socialApiUrl + "/participants/" + this.participant.id, { responseType: 'text' })
+    this.http.delete(environment.socialApiUrl + `/${this.slug}/` + this.profile.id, { responseType: 'text' })
     .subscribe(() => {
       this.deletionInProgress = false
       this.router.navigate(['/social/auth/register'])
@@ -68,17 +84,20 @@ export class ProfileComponent implements OnInit {
   }
 
   sendRequest() {
-    this.sendingRequest = true
-    this.http.post(
-      environment.socialApiUrl + "/participants/" + this.participant.id + "/request", "",
-      { responseType: 'text' }
-    )
-    .subscribe(
-      () => {
-        this.sendingRequest = false
-        this.participant.requestStatus = RequestStatus.Pending
-      }
-    )
+    const profile = this.profile
+    if (isParticipant(profile)) {
+      this.sendingRequest = true
+      this.http.post(
+        environment.socialApiUrl + "/participants/" + this.profile.id + "/request", "",
+        { responseType: 'text' }
+      )
+      .subscribe(
+        () => {
+          this.sendingRequest = false
+          profile.requestStatus = RequestStatus.Pending
+        }
+      )
+    }
   }
 
 }

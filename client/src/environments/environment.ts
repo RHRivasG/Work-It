@@ -4,7 +4,7 @@
 import { FixedIdentityProviderService } from "src/app/services/fixed-identity-provider.service";
 
 // The list of file replacements can be found in `angular.json`.
-const fixedAuthBuilder = new FixedIdentityProviderService("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI2YTQ5N2IyMC01Y2MyLTQ3MDgtOGU1NC03YjRlZGYyYmQ0NDkiLCJyb2xlIjpbInBhcnRpY2lwYW50Il19.miIE1xqoKtb7ESAXCPa-x-wSHV4OkBaz30FWCBIwCjAMtOg6DYERBehvPX6zdNdOmqIrbHPKVSp_euqDXyr04Q")
+const fixedAuthBuilder = new FixedIdentityProviderService("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI4OWY3ZGM2OC0xYzc4LTQxMjItYmFkMS01ZTc0N2MwNjNjNTQiLCJyb2xlcyI6WyJ0cmFpbmVyIl19.UQQ6JR-VGxzKbCP6XKJI6wzpXDl2kuAIA3ybo51Vxlxy4HB620cdbNhWSmPU0yu_7VdvbvoP0HvLr9ReIWSM5A")
 
 export const environment = {
   production: false,

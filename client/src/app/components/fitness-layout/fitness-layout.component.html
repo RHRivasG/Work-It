@@ -8,7 +8,7 @@
     </div>
     <div class="flex-auto col-span-4">
       <div *ngIf="activatedRoute.layout" class="search-bar">
-        <input class="search-bar-input">
+        <input [(ngModel)]="searchService.searchValue" class="search-bar-input">
         <fa-icon [icon]="searchIcon" class="search-bar-icon"></fa-icon>
       </div>
     </div>

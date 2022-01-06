@@ -15,6 +15,7 @@ import _root_.ucab.sqa.workit.application.trainers.UpdateTrainerCommand
 import _root_.ucab.sqa.workit.application.participants.ParticipantModel
 import _root_.ucab.sqa.workit.application.trainers.TrainerModel
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import ucab.sqa.workit.web.profile.Profile
 
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   // import the default encoders for primitive types (Int, String, Lists etc)
@@ -35,6 +36,7 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
       password: String
   )
 
+  implicit def profileFormat[A: JsonFormat] = jsonFormat2(Profile.apply[A])
   implicit val createParticipantFormat = jsonFormat3(CreateParticipantCommand)
   implicit val updateParticipantFormat = jsonFormat2(
     PartialUpdateParticipantCommand

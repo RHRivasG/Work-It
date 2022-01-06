@@ -1,7 +1,9 @@
 import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, InjectionToken, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { faDumbbell, faHome, faSearch, faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-icons';
+import { GlobalSearch, WI_GLOBAL_SEARCH } from 'src/app/services/global-search';
+import { GlobalSearchService } from 'src/app/services/global-search.service';
 import { IdentityProvider, WI_IDENTITY_PROVIDER } from 'src/app/services/identity-provider';
 
 @Component({
@@ -44,7 +46,13 @@ import { IdentityProvider, WI_IDENTITY_PROVIDER } from 'src/app/services/identit
   .navigation-icon.active {
     color: white !important;
   }
-  `]
+  `],
+  providers: [
+    {
+      provide: WI_GLOBAL_SEARCH,
+      useValue: new GlobalSearchService()
+    }
+  ]
 })
 export class LayoutComponent implements OnInit {
   id!: string
@@ -61,16 +69,28 @@ export class LayoutComponent implements OnInit {
   logoutIcon = faSignOutAlt
 
 
-  constructor(router: Router, @Inject(WI_IDENTITY_PROVIDER) identityProvider: IdentityProvider) {
+  constructor(
+    router: Router,
+    @Inject(WI_IDENTITY_PROVIDER) identityProvider: IdentityProvider,
+    @Inject(WI_GLOBAL_SEARCH) public searchService: GlobalSearch<unknown>
+  ) {
     const url = router.url
 
     identityProvider.identity.subscribe(id => {
       this.id = id
       this.activatedRoute.trainings = url.includes("fitness") && url.includes("trainings") && url.includes(id)
       this.activatedRoute.home = url.includes("trainings") && !this.activatedRoute.trainings
-      this.activatedRoute.profile = url.includes("profile") || url.includes("routines")
-      this.activatedRoute.layout = url.endsWith("routines") || url.endsWith("routines/") || url.endsWith("trainings/") || url.endsWith("trainings")
+      this.activatedRoute.profile = url.includes("profile") || url.includes("routines") || url.includes("dashboard")
+      this.activatedRoute.layout =
+        url.endsWith("routines") || url.endsWith("routines/") ||
+        url.endsWith("trainings/") || url.endsWith("trainings") ||
+        url.includes("dashboard")
     })
+  }
+
+  search(event: Event) {
+    const input = event.target as HTMLInputElement
+    this.searchService.searchValue = input.value
   }
 
   ngOnInit(): void {

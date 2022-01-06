@@ -13,6 +13,9 @@ import akka.util.Timeout
 import akka.actor.typed.scaladsl.AskPattern._
 import ucab.sqa.workit.web.infrastructure.database.Request
 import ucab.sqa.workit.domain.trainers.Trainer
+import ucab.sqa.workit.web.trainers.TrainerStreamMessage
+import cats.data.EitherT
+import ucab.sqa.workit.web.trainers.ResendTrainers
 
 object Infrastructure {
   private type DatabaseRequest = Request.TrainerDatabaseRequest
@@ -42,18 +45,26 @@ object Infrastructure {
       preferences: List[String]
   )(implicit
       ref: ActorRef[DatabaseRequest],
+      stream: ActorRef[TrainerStreamMessage],
       system: ActorSystem[_],
       to: Timeout
-  ) = ref.ask(Request.CreateTrainer(id, name, password, preferences, _))
+  ) = (for {
+    _ <- EitherT(ref.ask(Request.CreateTrainer(id, name, password, preferences, _)))
+    _ <- EitherT.pure[Future, Error](stream ! ResendTrainers())
+  } yield ()).value
 
   def updateTrainerHandler(
       id: UUID,
       name: String
   )(implicit
       ref: ActorRef[DatabaseRequest],
+      stream: ActorRef[TrainerStreamMessage],
       system: ActorSystem[_],
       to: Timeout
-  ) = ref.ask(Request.UpdateTrainer(id, name, _))
+  ) = (for {
+    _ <- EitherT(ref.ask(Request.UpdateTrainer(id, name, _)))
+    _ <- EitherT.pure[Future, Error](stream ! ResendTrainers())
+  } yield ()).value
 
   def changePasswordTrainerHandler(
       id: UUID,
@@ -67,24 +78,36 @@ object Infrastructure {
   def deleteTrainerHandler(id: UUID)(implicit
       ref: ActorRef[DatabaseRequest],
       system: ActorSystem[_],
+      stream: ActorRef[TrainerStreamMessage],
       to: Timeout
-  ) = ref.ask(Request.DeleteTrainer(id, _))
+  ) = (for {
+    _ <- EitherT(ref.ask(Request.DeleteTrainer(id, _)))
+    _ <- EitherT.pure[Future, Error](stream ! ResendTrainers())
+  } yield ()).value
 
   def preferencesAddedHandler(
       id: UUID,
       preferences: List[String]
   )(implicit
       ref: ActorRef[DatabaseRequest],
+      stream: ActorRef[TrainerStreamMessage],
       system: ActorSystem[_],
       to: Timeout
-  ) = ref.ask(Request.AddTrainerPreferences(id, preferences, _))
+  ) = (for {
+    _ <- EitherT(ref.ask(Request.AddTrainerPreferences(id, preferences, _)))
+    _ <- EitherT.pure[Future, Error](stream ! ResendTrainers())
+  } yield ()).value
 
   def preferencesRemovedHandler(
       id: UUID,
       preferences: List[String]
   )(implicit
       ref: ActorRef[DatabaseRequest],
+      stream: ActorRef[TrainerStreamMessage],
       system: ActorSystem[_],
       to: Timeout
-  ) = ref.ask(Request.RemoveTrainerPreferences(id, preferences, _))
+  ) = (for {
+    _ <- EitherT(ref.ask(Request.RemoveTrainerPreferences(id, preferences, _)))
+    _ <- EitherT.pure[Future, Error](stream ! ResendTrainers())
+  } yield ()).value
 }

@@ -42,14 +42,26 @@ import akka.http.scaladsl.server.Rejection
 import akka.http.scaladsl.server.directives.AuthenticationDirective
 import ucab.sqa.workit.web.helpers
 import ucab.sqa.workit.web.auth
-import ucab.sqa.workit.domain.participants.Participant
+import akka.stream.scaladsl.Source
+import akka.http.scaladsl.model.ws.Message
+import akka.NotUsed
+import akka.stream.scaladsl.Flow
+import akka.http.scaladsl.model.ws.TextMessage.Strict
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.RunnableGraph
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.GraphDSL
+import akka.stream.ClosedShape
+import akka.http.scaladsl.model.ws.TextMessage
+import akka.stream.FlowShape
 
 class ParticipantRoutes(
     participantService: ActorRef[Request[ParticipantCommand, ParticipantQuery, _]],
-    authorityService: ActorRef[auth.AuthorityActions]
-)(implicit val system: ActorSystem[_])
+)(implicit val system: ActorSystem[_],
+  streamingActor: ActorRef[ParticipantStreamMessage],
+  authorityService: ActorRef[auth.AuthorityActions],
+)
     extends JsonSupport {
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
   private implicit val timeout = Timeout.create(
     system.settings.config.getDuration("work-it-app.routes.ask-timeout")
@@ -119,17 +131,8 @@ class ParticipantRoutes(
       Command(RejectRequestParticipantToTrainerCommand(id), rp)
     )
 
-  private def authenticateParticipantWithCredentials(cred: Credentials): Future[Option[helpers.auth.AuthResult[ParticipantModel]]] =
-    cred match {
-      case Provided(token) => authorityService.ask(auth.ValidateToken(token, getParticipant(_), _))
-      case _ => Future(None)
-    }
-
   private def authenticateParticipant =
-    authenticateOAuth2Async(
-      "Participant Visible",
-      authenticateParticipantWithCredentials
-    )
+    helpers.auth.authenticateParticipant(participantService)
 
   val participantRoutes: Route =
     pathPrefix("participants") {
@@ -148,6 +151,9 @@ class ParticipantRoutes(
               )
             }
           )
+        },
+        path("stream") {
+          handleWebSocketMessages(ParticipantStreamActor.flow)
         },
         (path("preferences") & get & rejectDomainErrorAsBadRequest) {
           handleFuture(EitherT(getPreferences).map(_.map { _.tag }).value)

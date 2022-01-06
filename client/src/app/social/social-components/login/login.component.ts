@@ -99,7 +99,7 @@ export class LoginComponent implements OnInit {
       this.loading = false
       this.status = status
 
-      if (id) this.router.navigate(['/social/profile/', id])
+      if (id) this.router.navigate(['/social/profile/', id], { queryParams: { as: this.as } })
     })
   }
 }

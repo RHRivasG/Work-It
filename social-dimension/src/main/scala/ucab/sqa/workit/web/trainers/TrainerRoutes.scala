@@ -29,10 +29,11 @@ import akka.http.scaladsl.server.directives.Credentials
 
 class TrainerRoutes(
     trainersService: ActorRef[Request[TrainerCommand, TrainerQuery, _]],
-    authorityService: ActorRef[auth.AuthorityActions]
-)(implicit system: ActorSystem[_])
+)(implicit system: ActorSystem[_],
+  streamingActor: ActorRef[TrainerStreamMessage],
+  authorityService: ActorRef[auth.AuthorityActions],
+)
     extends JsonSupport {
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
   private implicit val timeout = Timeout.create(
     system.settings.config.getDuration("work-it-app.routes.ask-timeout")
@@ -60,17 +61,8 @@ class TrainerRoutes(
   private def deleteTrainer(id: String): Future[Either[Error, Unit]] =
     trainersService.ask(Command(DeleteTrainerCommand(id), _))
 
-  private def authenticateTrainerWithCredentials(cred: Credentials): Future[Option[helpers.auth.AuthResult[TrainerModel]]] =
-    cred match {
-      case Credentials.Provided(token) => authorityService.ask(auth.ValidateToken(token, getTrainer(_), _))
-      case _ => Future(None)
-    }
-
   private def authenticateTrainer =
-    authenticateOAuth2Async(
-      "Participant Visible",
-      authenticateTrainerWithCredentials
-    )
+    helpers.auth.authenticateTrainer(trainersService)
 
   def trainerRoutes: Route =
     pathPrefix("trainers") {
@@ -83,6 +75,9 @@ class TrainerRoutes(
               }
             }
           }
+        },
+        path("stream") {
+          handleWebSocketMessages(TrainerStreamActor.flow)
         },
         pathPrefix(Segment) { id =>
           concat(

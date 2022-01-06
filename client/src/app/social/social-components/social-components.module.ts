@@ -11,6 +11,7 @@ import { ComponentsModule } from 'src/app/components/components.module';
 import { ProfileComponent } from './profile/profile.component';
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { PortalModule } from '@angular/cdk/portal';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
     FontAwesomeModule,
     SocialRoutingModule,
     ComponentsModule,
+    PortalModule,
     LayoutModule
   ]
 })

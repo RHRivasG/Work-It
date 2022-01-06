@@ -34,7 +34,6 @@ class AuthRoutes[C1, C2](
     authorityService: ActorRef[AuthorityActions]
 )(implicit system: ActorSystem[_])
     extends JsonSupport {
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
   private implicit val timeout = Timeout.create(
     system.settings.config.getDuration("work-it-app.routes.ask-timeout")
@@ -86,7 +85,7 @@ class AuthRoutes[C1, C2](
             "Trainer Visible",
             authenticate(getTrainer(_)) { _.password.password }
           )) { trainer =>
-            complete(issueJWT(trainer.id.id.toString, Seq("trainer")))
+            complete(issueJWT(trainer.id.id.toString, Seq("trainer", "participant")))
           },
           (path("participant") & authenticateBasicAsync(
             "Participant Visible",
@@ -100,7 +99,7 @@ class AuthRoutes[C1, C2](
               .filter(addr => addr.isAnyLocalAddress() || addr.isLoopbackAddress())
               .isPresent()
           }) {
-            complete(issueJWT("admin", Seq("admin")))
+            complete(issueJWT("admin", Seq("admin", "participant", "trainer")))
           }
         )
       },

@@ -3,7 +3,9 @@ import { RouterModule, Routes } from '@angular/router';
 import { FitnessLayoutComponent } from '../fitness/fitness-components/fitness-layout/fitness-layout.component';
 import { CanActivateDashboardGuard } from '../services/can-activate-dashboard.guard';
 import { CanActivateLoginGuard } from '../services/can-activate-login.guard';
+import { ParticipantsResolver } from '../services/participants.resolver';
 import { PreferencesResolver } from '../services/preferences.resolver';
+import { TrainersResolver } from '../services/trainers.resolver';
 import { ProfileResolver } from './services/profile.resolver';
 import { ChangePasswordComponent } from './social-components/change-password/change-password.component';
 import { DashboardComponent } from './social-components/dashboard/dashboard.component';
@@ -13,6 +15,21 @@ import { ProfileComponent } from './social-components/profile/profile.component'
 import { RegisterComponent } from './social-components/register/register.component';
 
 const routes: Routes = [
+  {
+    path: 'dashboard',
+    component: FitnessLayoutComponent,
+    children: [
+      {
+        path: '',
+        component: DashboardComponent,
+        resolve: {
+          participants: ParticipantsResolver,
+          trainers: TrainersResolver
+        }
+      }
+    ],
+    canActivate: [CanActivateDashboardGuard]
+  },
   {
     path: 'auth',
     component: SocialLayoutComponent ,
@@ -49,11 +66,6 @@ const routes: Routes = [
         },
       }
     ]
-  },
-  {
-    path: 'dashboard',
-    component: DashboardComponent,
-    canActivate: [CanActivateDashboardGuard]
   },
   {
     path: '**',

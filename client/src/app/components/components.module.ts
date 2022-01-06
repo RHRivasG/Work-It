@@ -4,7 +4,7 @@ import { LayoutComponent as FitnessLayoutComponent } from './fitness-layout/fitn
 import { LayoutComponent as SocialLayoutComponent } from './social-layout/social-layout.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TagInputComponent } from './tag-input/tag-input.component';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { FileInputComponent } from './file-input/file-input.component';
 import { PasswordInputComponent } from './password-input/password-input.component';
@@ -33,6 +33,7 @@ import { InputComponent } from './input/input.component';
   imports: [
     CommonModule,
     FontAwesomeModule,
+    FormsModule,
     ReactiveFormsModule,
     RouterModule
   ]
