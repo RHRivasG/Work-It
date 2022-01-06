@@ -19,9 +19,11 @@ func (p *TrainingPublisher) Publish(e interface{}) {
 	case events.TrainingCreated:
 		event := e.(events.TrainingCreated)
 		res, err := p.Client.Save(context.Background(), &pb.TrainingCreated{
+			Id:          event.ID.Value.String(),
 			TrainerId:   event.TrainerID.Value,
 			Name:        event.Name.Value,
 			Description: event.Description.Value,
+			Categories:  event.Categories.Values,
 		})
 
 		if err != nil {
@@ -56,10 +58,13 @@ func (p *TrainingPublisher) Publish(e interface{}) {
 		fmt.Println(res)
 	case events.TrainingVideoCreated:
 		event := e.(events.TrainingVideoCreated)
+		fmt.Println(event)
 		res, err := p.Client.SaveVideo(context.Background(), &pb.TrainingVideoCreated{
+			Id:         event.ID.Value.String(),
 			TrainingId: event.TrainingID.Value.String(),
 			Name:       event.Name.Value,
 			Ext:        event.Ext.Value,
+			Video:      string(event.Buff.Value),
 		})
 
 		if err != nil {

@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type RoutineHttpController struct {
@@ -14,9 +16,18 @@ type RoutineHttpController struct {
 }
 
 func (c *RoutineHttpController) Get(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	routine := c.Service.Get(id)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&routine)
 }
 
 func (c *RoutineHttpController) GetAll(w http.ResponseWriter, r *http.Request) {
+	routines := c.Service.GetAll()
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&routines)
 }
 
 func (c *RoutineHttpController) Create(w http.ResponseWriter, r *http.Request) {
@@ -28,6 +39,9 @@ func (c *RoutineHttpController) Create(w http.ResponseWriter, r *http.Request) {
 	command := commands.CreateRoutine{}
 	json.Unmarshal(reqBody, &command)
 	c.Service.Handle(command)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (c *RoutineHttpController) Update(w http.ResponseWriter, r *http.Request) {

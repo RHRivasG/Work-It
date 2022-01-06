@@ -1,9 +1,10 @@
 package models
 
 type TrainingVideo struct {
-	ID     string
-	Name   string
-	Ext    string
-	Length int
-	Buff   []byte
+	tableName  struct{} `pg:"videos,alias:t"`
+	ID         string   `pg:"id,pk"`
+	Name       string   `pg:"name"`
+	Ext        string   `pg:"ext"`
+	Buff       []byte   `pg:"buff"`
+	TrainingID string   `pg:"training_id"`
 }

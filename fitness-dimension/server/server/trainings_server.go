@@ -22,9 +22,13 @@ func HttpTrainingServe(router *mux.Router, r repositories.TrainingRepository, p 
 	router.HandleFunc("/trainings/{id}", c.Update).Methods("PUT")
 	router.HandleFunc("/trainings/{id}", c.Delete).Methods("DELETE")
 
+	router.HandleFunc("/trainings/{id}/video", c.CreateVideo).Methods("GET")
+	router.HandleFunc("/trainings/{id}/video", c.CreateVideo).Methods("POST")
+	router.HandleFunc("/trainings/{id}/video", c.DeleteVideo).Methods("DELETE")
+
 }
 
 func GrpcTrainingServe(s *grpc.Server, db *pg.DB) {
-	c := controllers.TrainingApiServer{}
+	c := controllers.TrainingApiServer{DB: db}
 	pb.RegisterTrainingAPIServer(s, &c)
 }
