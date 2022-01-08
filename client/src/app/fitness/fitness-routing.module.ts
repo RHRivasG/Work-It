@@ -5,6 +5,7 @@ import { NewTrainingComponent } from './fitness-components/new-training/new-trai
 import { RoutineIndexComponent } from './fitness-components/routine-index/routine-index.component';
 import { ShowRoutineComponent } from './fitness-components/show-routine/show-routine.component';
 import { TrainingIndexComponent } from './fitness-components/training-index/training-index.component';
+import { TrainingsResolver } from './services/trainings.resolver';
 
 const routes: Routes = [
   {
@@ -20,6 +21,9 @@ const routes: Routes = [
         component: TrainingIndexComponent,
         data: {
           animation: 'searchable'
+        },
+        resolve: {
+          trainings: TrainingsResolver
         }
       },
       {

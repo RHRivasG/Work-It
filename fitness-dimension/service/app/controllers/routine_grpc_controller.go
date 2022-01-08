@@ -1,0 +1,98 @@
+package controllers
+
+import (
+	"context"
+	pb "fitness-dimension/gen/proto"
+	"fitness-dimension/service/app/models"
+	"fmt"
+
+	"github.com/go-pg/pg/v10"
+)
+
+type RoutineApiServer struct {
+	pb.UnimplementedRoutineAPIServer
+	DB *pg.DB
+}
+
+func (s *RoutineApiServer) Save(ctx context.Context, req *pb.RoutineCreated) (*pb.Response, error) {
+	fmt.Println("Saving routine")
+
+	routine := &models.Routine{
+		ID:          req.Id,
+		Name:        req.Name,
+		UserID:      req.UserId,
+		Description: req.Description,
+	}
+	_, err := s.DB.Model(routine).Insert()
+	if err != nil {
+		return nil, err
+	}
+
+	msg := pb.Response{Msg: "Routine saved"}
+	return &msg, nil
+}
+
+func (s *RoutineApiServer) Update(ctx context.Context, req *pb.RoutineUpdated) (*pb.Response, error) {
+	fmt.Println("Updating routine")
+
+	routine := &models.Routine{
+		ID:          req.Id,
+		Name:        req.Name,
+		UserID:      req.UserId,
+		Description: req.Description,
+	}
+	_, err := s.DB.Model(routine).WherePK().Update()
+	if err != nil {
+		return nil, err
+	}
+
+	msg := pb.Response{Msg: "Routine updated"}
+	return &msg, nil
+}
+
+func (s *RoutineApiServer) Delete(ctx context.Context, req *pb.RoutineDeleted) (*pb.Response, error) {
+	fmt.Println("Deleting routine")
+
+	routine := &models.Routine{
+		ID: req.Id,
+	}
+	_, err := s.DB.Model(routine).WherePK().Delete()
+	if err != nil {
+		return nil, err
+	}
+
+	msg := pb.Response{Msg: "Routine deleted"}
+	return &msg, nil
+}
+
+func (s *RoutineApiServer) AddTraining(ctx context.Context, req *pb.TrainingAdded) (*pb.Response, error) {
+	fmt.Println("Adding training")
+
+	routineTraining := &models.RoutineTraining{
+		RoutineID:  req.RoutineId,
+		TrainingID: req.TrainingId,
+	}
+	_, err := s.DB.Model(routineTraining).Insert()
+	if err != nil {
+		return nil, err
+	}
+
+	msg := pb.Response{Msg: "Training added"}
+	return &msg, nil
+}
+
+func (s *RoutineApiServer) RemoveTraining(ctx context.Context, req *pb.TrainingRemoved) (*pb.Response, error) {
+	fmt.Println("Removing training")
+
+	routineTraining := &models.RoutineTraining{
+		RoutineID:  req.RoutineId,
+		TrainingID: req.TrainingId,
+	}
+	_, err := s.DB.Model(routineTraining).WherePK().Delete()
+	if err != nil {
+		return nil, err
+	}
+
+	msg := pb.Response{Msg: "Training removed"}
+	return &msg, nil
+}

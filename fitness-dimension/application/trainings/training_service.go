@@ -3,6 +3,7 @@ package trainings
 import (
 	"fitness-dimension/application/trainings/commands"
 	"fitness-dimension/application/trainings/repositories"
+	"fmt"
 	"log"
 
 	"fitness-dimension/core/trainings/training"
@@ -38,10 +39,9 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		trainerID := valuesObjects.TrainerID{Value: command.TrainerID}
 		name := valuesObjects.TrainingName{Value: command.Name}
 		description := valuesObjects.TrainingDescription{Value: command.Description}
-		categories := valuesObjects.TrainingTaxonomies{}
+		categories := valuesObjects.TrainingTaxonomies{Values: command.Categories}
 
 		t := s.Repository.Find(command.ID)
-
 		t.Update(categories, trainerID, name, description)
 		for _, i := range t.GetEvents() {
 			s.Publisher.Publish(i)
@@ -51,7 +51,6 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		command := c.(commands.DeleteTraining)
 
 		t := s.Repository.Find(command.ID)
-
 		t.Destroy()
 		for _, i := range t.GetEvents() {
 			s.Publisher.Publish(i)
@@ -67,6 +66,8 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		t := s.Repository.Find(command.TrainingID)
 
 		t.SetVideo(filename, video, ext)
+
+		fmt.Println(t)
 		for _, i := range t.GetEvents() {
 			s.Publisher.Publish(i)
 		}
@@ -81,6 +82,7 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		t := s.Repository.Find(command.TrainingID)
 
 		t.UpdateVideo(filename, video, ext)
+
 		for _, i := range t.GetEvents() {
 			s.Publisher.Publish(i)
 		}
@@ -90,7 +92,6 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		t := s.Repository.Find(command.TrainingID)
 		t.DestroyVideo()
 
-		s.VideoRepository.Delete(command.ID)
 		for _, i := range t.GetEvents() {
 			s.Publisher.Publish(i)
 		}
@@ -110,5 +111,3 @@ func (s *TrainingService) Get(id string) training.Training {
 func (s *TrainingService) GetAll() []training.Training {
 	return s.Repository.GetAll()
 }
-
-//func (s *TrainingService) GetVideo

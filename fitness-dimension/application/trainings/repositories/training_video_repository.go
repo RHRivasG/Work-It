@@ -8,5 +8,4 @@ import (
 
 type TrainingVideoRepository interface {
 	Find(uuid.UUID) entities.TrainingVideo
-	Delete(uuid.UUID)
 }

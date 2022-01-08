@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Training } from '../../models/training';
 
 @Component({
   selector: 'wi-training-index',
@@ -20,7 +22,14 @@ export class TrainingIndexComponent implements OnInit {
     }
   ]
 
-  constructor() { }
+  trainings!: Training[]
+
+  constructor(private route: ActivatedRoute) { 
+    route.data.subscribe(data => {
+      this.trainings = data.trainings
+      console.log(this.trainings)
+    })
+  }
 
   ngOnInit(): void {
   }

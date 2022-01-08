@@ -4,6 +4,7 @@ import (
 	"fitness-dimension/core/trainings/events"
 	entities "fitness-dimension/core/trainings/training/entities"
 	valuesObjects "fitness-dimension/core/trainings/training/values-objects"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -62,11 +63,18 @@ func (t *Training) SetVideo(
 
 	v := entities.CreateVideo(filename, ext, video)
 	t.Video = &v
-	t.AddEvent(events.TrainingVideoCreated{
+	fmt.Println(events.TrainingVideoCreated{
 		ID:   v.ID,
 		Name: v.Name,
 		Ext:  v.Ext,
 		Buff: v.Buff,
+	})
+	t.AddEvent(events.TrainingVideoCreated{
+		ID:         v.ID,
+		Name:       v.Name,
+		Ext:        v.Ext,
+		Buff:       v.Buff,
+		TrainingID: t.ID,
 	})
 }
 
@@ -85,8 +93,10 @@ func (t *Training) UpdateVideo(
 }
 
 func (t *Training) DestroyVideo() {
-	t.Video = nil
-	t.AddEvent(events.TrainingVideoDeleted{ID: t.Video.ID})
+	if t.Video != nil {
+		t.AddEvent(events.TrainingVideoDeleted{ID: t.Video.ID})
+		t.Video = nil
+	}
 }
 
 func (t *Training) Update(
