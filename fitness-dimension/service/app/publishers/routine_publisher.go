@@ -74,6 +74,7 @@ func (p *RoutinePublisher) Publish(e interface{}) {
 		res, err := p.Client.AddTraining(context.Background(), &pb.TrainingAdded{
 			RoutineId:  event.ID.Value.String(),
 			TrainingId: event.TrainingID.Value.String(),
+			Order:      int32(event.Order.Value),
 		})
 
 		if err != nil {

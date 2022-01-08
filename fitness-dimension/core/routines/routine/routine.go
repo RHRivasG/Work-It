@@ -54,9 +54,11 @@ func CreateRoutine(
 
 func (r *Routine) AddTraining(trainingID valuesObjects.RoutineTrainingID) {
 	r.TrainingsID.Values = append(r.TrainingsID.Values, trainingID.Value)
+	lastTraining := len(r.TrainingsID.Values)
 	r.AddEvent(events.TrainingAdded{
 		ID:         r.ID,
 		TrainingID: trainingID,
+		Order:      valuesObjects.RoutineTrainingOrder{Value: lastTraining},
 	})
 }
 

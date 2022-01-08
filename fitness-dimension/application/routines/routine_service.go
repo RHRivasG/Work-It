@@ -76,6 +76,9 @@ func (s *RoutineService) Handle(c interface{}) {
 
 		r := s.Repository.Find(command.ID)
 		r.AddTraining(trainingID)
+		for _, i := range r.GetEvents() {
+			s.Publisher.Publish(i)
+		}
 
 	case commands.RemoveRoutineTraining:
 		command := c.(commands.RemoveRoutineTraining)
@@ -83,6 +86,9 @@ func (s *RoutineService) Handle(c interface{}) {
 
 		r := s.Repository.Find(command.ID)
 		r.RemoveTraining(trainingID)
+		for _, i := range r.GetEvents() {
+			s.Publisher.Publish(i)
+		}
 	}
 }
 

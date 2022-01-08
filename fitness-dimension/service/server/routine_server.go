@@ -23,8 +23,8 @@ func HttpRoutineServe(e *echo.Echo, r repositories.RoutineRepository, p routines
 	e.PUT("/routines/:id", controller.Update)
 	e.DELETE("/routines/:id", controller.Delete)
 
-	e.POST("/routines/{id}/training/{idt}", WrapControllerHandler(controller.AddTraining))
-	e.DELETE("/routines/{id}/training/{idt}", WrapControllerHandler(controller.RemoveTraining))
+	e.POST("/routines/:id/training/:idt", controller.AddTraining)
+	e.DELETE("/routines/:id/training/:idt", controller.RemoveTraining)
 }
 
 func GrpcRoutineServe(s *grpc.Server, db *pg.DB) {

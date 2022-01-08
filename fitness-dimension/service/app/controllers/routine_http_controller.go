@@ -1,14 +1,11 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fitness-dimension/application/routines"
 	"fitness-dimension/application/routines/commands"
 	"fitness-dimension/service/app/auth"
 	"fitness-dimension/service/app/helpers"
 	"fitness-dimension/service/app/models"
-	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/golang-jwt/jwt"
@@ -112,24 +109,44 @@ func (c *RoutineHttpController) Delete(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "Routine deleted")
 }
 
-func (c *RoutineHttpController) AddTraining(w http.ResponseWriter, r *http.Request) {
-	reqBody, err := ioutil.ReadAll(r.Body)
+func (c *RoutineHttpController) AddTraining(ctx echo.Context) error {
+	id := ctx.Param("id")
+	routineId, err := uuid.Parse(id)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	command := commands.AddRoutineTraining{}
-	json.Unmarshal(reqBody, &command)
+	idt := ctx.Param("idt")
+	trainingId, err := uuid.Parse(idt)
+	if err != nil {
+		return err
+	}
+
+	command := commands.AddRoutineTraining{
+		ID:         routineId,
+		TrainingID: trainingId,
+	}
 	c.Service.Handle(command)
+	return ctx.String(http.StatusOK, "Training added")
 }
 
-func (c *RoutineHttpController) RemoveTraining(w http.ResponseWriter, r *http.Request) {
-	reqBody, err := ioutil.ReadAll(r.Body)
+func (c *RoutineHttpController) RemoveTraining(ctx echo.Context) error {
+	id := ctx.Param("id")
+	routineId, err := uuid.Parse(id)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	command := commands.RemoveRoutineTraining{}
-	json.Unmarshal(reqBody, &command)
+	idt := ctx.Param("idt")
+	trainingId, err := uuid.Parse(idt)
+	if err != nil {
+		return err
+	}
+
+	command := commands.RemoveRoutineTraining{
+		ID:         routineId,
+		TrainingID: trainingId,
+	}
 	c.Service.Handle(command)
+	return ctx.String(http.StatusOK, "Training removed")
 }
