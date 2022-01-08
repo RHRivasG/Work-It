@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fitness-dimension/core/routines/routine"
 	"fitness-dimension/core/trainings/training"
 	"fitness-dimension/service/app/models"
 )
@@ -28,5 +29,21 @@ func TranformTrainingToDto(training training.Training) models.Training {
 		Categories:  training.Categories.Values,
 		TrainerID:   training.TrainerID.Value,
 		Video:       nil,
+	}
+}
+
+func TranformRoutineToDto(routine routine.Routine) models.Routine {
+
+	var trainingsId []string
+	for _, tId := range routine.TrainingsID.Values {
+		trainingsId = append(trainingsId, tId.String())
+	}
+
+	return models.Routine{
+		ID:          routine.ID.Value.String(),
+		Name:        routine.Name.Value,
+		UserID:      routine.UserID.Value,
+		Description: routine.Description.Value,
+		Trainings:   trainingsId,
 	}
 }

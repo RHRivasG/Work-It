@@ -90,6 +90,7 @@ func (r *Routine) Update(
 	r.Description = description
 
 	r.AddEvent(events.RoutineUpdated{
+		ID:          r.ID,
 		Name:        r.Name,
 		UserID:      r.UserID,
 		TrainingsID: r.TrainingsID,

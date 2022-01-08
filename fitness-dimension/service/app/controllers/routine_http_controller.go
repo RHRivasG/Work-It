@@ -4,66 +4,112 @@ import (
 	"encoding/json"
 	"fitness-dimension/application/routines"
 	"fitness-dimension/application/routines/commands"
+	"fitness-dimension/service/app/auth"
+	"fitness-dimension/service/app/helpers"
+	"fitness-dimension/service/app/models"
 	"io/ioutil"
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 )
 
 type RoutineHttpController struct {
 	Service routines.RoutineService
 }
 
-func (c *RoutineHttpController) Get(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
+func (c *RoutineHttpController) Get(ctx echo.Context) error {
+	id := ctx.Param("id")
 	routine := c.Service.Get(id)
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&routine)
+	routineDto := helpers.TranformRoutineToDto(routine)
+	return ctx.JSON(http.StatusOK, routineDto)
 }
 
-func (c *RoutineHttpController) GetAll(w http.ResponseWriter, r *http.Request) {
+func (c *RoutineHttpController) GetAll(ctx echo.Context) error {
 	routines := c.Service.GetAll()
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&routines)
+	var routinesDto []models.Routine
+	for _, r := range routines {
+		routinesDto = append(routinesDto, helpers.TranformRoutineToDto(r))
+	}
+	return ctx.JSON(http.StatusOK, routinesDto)
 }
 
-func (c *RoutineHttpController) Create(w http.ResponseWriter, r *http.Request) {
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Fatal(err)
+func (c *RoutineHttpController) Create(ctx echo.Context) error {
+
+	user := ctx.Get("participant").(*jwt.Token)
+	claims := user.Claims.(*auth.JwtWorkItClaims)
+	userId := claims.Subject
+	if !helpers.Contains(claims.Roles, "participant") {
+		return echo.ErrUnauthorized
 	}
 
-	command := commands.CreateRoutine{}
-	json.Unmarshal(reqBody, &command)
+	var partialCommand struct {
+		Name        string   `json:"name"`
+		Description string   `json:"description"`
+		Trainings   []string `json:"trainings"`
+	}
+	ctx.Bind(&partialCommand)
+
+	command := commands.CreateRoutine{
+		UserID:      userId,
+		Name:        partialCommand.Name,
+		Description: partialCommand.Description,
+		TrainingsID: partialCommand.Trainings,
+	}
 	c.Service.Handle(command)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	return ctx.String(http.StatusCreated, "Routine created")
 }
 
-func (c *RoutineHttpController) Update(w http.ResponseWriter, r *http.Request) {
-	reqBody, err := ioutil.ReadAll(r.Body)
+func (c *RoutineHttpController) Update(ctx echo.Context) error {
+
+	id := ctx.Param("id")
+	routineId, err := uuid.Parse(id)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	command := commands.UpdateRoutine{}
-	json.Unmarshal(reqBody, &command)
+	user := ctx.Get("user").(*jwt.Token)
+	claims := user.Claims.(*auth.JwtWorkItClaims)
+	userId := claims.Subject
+	if !helpers.Contains(claims.Roles, "participant") {
+		return echo.ErrUnauthorized
+	}
+
+	var partialCommand struct {
+		Name        string   `json:"name"`
+		Description string   `json:"description"`
+		Trainings   []string `json:"trainings"`
+	}
+	ctx.Bind(&partialCommand)
+
+	command := commands.UpdateRoutine{
+		ID:          routineId,
+		UserID:      userId,
+		Name:        partialCommand.Name,
+		Description: partialCommand.Description,
+		TrainingsID: partialCommand.Trainings,
+	}
 	c.Service.Handle(command)
+
+	return ctx.String(http.StatusOK, "Routine updated")
 }
 
-func (c *RoutineHttpController) Delete(w http.ResponseWriter, r *http.Request) {
-	reqBody, err := ioutil.ReadAll(r.Body)
+func (c *RoutineHttpController) Delete(ctx echo.Context) error {
+	id := ctx.Param("id")
+	routineId, err := uuid.Parse(id)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	command := commands.DeleteRoutine{}
-	json.Unmarshal(reqBody, &command)
+	command := commands.DeleteRoutine{
+		ID: routineId,
+	}
 	c.Service.Handle(command)
+
+	return ctx.String(http.StatusOK, "Routine deleted")
 }
 
 func (c *RoutineHttpController) AddTraining(w http.ResponseWriter, r *http.Request) {

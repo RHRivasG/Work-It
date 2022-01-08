@@ -2,10 +2,11 @@ package models
 
 type Routine struct {
 	tableName   struct{} `pg:"routines,alias:r"`
-	ID          string   `pg:"id,pk"`
-	Name        string   `pg:"name"`
-	UserID      string   `pg:"user_id"`
-	Description string   `pg:"description"`
+	ID          string   `json:"id" pg:"id,pk"`
+	Name        string   `json:"name" pg:"name"`
+	UserID      string   `json:"userId" pg:"user_id"`
+	Description string   `json:"description" pg:"description"`
+	Trainings   []string `json:"trainings" pg:"-"`
 }
 
 type RoutineTraining struct {

@@ -28,6 +28,18 @@ func (s *RoutineApiServer) Save(ctx context.Context, req *pb.RoutineCreated) (*p
 		return nil, err
 	}
 
+	for i, t := range req.TrainingsId {
+		rt := &models.RoutineTraining{
+			RoutineID:  routine.ID,
+			TrainingID: t,
+			Order:      i + 1,
+		}
+		_, err := s.DB.Model(rt).Insert()
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	msg := pb.Response{Msg: "Routine saved"}
 	return &msg, nil
 }
@@ -44,6 +56,18 @@ func (s *RoutineApiServer) Update(ctx context.Context, req *pb.RoutineUpdated) (
 	_, err := s.DB.Model(routine).WherePK().Update()
 	if err != nil {
 		return nil, err
+	}
+
+	for i, t := range req.TrainingsId {
+		rt := &models.RoutineTraining{
+			RoutineID:  routine.ID,
+			TrainingID: t,
+			Order:      i + 1,
+		}
+		_, err := s.DB.Model(rt).WherePK().Update()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	msg := pb.Response{Msg: "Routine updated"}

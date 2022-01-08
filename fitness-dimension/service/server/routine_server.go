@@ -17,11 +17,11 @@ func HttpRoutineServe(e *echo.Echo, r repositories.RoutineRepository, p routines
 	service := routines.RoutineService{Repository: r, Publisher: p}
 	controller := controllers.RoutineHttpController{Service: service}
 
-	e.POST("/routines", WrapControllerHandler(controller.Create))
-	e.GET("/routines", WrapControllerHandler(controller.GetAll))
-	e.GET("/routines/{id}", WrapControllerHandler(controller.Get))
-	e.PUT("/routines/{id}", WrapControllerHandler(controller.Update))
-	e.DELETE("/routines/{id}", WrapControllerHandler(controller.Delete))
+	e.POST("/routines", controller.Create)
+	e.GET("/routines", controller.GetAll)
+	e.GET("/routines/:id", controller.Get)
+	e.PUT("/routines/:id", controller.Update)
+	e.DELETE("/routines/:id", controller.Delete)
 
 	e.POST("/routines/{id}/training/{idt}", WrapControllerHandler(controller.AddTraining))
 	e.DELETE("/routines/{id}/training/{idt}", WrapControllerHandler(controller.RemoveTraining))
