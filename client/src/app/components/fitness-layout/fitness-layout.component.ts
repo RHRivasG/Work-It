@@ -1,7 +1,9 @@
 import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
-import { Component, Inject, InjectionToken, OnInit } from '@angular/core';
+import { Overlay, OverlayRef } from '@angular/cdk/overlay';
+import { TemplatePortal } from '@angular/cdk/portal';
+import { Component, Inject, InjectionToken, OnInit, TemplateRef, ViewContainerRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { faDumbbell, faHome, faSearch, faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faDumbbell, faHome, faSearch, faSignOutAlt, faTimes, faUser } from '@fortawesome/free-solid-svg-icons';
 import { GlobalSearch, WI_GLOBAL_SEARCH } from 'src/app/services/global-search';
 import { GlobalSearchService } from 'src/app/services/global-search.service';
 import { IdentityProvider, WI_IDENTITY_PROVIDER } from 'src/app/services/identity-provider';
@@ -62,19 +64,29 @@ export class LayoutComponent implements OnInit {
     trainings: false,
     layout: false
   }
+  closeIcon = faTimes
   searchIcon = faSearch
   homeIcon = faHome
   userIcon = faUser
   trainingsIcon = faDumbbell
   logoutIcon = faSignOutAlt
+  userChoice: OverlayRef
 
 
   constructor(
     router: Router,
+    overlay: Overlay,
+    private container: ViewContainerRef,
     @Inject(WI_IDENTITY_PROVIDER) identityProvider: IdentityProvider,
     @Inject(WI_GLOBAL_SEARCH) public searchService: GlobalSearch<unknown>
   ) {
     const url = router.url
+
+    this.userChoice = overlay.create({
+      positionStrategy: overlay.position().global().centerHorizontally().centerVertically(),
+      hasBackdrop: true,
+      width: '25%',
+    })
 
     identityProvider.identity.subscribe(id => {
       this.id = id
@@ -86,6 +98,14 @@ export class LayoutComponent implements OnInit {
         url.endsWith("trainings/") || url.endsWith("trainings") ||
         url.includes("dashboard")
     })
+  }
+
+  openUserChoice(choice: TemplateRef<unknown>) {
+    this.userChoice.attach(new TemplatePortal(choice, this.container))
+  }
+
+  closeChoice() {
+    this.userChoice.detach()
   }
 
   search(event: Event) {

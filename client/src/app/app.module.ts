@@ -7,6 +7,9 @@ import { FitnessModule } from './fitness/fitness.module';
 import { SocialModule } from './social/social.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { WI_IDENTITY_PROVIDER } from './services/identity-provider';
+import { environment } from 'src/environments/environment';
 
 @NgModule({
   declarations: [
@@ -21,7 +24,17 @@ import { BrowserModule } from '@angular/platform-browser';
     SocialModule,
     HttpClientModule
   ],
-  providers: [],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      multi: true,
+      useClass: environment.authInterceptor
+    },
+    {
+      provide: WI_IDENTITY_PROVIDER ,
+      useClass: environment.identityProviderService
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

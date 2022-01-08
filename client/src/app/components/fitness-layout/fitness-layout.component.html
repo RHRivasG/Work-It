@@ -1,3 +1,21 @@
+<ng-template #choice>
+  <div class="bg-white p-4 rounded-lg shadow-lg w-full">
+    <div class="flex flex-row">
+      <p class="flex-auto font-semibold">Redirect to...</p>
+      <button class="shrink-1 text-gray-400" (click)="closeChoice()">
+        <fa-icon [icon]="closeIcon"></fa-icon>
+      </button>
+    </div>
+    <div class="flex flex-col gap-2 pt-4 pb-2">
+      <a [routerLink]="['/social/profile', id]" (click)="closeChoice()" class="p-2 rounded-md hover:bg-gray-200">
+        My profile
+      </a>
+      <a [routerLink]="['/fitness', 'routines']" (click)="closeChoice()" class="p-2 rounded-md hover:bg-gray-200">
+        My routines
+      </a>
+    </div>
+  </div>
+</ng-template>
 <div class="flex flex-col h-screen relative">
   <header class="header z-40" id="header">
     <div class="logo">
@@ -16,9 +34,12 @@
       <a routerLink="/fitness/trainings" class="hidden lg:block">
         <fa-icon [ngClass]="activatedRoute.home ? 'active' : ''" [icon]="homeIcon" class="navigation-icon"></fa-icon>
       </a>
-      <a [routerLink]="['/social/profile', id]" class="hidden lg:block">
+      <button (click)="openUserChoice(choice)" class="hidden lg:block">
         <fa-icon [ngClass]="activatedRoute.profile ? 'active' : ''" [icon]="userIcon" class="navigation-icon"></fa-icon>
-      </a>
+      </button>
+      <!-- <a [routerLink]="['/social/profile', id]" class="hidden lg:block">
+        <fa-icon [ngClass]="activatedRoute.profile ? 'active' : ''" [icon]="userIcon" class="navigation-icon"></fa-icon>
+      </a>-->
       <a [routerLink]="['/fitness/trainings', id]" class="hidden lg:block">
         <fa-icon [ngClass]="activatedRoute.trainings ? 'active' : ''" [icon]="trainingsIcon" class="navigation-icon"></fa-icon>
       </a>

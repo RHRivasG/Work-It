@@ -27,6 +27,8 @@ export class ProfileResolver implements Resolve<Participant | Trainer> {
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Participant | Trainer> {
     return  this.provider.identity.pipe(
       switchMap(id => {
+        console.log(id)
+        console.log(route.params.id)
         if (id != "admin" || route.params.id) return of(id)
         else {
           this.router.navigate(['/social', 'dashboard'])

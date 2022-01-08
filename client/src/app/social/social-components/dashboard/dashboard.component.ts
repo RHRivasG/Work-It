@@ -89,7 +89,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.trainers = res as Trainer[]
       }
     })
-    this.participantsStreamSubscription = webSocket<Participant[]>("ws://localhost:5000/participants/stream")
+    this.participantsStreamSubscription = webSocket<Participant[]>(environment.socialStreamingApiUrl + "/participants/stream")
     .pipe(
       switchMap(list => forkJoin(
           list.map(p => this.http.get(environment.socialApiUrl + "/participants/" + p.id + "/request")
@@ -105,7 +105,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       if (this.tab != "trainers")
         this.searchService.dataSource = this.participantsDataSource
     })
-    this.trainersStreamSubscription = webSocket<Trainer[]>("ws://localhost:5000/trainers/stream").subscribe(list => {
+    this.trainersStreamSubscription = webSocket<Trainer[]>(environment.socialStreamingApiUrl + "/trainers/stream").subscribe(list => {
       this.trainersDataSource = list
       if (this.tab == "trainers")
         this.searchService.dataSource = this.trainersDataSource

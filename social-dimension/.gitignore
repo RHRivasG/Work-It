@@ -1,8 +1,0 @@
-*.class
-.idea
-target/
-.bloop/
-.metals/
-null/
-.vscode/
-.bsp/
