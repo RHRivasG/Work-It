@@ -3,6 +3,7 @@ package helpers
 import (
 	"fitness-dimension/core/routines/routine"
 	"fitness-dimension/core/trainings/training"
+	"fitness-dimension/core/trainings/training/entities"
 	"fitness-dimension/service/app/models"
 )
 
@@ -15,10 +16,10 @@ func TranformTrainingToDto(training training.Training) models.Training {
 			Categories:  training.Categories.Values,
 			TrainerID:   training.TrainerID.Value,
 			Video: &models.TrainingVideo{
-				ID:   training.Video.ID.Value.String(),
-				Name: training.Video.Name.Value,
-				Ext:  training.Video.Ext.Value,
-				Buff: training.Video.Buff.Value,
+				ID:     training.Video.ID.Value.String(),
+				Name:   training.Video.Name.Value,
+				Ext:    training.Video.Ext.Value,
+				Length: len(training.Video.Buff.Value),
 			},
 		}
 	}
@@ -29,6 +30,15 @@ func TranformTrainingToDto(training training.Training) models.Training {
 		Categories:  training.Categories.Values,
 		TrainerID:   training.TrainerID.Value,
 		Video:       nil,
+	}
+}
+
+func TransformVideoToDto(video entities.TrainingVideo) models.TrainingVideo {
+	return models.TrainingVideo{
+		ID:     video.ID.Value.String(),
+		Name:   video.Name.Value,
+		Ext:    video.Ext.Value,
+		Length: len(video.Buff.Value),
 	}
 }
 

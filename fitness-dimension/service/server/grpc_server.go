@@ -8,7 +8,12 @@ import (
 )
 
 func GrpcServe(l net.Listener, db *pg.DB) error {
-	s := grpc.NewServer()
+	maxMsgSize := 220 * 1024 * 1024
+	s := grpc.NewServer(
+		grpc.MaxMsgSize(maxMsgSize),
+		grpc.MaxRecvMsgSize(maxMsgSize),
+		grpc.MaxSendMsgSize(maxMsgSize),
+	)
 
 	GrpcRoutineServe(s, db)
 	GrpcTrainingServe(s, db)

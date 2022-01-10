@@ -113,7 +113,17 @@ func (s *RoutineApiServer) RemoveTraining(ctx context.Context, req *pb.TrainingR
 		RoutineID:  req.RoutineId,
 		TrainingID: req.TrainingId,
 	}
+
+	s.DB.Model(routineTraining).WherePK().Select(routineTraining)
 	_, err := s.DB.Model(routineTraining).WherePK().Delete()
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.DB.Model((*models.RoutineTraining)(nil)).Exec(fmt.Sprintf(`
+		UPDATE routine_training 
+		SET "order" = "order" - 1
+		WHERE "order" > %d AND id_routine = '%s'
+	`, routineTraining.Order, routineTraining.RoutineID))
 	if err != nil {
 		return nil, err
 	}

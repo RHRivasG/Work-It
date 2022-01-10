@@ -5,26 +5,34 @@
   </div>
   <form>
     <div class="w-full pt-6 text-2xl flex flex-col gap-4">
-      <label class="flex flex-row gap-4 items-center cursor-pointer">
-        <input class="flex-shrink w-6 h-6 cursor-pointer" type="checkbox" name="routine">
-        Monday Routine
+      <label class="flex flex-row gap-4 items-center cursor-pointer" *ngFor="let routine of availableRoutines">
+        <input [checked]="routine.trainings.includes(training.id)" (click)="interactWithRoutine(routine)" class="flex-shrink w-6 h-6 cursor-pointer" type="checkbox" name="routine">
+        {{ routine.name }}
       </label>
-      <label class="flex flex-row gap-4 items-center cursor-pointer">
-        <input class="flex-shrink w-6 h-6 cursor-pointer" type="checkbox" name="routine">
-        Weekend Routine
+      <label class="flex flex-row gap-4 items-center cursor-pointer" *ngFor="let routine of createdRoutines">
+        <input checked disabled class="flex-shrink w-6 h-6 cursor-pointer" type="checkbox" name="routine">
+        {{ routine }}
       </label>
     </div>
   </form>
-  <div [ngClass]="creatingRoutine ? 'hidden' : 'block'" class="pt-8 flex flex-row items-center justify-start">
-    <button class="bg-transparent hover:bg-gray-200 text-2xl rounded-lg py-2 px-3 w-max" (click)="showCreateRoutine()">
+  <div *ngIf="!creatingRoutine" class="pt-8 flex flex-row items-center justify-start">
+    <button type="button" class="bg-transparent hover:bg-gray-200 text-2xl flex-auto w-full rounded-lg py-2 px-3 w-max" (click)="showCreateRoutine()">
       <fa-icon class="text-xl mr-1" [icon]="addRoutineIcon"></fa-icon>
       Create new Routine
     </button>
   </div>
-  <form [formGroup]="routineGroup" [ngClass]="creatingRoutine ? 'block' : 'hidden'" (ngSubmit)="createRoutine()" class="flex flex-col items-center justify-center gap-4 pt-8">
-    <input formControlName="name" placeholder="Enter routine name..." class="border-2 border-gray-400 text-xl p-2 w-full rounded-lg focus:ring-4 focus:ring-primary focus:ring-opacity-50 focus:outline-none transition duration-400" name="name">
-    <button type="submit" class="shadow-lg rounded-md bg-blue-500 text-white w-full px-4 py-3 text-xl font-bold focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50">
+  <form [formGroup]="routineGroup" *ngIf="creatingRoutine" (ngSubmit)="createRoutine()" class="flex flex-col items-center justify-center gap-4 pt-8">
+    <div class="flex-auto w-full">
+      <wi-input formControlName="name" class="w-full" placeholder="Enter routine name..." name="name"></wi-input>
+      <small class="error" *ngIf="routineGroup.get('name')?.errors?.required">Routine name must not be empty</small>
+    </div>
+    <wi-submit-button
+      class="w-full"
+      [disabled]="routineGroup.status == 'INVALID' || loading"
+      [loading]="loading"
+      type="action"
+      submit>
       Create
-    </button>
+    </wi-submit-button>
   </form>
 </div>

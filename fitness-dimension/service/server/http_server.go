@@ -17,7 +17,8 @@ import (
 
 func HttpServe(l net.Listener, db *pg.DB) error {
 
-	conn, err := grpc.Dial("localhost:8080", grpc.WithInsecure())
+	maxMsgSize := 220 * 1024 * 1024
+	conn, err := grpc.Dial("localhost:8080", grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxMsgSize), grpc.MaxCallSendMsgSize(maxMsgSize)))
 	defer conn.Close()
 	if err != nil {
 		return err

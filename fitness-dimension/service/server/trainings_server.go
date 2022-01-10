@@ -22,9 +22,11 @@ func HttpTrainingServe(e *echo.Echo, r repositories.TrainingRepository, p traini
 	e.PUT("/trainings/:id", controller.Update)
 	e.DELETE("/trainings/:id", controller.Delete)
 
-	e.GET("/trainings/:id/video", WrapControllerHandler(controller.GetVideo))
+	e.GET("/trainings/:id/video", controller.GetVideo)
 	e.POST("/trainings/:id/video", controller.CreateVideo)
 	e.DELETE("/trainings/:id/video", controller.DeleteVideo)
+
+	e.GET("/trainings/trainer", controller.GetByTrainer)
 
 }
 

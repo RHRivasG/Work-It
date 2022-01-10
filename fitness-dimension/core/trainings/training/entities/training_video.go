@@ -23,10 +23,11 @@ func CreateVideo(
 	id := valuesObjects.TrainingVideoID{Value: uuid.New()}
 
 	v := TrainingVideo{
-		ID:   id,
-		Name: name,
-		Ext:  ext,
-		Buff: buff,
+		ID:     id,
+		Name:   name,
+		Ext:    ext,
+		Buff:   buff,
+		Length: valuesObjects.TrainingVideoLength{Value: len(buff.Value)},
 	}
 
 	return v

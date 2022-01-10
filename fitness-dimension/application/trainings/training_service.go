@@ -3,10 +3,10 @@ package trainings
 import (
 	"fitness-dimension/application/trainings/commands"
 	"fitness-dimension/application/trainings/repositories"
-	"fmt"
 	"log"
 
 	"fitness-dimension/core/trainings/training"
+	"fitness-dimension/core/trainings/training/entities"
 	valuesObjects "fitness-dimension/core/trainings/training/values-objects"
 
 	"github.com/google/uuid"
@@ -32,6 +32,8 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		for _, i := range t.GetEvents() {
 			s.Publisher.Publish(i)
 		}
+
+		return t.ID.Value.String(), nil
 
 	case commands.UpdateTraining:
 		command := c.(commands.UpdateTraining)
@@ -67,7 +69,6 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 
 		t.SetVideo(filename, video, ext)
 
-		fmt.Println(t)
 		for _, i := range t.GetEvents() {
 			s.Publisher.Publish(i)
 		}
@@ -110,4 +111,12 @@ func (s *TrainingService) Get(id string) training.Training {
 
 func (s *TrainingService) GetAll() []training.Training {
 	return s.Repository.GetAll()
+}
+
+func (s *TrainingService) GetByTrainer(id string) []training.Training {
+	return s.Repository.GetByTrainer(id)
+}
+
+func (s *TrainingService) GetVideo(id string) *entities.TrainingVideo {
+	return s.Repository.GetVideo(id)
 }

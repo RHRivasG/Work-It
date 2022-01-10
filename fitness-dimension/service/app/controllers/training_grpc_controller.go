@@ -72,7 +72,6 @@ func (s *TrainingApiServer) Delete(ctx context.Context, req *pb.TrainingDeleted)
 
 func (s *TrainingApiServer) SaveVideo(ctx context.Context, req *pb.TrainingVideoCreated) (*pb.Response, error) {
 	fmt.Println("Saving video")
-	fmt.Println(req)
 
 	video := &models.TrainingVideo{
 		ID:         req.Id,
@@ -81,7 +80,20 @@ func (s *TrainingApiServer) SaveVideo(ctx context.Context, req *pb.TrainingVideo
 		Buff:       []byte(req.Video),
 		TrainingID: req.TrainingId,
 	}
-	_, err := s.DB.Model(video).Insert()
+
+	var existsVideo models.TrainingVideo
+	err := s.DB.Model().Table("videos").Where("training_id = ?", video.TrainingID).Select(&existsVideo)
+	if err != nil && err != pg.ErrNoRows {
+		return nil, err
+	}
+	if &existsVideo.ID != nil {
+		_, err := s.DB.Model(&existsVideo).WherePK().Delete()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = s.DB.Model(video).Insert()
 	if err != nil {
 		return nil, err
 	}

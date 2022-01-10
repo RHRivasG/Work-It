@@ -25,7 +25,14 @@ func (c *RoutineHttpController) Get(ctx echo.Context) error {
 }
 
 func (c *RoutineHttpController) GetAll(ctx echo.Context) error {
-	routines := c.Service.GetAll()
+	user := ctx.Get("user").(*jwt.Token)
+	claims := user.Claims.(*auth.JwtWorkItClaims)
+	userId := claims.Subject
+
+	if !helpers.Contains(claims.Roles, "participant") {
+		return echo.ErrUnauthorized
+	}
+	routines := c.Service.GetAll(userId)
 	var routinesDto []models.Routine
 	for _, r := range routines {
 		routinesDto = append(routinesDto, helpers.TranformRoutineToDto(r))
@@ -35,7 +42,7 @@ func (c *RoutineHttpController) GetAll(ctx echo.Context) error {
 
 func (c *RoutineHttpController) Create(ctx echo.Context) error {
 
-	user := ctx.Get("participant").(*jwt.Token)
+	user := ctx.Get("user").(*jwt.Token)
 	claims := user.Claims.(*auth.JwtWorkItClaims)
 	userId := claims.Subject
 	if !helpers.Contains(claims.Roles, "participant") {

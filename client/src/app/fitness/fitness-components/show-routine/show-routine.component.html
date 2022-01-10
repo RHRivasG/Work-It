@@ -1,10 +1,10 @@
-<wi-routine-update-modal *cdkPortal (close)="updateRef.detach()" class="w-full"></wi-routine-update-modal>
+<wi-routine-update-modal *cdkPortal (close)="updateRef.detach()" [routine]="routine" class="w-full"></wi-routine-update-modal>
 <div class="h-full w-full overflow-auto">
   <div class="container mx-auto px-8 md:px-44 py-14">
     <div class="grid auto-rows-auto auto-cols-auto gap-2 w-full">
-      <h1 class="text-3xl font-bold">Routine Name</h1>
+      <h1 class="text-3xl font-bold">{{ routine.name }}</h1>
       <p class="row-start-2 text-xl w-3/4">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce pulvinar neque et lacus aliquam, at eleifend orci ultrices.
+        {{ routine.description }}
       </p>
       <div class="col-start-2 row-span-full ml-auto py-4">
         <fa-icon (click)="showUpdateModal()" class="text-lg cursor-pointer" [icon]="moreIcon"></fa-icon>
@@ -23,11 +23,11 @@
           <p class="text-lg row-start-2 col-start-2 overflow-hidden w-full">Made by {{ training.trainerId }}</p>
           <div class="flex flex-row flex-wrap gap-4 pt-3 row-start-3 col-start-2">
             <div *ngFor="let category of training.categories" class="cursor-pointer rounded-3xl bg-gray-400 w-min whitespace-nowrap px-4 py-2 text-base items-center">
-              {{ category.value }}
+              {{ category }}
             </div>
           </div>
         </div>
-        <fa-icon class="absolute text-gray-500 cursor-pointer top-6 right-6" [icon]="closeIcon"></fa-icon>
+        <fa-icon (click)="removeTraining(training)" class="absolute text-gray-500 cursor-pointer top-6 right-6" [icon]="closeIcon"></fa-icon>
       </div>
     </div>
   </div>

@@ -59,27 +59,12 @@ func (p *TrainingPublisher) Publish(e interface{}) {
 		fmt.Println(res)
 	case events.TrainingVideoCreated:
 		event := e.(events.TrainingVideoCreated)
-		fmt.Println(event)
 		res, err := p.Client.SaveVideo(context.Background(), &pb.TrainingVideoCreated{
 			Id:         event.ID.Value.String(),
 			TrainingId: event.TrainingID.Value.String(),
 			Name:       event.Name.Value,
 			Ext:        event.Ext.Value,
-			Video:      string(event.Buff.Value),
-		})
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Println(res)
-	case events.TrainingVideoUpdated:
-		event := e.(events.TrainingVideoUpdated)
-		res, err := p.Client.UpdateVideo(context.Background(), &pb.TrainingVideoUpdated{
-			Id:         event.ID.Value.String(),
-			TrainingId: event.TrainingID.Value.String(),
-			Name:       event.Name.Value,
-			Ext:        event.Ext.Value,
+			Video:      event.Buff.Value,
 		})
 
 		if err != nil {

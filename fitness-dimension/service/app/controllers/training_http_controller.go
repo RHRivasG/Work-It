@@ -1,18 +1,14 @@
 package controllers
 
 import (
-	"bytes"
 	"encoding/base64"
-	"encoding/json"
 	"fitness-dimension/application/trainings"
 	"fitness-dimension/application/trainings/commands"
 	"fitness-dimension/service/app/auth"
 	"fitness-dimension/service/app/helpers"
 	"fitness-dimension/service/app/models"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
@@ -28,6 +24,19 @@ func (c *TrainingHttpController) Get(ctx echo.Context) error {
 	training := c.Service.Get(id)
 	trainingDto := helpers.TranformTrainingToDto(training)
 	return ctx.JSON(http.StatusOK, trainingDto)
+}
+
+func (c *TrainingHttpController) GetByTrainer(ctx echo.Context) error {
+	trainer := ctx.Get("user").(*jwt.Token)
+	claims := trainer.Claims.(*auth.JwtWorkItClaims)
+	trainerId := claims.Subject
+
+	trainings := c.Service.GetByTrainer(trainerId)
+	var trainingsDto []models.Training
+	for _, t := range trainings {
+		trainingsDto = append(trainingsDto, helpers.TranformTrainingToDto(t))
+	}
+	return ctx.JSON(http.StatusOK, trainingsDto)
 }
 
 func (c *TrainingHttpController) GetAll(ctx echo.Context) error {
@@ -65,12 +74,12 @@ func (c *TrainingHttpController) Create(ctx echo.Context) error {
 		TrainerID:   trainerId,
 	}
 
-	_, err := c.Service.Handle(command)
+	trainingId, err := c.Service.Handle(command)
 	if err != nil {
 		return err
 	}
 
-	return ctx.String(http.StatusCreated, "Training created")
+	return ctx.String(http.StatusCreated, trainingId.(string))
 }
 
 func (c *TrainingHttpController) Update(ctx echo.Context) error {
@@ -127,31 +136,30 @@ func (c *TrainingHttpController) Delete(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "Training deleted")
 }
 
-func (c *TrainingHttpController) GetVideo(w http.ResponseWriter, r *http.Request) {
+func (c *TrainingHttpController) GetVideo(ctx echo.Context) error {
 
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Fatal(err)
+	id := ctx.Param("id")
+
+	video := c.Service.GetVideo(id)
+
+	if video == nil {
+		return ctx.NoContent(http.StatusNotFound)
 	}
 
-	command := commands.UpdateTrainingVideo{}
-	json.Unmarshal(reqBody, &command)
-	c.Service.Handle(command)
+	return ctx.String(200, base64.StdEncoding.EncodeToString(video.Buff.Value))
 }
 
 func (c *TrainingHttpController) CreateVideo(ctx echo.Context) error {
 	var body struct {
 		Name  string `json:"name"`
 		Ext   string `json:"ext"`
-		Video string `json:"buff"`
+		Video string `json:"video"`
 	}
 	if err := ctx.Bind(&body); err != nil {
 		return err
 	}
 
-	reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(body.Video))
-	buff := bytes.Buffer{}
-	_, err := buff.ReadFrom(reader)
+	buff, err := base64.StdEncoding.DecodeString(body.Video)
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -168,7 +176,7 @@ func (c *TrainingHttpController) CreateVideo(ctx echo.Context) error {
 		TrainingID: trainingId,
 		Name:       body.Name,
 		Ext:        body.Ext,
-		Video:      buff.Bytes(),
+		Video:      buff,
 	}
 	_, err = c.Service.Handle(command)
 	if err != nil {

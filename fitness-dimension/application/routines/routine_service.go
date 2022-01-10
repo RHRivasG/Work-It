@@ -101,6 +101,6 @@ func (s *RoutineService) Get(id string) routine.Routine {
 	return s.Repository.Find(routineId)
 }
 
-func (s *RoutineService) GetAll() []routine.Routine {
-	return s.Repository.GetAll()
+func (s *RoutineService) GetAll(userId string) []routine.Routine {
+	return s.Repository.GetAll(userId)
 }

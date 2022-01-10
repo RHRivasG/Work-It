@@ -42,10 +42,10 @@ func (r PgRoutineRepository) Find(id uuid.UUID) routine.Routine {
 
 }
 
-func (r PgRoutineRepository) GetAll() []routine.Routine {
+func (r PgRoutineRepository) GetAll(userId string) []routine.Routine {
 
 	var routineList []models.Routine
-	err := r.DB.Model().Table("routines").Select(&routineList)
+	err := r.DB.Model().Table("routines").Where("user_id = ?", userId).Select(&routineList)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,7 +74,10 @@ func (r PgRoutineRepository) GetAll() []routine.Routine {
 
 func (r PgRoutineRepository) getTrainings(routineItem models.Routine) []uuid.UUID {
 	var trainings []models.RoutineTraining
-	err := r.DB.Model().Table("routine_training").Where("id_routine = ?", routineItem.ID).Select(&trainings)
+	err := r.DB.Model().Table("routine_training").
+		Where("id_routine = ?", routineItem.ID).
+		Order("order ASC").
+		Select(&trainings)
 
 	if err != nil {
 		if err == pg.ErrNoRows {

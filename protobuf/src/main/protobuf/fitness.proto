@@ -8,7 +8,6 @@ service trainingAPI{
     rpc Update(TrainingUpdated) returns(Response){}
     rpc Delete(TrainingDeleted) returns (Response){}
     rpc SaveVideo(TrainingVideoCreated) returns (Response){}
-    rpc UpdateVideo(TrainingVideoUpdated) returns (Response){}
     rpc DeleteVideo(TrainingVideoDeleted) returns (Response){}
 }
 
@@ -50,15 +49,7 @@ message TrainingVideoCreated{
     string trainingId = 2;
     string name = 3;
     string ext = 4;
-    string video = 5;
-}
-
-message TrainingVideoUpdated{
-    string id = 1;
-    string trainingId = 2;
-    string name = 3;
-    string ext = 4;
-    string video = 5;
+    bytes video = 5;
 }
 
 message TrainingVideoDeleted{
