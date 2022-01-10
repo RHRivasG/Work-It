@@ -6,7 +6,7 @@ import (
 	"fitness-dimension/application/trainings/commands"
 	"fitness-dimension/service/app/auth"
 	"fitness-dimension/service/app/helpers"
-	"fitness-dimension/service/app/models"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -21,28 +21,44 @@ type TrainingHttpController struct {
 
 func (c *TrainingHttpController) Get(ctx echo.Context) error {
 	id := ctx.Param("id")
-	training := c.Service.Get(id)
-	trainingDto := helpers.TranformTrainingToDto(training)
-	return ctx.JSON(http.StatusOK, trainingDto)
+	training, err := c.Service.Get(id)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return ctx.JSON(http.StatusOK, training)
 }
 
 func (c *TrainingHttpController) GetByTrainer(ctx echo.Context) error {
 	trainer := ctx.Get("user").(*jwt.Token)
 	claims := trainer.Claims.(*auth.JwtWorkItClaims)
 	trainerId := claims.Subject
+	if !helpers.Contains(claims.Roles, "trainer") {
+		return echo.ErrUnauthorized
+	}
 
-	trainings := c.Service.GetByTrainer(trainerId)
-	var trainingsDto []models.Training
-	for _, t := range trainings {
+	trainingsList, err := c.Service.GetByTrainer(trainerId)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	var trainingsDto []trainings.TrainingDto
+	for _, t := range trainingsList {
 		trainingsDto = append(trainingsDto, helpers.TranformTrainingToDto(t))
 	}
 	return ctx.JSON(http.StatusOK, trainingsDto)
 }
 
 func (c *TrainingHttpController) GetAll(ctx echo.Context) error {
-	trainings := c.Service.GetAll()
-	var trainingsDto []models.Training
-	for _, t := range trainings {
+	trainingsList, err := c.Service.GetAll()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	var trainingsDto []trainings.TrainingDto
+	for _, t := range trainingsList {
 		trainingsDto = append(trainingsDto, helpers.TranformTrainingToDto(t))
 	}
 	return ctx.JSON(http.StatusOK, trainingsDto)

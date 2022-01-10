@@ -27,7 +27,7 @@ func serve(db *pg.DB) error {
 	g.Go(func() error { return server.HttpServe(httpListener, db) })
 
 	g.Go(func() error { return m.Serve() })
-	log.Println("run server:")
+	log.Println("run server on port 8080:")
 	g.Wait()
 
 	return nil
@@ -41,7 +41,7 @@ func Main() {
 
 	defer db.Close()
 	if err := serve(db); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 }

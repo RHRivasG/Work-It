@@ -2,7 +2,6 @@ package server
 
 import (
 	"fitness-dimension/application/trainings"
-	"fitness-dimension/application/trainings/repositories"
 	pb "fitness-dimension/gen/proto"
 	"fitness-dimension/service/app/controllers"
 
@@ -11,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func HttpTrainingServe(e *echo.Echo, r repositories.TrainingRepository, p trainings.TrainingPublisher) {
+func HttpTrainingServe(e *echo.Echo, r trainings.TrainingRepository, p trainings.TrainingPublisher) {
 
 	service := trainings.TrainingService{Repository: r, Publisher: p}
 	controller := controllers.TrainingHttpController{Service: service}
@@ -27,7 +26,6 @@ func HttpTrainingServe(e *echo.Echo, r repositories.TrainingRepository, p traini
 	e.DELETE("/trainings/:id/video", controller.DeleteVideo)
 
 	e.GET("/trainings/trainer", controller.GetByTrainer)
-
 }
 
 func GrpcTrainingServe(s *grpc.Server, db *pg.DB) {

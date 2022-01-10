@@ -13,7 +13,7 @@ export class TrainingIndexComponent implements OnInit {
 
   constructor(private route: ActivatedRoute, @Inject(WI_GLOBAL_SEARCH) private search: GlobalSearch<Training>) {
     route.data.subscribe(data => {
-      this.search.dataSource = data.trainings
+      this.search.dataSource = data.trainings || []
       this.search.extractor = JSON.stringify
       this.search.result.subscribe(trainings => {
         this.trainings = trainings

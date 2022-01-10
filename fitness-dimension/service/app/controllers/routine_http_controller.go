@@ -19,8 +19,19 @@ type RoutineHttpController struct {
 
 func (c *RoutineHttpController) Get(ctx echo.Context) error {
 	id := ctx.Param("id")
+	user := ctx.Get("user").(*jwt.Token)
+	claims := user.Claims.(*auth.JwtWorkItClaims)
+	userId := claims.Subject
+	if !helpers.Contains(claims.Roles, "participant") {
+		return echo.ErrUnauthorized
+	}
+
 	routine := c.Service.Get(id)
 	routineDto := helpers.TranformRoutineToDto(routine)
+	if routineDto.UserID != userId {
+		return echo.ErrUnauthorized
+	}
+
 	return ctx.JSON(http.StatusOK, routineDto)
 }
 
@@ -28,10 +39,10 @@ func (c *RoutineHttpController) GetAll(ctx echo.Context) error {
 	user := ctx.Get("user").(*jwt.Token)
 	claims := user.Claims.(*auth.JwtWorkItClaims)
 	userId := claims.Subject
-
 	if !helpers.Contains(claims.Roles, "participant") {
 		return echo.ErrUnauthorized
 	}
+
 	routines := c.Service.GetAll(userId)
 	var routinesDto []models.Routine
 	for _, r := range routines {

@@ -24,6 +24,7 @@ func HttpServe(l net.Listener, db *pg.DB) error {
 		return err
 	}
 
+	//Http Server
 	e := echo.New()
 
 	//CORS

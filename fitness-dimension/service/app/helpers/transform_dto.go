@@ -1,21 +1,22 @@
 package helpers
 
 import (
+	"fitness-dimension/application/trainings"
 	"fitness-dimension/core/routines/routine"
 	"fitness-dimension/core/trainings/training"
 	"fitness-dimension/core/trainings/training/entities"
 	"fitness-dimension/service/app/models"
 )
 
-func TranformTrainingToDto(training training.Training) models.Training {
+func TranformTrainingToDto(training training.Training) trainings.TrainingDto {
 	if training.Video != nil {
-		return models.Training{
+		return trainings.TrainingDto{
 			ID:          training.ID.Value.String(),
 			Name:        training.Name.Value,
 			Description: training.Description.Value,
 			Categories:  training.Categories.Values,
 			TrainerID:   training.TrainerID.Value,
-			Video: &models.TrainingVideo{
+			Video: &trainings.TrainingVideoDto{
 				ID:     training.Video.ID.Value.String(),
 				Name:   training.Video.Name.Value,
 				Ext:    training.Video.Ext.Value,
@@ -23,7 +24,7 @@ func TranformTrainingToDto(training training.Training) models.Training {
 			},
 		}
 	}
-	return models.Training{
+	return trainings.TrainingDto{
 		ID:          training.ID.Value.String(),
 		Name:        training.Name.Value,
 		Description: training.Description.Value,
