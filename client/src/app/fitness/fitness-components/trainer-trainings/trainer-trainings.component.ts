@@ -28,7 +28,7 @@ export class TrainerTrainingsComponent implements OnInit {
     @Inject(WI_GLOBAL_SEARCH) private search: GlobalSearch<Training>
   ) {
     const data = route.snapshot.data
-    this.search.dataSource = data.trainings
+    this.search.dataSource = data.trainings || []
     this.search.extractor = JSON.stringify
     this.search.result.subscribe(trainings => {
       this.trainings = trainings

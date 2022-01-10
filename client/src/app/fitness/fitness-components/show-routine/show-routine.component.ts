@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { faEllipsisV, faGripLines, faPlayCircle, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { moveItemInArray } from "@angular/cdk/drag-drop"
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
@@ -7,6 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FullRoutine } from '../../models/routine';
 import { Training } from '../../models/training';
 import { RoutineService } from '../../services/routine.service';
+import { GlobalSearch, WI_GLOBAL_SEARCH } from 'src/app/services/global-search';
 
 @Component({
   selector: 'wi-show-routine',
@@ -24,10 +25,14 @@ export class ShowRoutineComponent implements OnInit {
   trainings: Training[] = []
   routine!: FullRoutine
 
-  constructor(private route: ActivatedRoute, private service: RoutineService, overlay: Overlay) {
+  constructor(private route: ActivatedRoute, private service: RoutineService, overlay: Overlay, @Inject(WI_GLOBAL_SEARCH) private search: GlobalSearch<Training>) {
     route.data.subscribe(data => {
       this.routine = data.routine
-      this.trainings = this.routine.trainings
+      this.search.dataSource = this.routine.trainings || []
+      this.search.extractor = JSON.stringify
+      this.search.result.subscribe(trainings => {
+        this.trainings = trainings
+      })
     })
     this.updateRef = overlay.create({
       positionStrategy: overlay.position().global().centerHorizontally().centerVertically(),

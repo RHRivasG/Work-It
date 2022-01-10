@@ -34,7 +34,7 @@ const routes: Routes = [
         },
         resolve: {
           trainings: TrainingsResolver,
-          routines: RoutinesResolver
+          // routines: RoutinesResolver
         }
       },
       {

@@ -23,7 +23,7 @@ export class TrainingService {
       ...trainingDto
     }
     return this.client.post(
-      environment.fitnessApiUrl + "/trainings/",
+      environment.fitnessApiUrl + "/trainings",
       trainingDto,
       { responseType: "text" }
     ).pipe(

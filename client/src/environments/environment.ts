@@ -4,7 +4,7 @@
 import { FixedIdentityProviderBuilder } from "src/app/services/fixed-identity-provider.builder";
 
 // The list of file replacements can be found in `angular.json`.
-const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIzIiwicm9sZXMiOlsidHJhaW5lciIsInBhcnRpY2lwYW50Il19.U28W1sd4_QqP6DrVFNR4Yz_HwRK7nSgBVhvmhJkm0TbqXYmzb4k0Egrzmsr7lLqd0srqreQ5QzOIFYi9HKcwKg",
+const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwicm9sZXMiOlsidHJhaW5lciIsInBhcnRpY2lwYW50Il19.7sFNLPOsiMEVaQc456QocJjhMu_fC5jl_R2Gb1b2uFm5-yS8D7dW4DeLgiDVcB4-WPtSHXHEJ96zo2400DaOIQ",
   fixedAuthBuilder = new FixedIdentityProviderBuilder(token)
 
 export const environment = {
