@@ -45,7 +45,10 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 
 		t.Update(categories, trainerID, name, description)
 		for _, i := range t.GetEvents() {
-			s.Publisher.Publish(i)
+			err := s.Publisher.Publish(i)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 	case commands.DeleteTraining:
@@ -58,7 +61,10 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 
 		t.Destroy()
 		for _, i := range t.GetEvents() {
-			s.Publisher.Publish(i)
+			err := s.Publisher.Publish(i)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 	case commands.CreateTrainingVideo:
@@ -76,7 +82,10 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		t.SetVideo(filename, video, ext)
 
 		for _, i := range t.GetEvents() {
-			s.Publisher.Publish(i)
+			err := s.Publisher.Publish(i)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 	case commands.UpdateTrainingVideo:
@@ -94,7 +103,10 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		t.UpdateVideo(filename, video, ext)
 
 		for _, i := range t.GetEvents() {
-			s.Publisher.Publish(i)
+			err := s.Publisher.Publish(i)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 	case commands.DeleteTrainingVideo:
@@ -107,7 +119,10 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 
 		t.DestroyVideo()
 		for _, i := range t.GetEvents() {
-			s.Publisher.Publish(i)
+			err := s.Publisher.Publish(i)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	return nil, nil

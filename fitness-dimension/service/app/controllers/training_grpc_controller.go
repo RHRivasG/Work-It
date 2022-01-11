@@ -52,23 +52,23 @@ func (s *TrainingApiServer) Update(ctx context.Context, req *pb.TrainingUpdated)
 	return &msg, nil
 }
 
-//func (s *TrainingApiServer) Delete(ctx context.Context, req *pb.TrainingDeleted) (*pb.Response, error) {
-//	fmt.Println("Deleting training")
-//
-//	//TODO destroy video
-//
-//	training := &models.Training{
-//		ID: req.Id,
-//	}
-//	fmt.Println(training)
-//	_, err := s.DB.Model(training).WherePK().Delete()
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	msg := pb.Response{Msg: "Training deleted"}
-//	return &msg, nil
-//}
+func (s *TrainingApiServer) Delete(ctx context.Context, req *pb.TrainingDeleted) (*pb.Response, error) {
+	fmt.Println("Deleting training")
+
+	//TODO destroy video
+
+	training := &models.Training{
+		ID: req.Id,
+	}
+	fmt.Println(training)
+	_, err := s.DB.Model(training).WherePK().Delete()
+	if err != nil {
+		return nil, err
+	}
+
+	msg := pb.Response{Msg: "Training deleted"}
+	return &msg, nil
+}
 
 func (s *TrainingApiServer) SaveVideo(ctx context.Context, req *pb.TrainingVideoCreated) (*pb.Response, error) {
 	fmt.Println("Saving video")

@@ -1,5 +1,5 @@
 package trainings
 
 type TrainingPublisher interface {
-	Publish(interface{})
+	Publish(interface{}) error
 }

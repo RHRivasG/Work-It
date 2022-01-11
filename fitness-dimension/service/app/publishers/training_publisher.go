@@ -6,7 +6,6 @@ import (
 	"fitness-dimension/core/trainings/events"
 	pb "fitness-dimension/gen/proto"
 	"fmt"
-	"log"
 )
 
 type TrainingPublisher struct {
@@ -14,7 +13,7 @@ type TrainingPublisher struct {
 	Client pb.TrainingAPIClient
 }
 
-func (p *TrainingPublisher) Publish(e interface{}) {
+func (p *TrainingPublisher) Publish(e interface{}) error {
 	switch e.(type) {
 	case events.TrainingCreated:
 		event := e.(events.TrainingCreated)
@@ -27,7 +26,7 @@ func (p *TrainingPublisher) Publish(e interface{}) {
 		})
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		fmt.Println(res)
@@ -42,7 +41,7 @@ func (p *TrainingPublisher) Publish(e interface{}) {
 		})
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		fmt.Println(res)
@@ -53,7 +52,7 @@ func (p *TrainingPublisher) Publish(e interface{}) {
 		})
 
 		if err != nil {
-			log.Fatal(err)
+			return nil
 		}
 
 		fmt.Println(res)
@@ -68,7 +67,7 @@ func (p *TrainingPublisher) Publish(e interface{}) {
 		})
 
 		if err != nil {
-			log.Fatal(err)
+			return nil
 		}
 
 		fmt.Println(res)
@@ -79,10 +78,11 @@ func (p *TrainingPublisher) Publish(e interface{}) {
 		})
 
 		if err != nil {
-			log.Fatal(err)
+			return nil
 		}
 
 		fmt.Println(res)
 
 	}
+	return nil
 }

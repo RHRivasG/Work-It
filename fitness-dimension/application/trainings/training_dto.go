@@ -3,7 +3,7 @@ package trainings
 type TrainingDto struct {
 	ID          string            `json:"id"`
 	Name        string            `json:"name"`
-	TrainerID   string            `json:"trainer_id"`
+	TrainerID   string            `json:"trainerId"`
 	Description string            `json:"description"`
 	Categories  []string          `json:"categories"`
 	Video       *TrainingVideoDto `json:"video"`
