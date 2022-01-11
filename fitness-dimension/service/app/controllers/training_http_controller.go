@@ -26,7 +26,8 @@ func (c *TrainingHttpController) Get(ctx echo.Context) error {
 		fmt.Println(err)
 		return err
 	}
-	return ctx.JSON(http.StatusOK, training)
+	trainingsDto := helpers.TranformTrainingToDto(training)
+	return ctx.JSON(http.StatusOK, trainingsDto)
 }
 
 func (c *TrainingHttpController) GetByTrainer(ctx echo.Context) error {
@@ -45,7 +46,7 @@ func (c *TrainingHttpController) GetByTrainer(ctx echo.Context) error {
 
 	var trainingsDto []trainings.TrainingDto
 	for _, t := range trainingsList {
-		trainingsDto = append(trainingsDto, helpers.TranformTrainingToDto(t))
+		trainingsDto = append(trainingsDto, helpers.TranformTrainingToDto(&t))
 	}
 	return ctx.JSON(http.StatusOK, trainingsDto)
 }
@@ -59,7 +60,7 @@ func (c *TrainingHttpController) GetAll(ctx echo.Context) error {
 
 	var trainingsDto []trainings.TrainingDto
 	for _, t := range trainingsList {
-		trainingsDto = append(trainingsDto, helpers.TranformTrainingToDto(t))
+		trainingsDto = append(trainingsDto, helpers.TranformTrainingToDto(&t))
 	}
 	return ctx.JSON(http.StatusOK, trainingsDto)
 }

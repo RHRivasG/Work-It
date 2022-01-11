@@ -1,14 +1,14 @@
 package helpers
 
 import (
+	"fitness-dimension/application/routines"
 	"fitness-dimension/application/trainings"
 	"fitness-dimension/core/routines/routine"
 	"fitness-dimension/core/trainings/training"
 	"fitness-dimension/core/trainings/training/entities"
-	"fitness-dimension/service/app/models"
 )
 
-func TranformTrainingToDto(training training.Training) trainings.TrainingDto {
+func TranformTrainingToDto(training *training.Training) trainings.TrainingDto {
 	if training.Video != nil {
 		return trainings.TrainingDto{
 			ID:          training.ID.Value.String(),
@@ -34,8 +34,8 @@ func TranformTrainingToDto(training training.Training) trainings.TrainingDto {
 	}
 }
 
-func TransformVideoToDto(video entities.TrainingVideo) models.TrainingVideo {
-	return models.TrainingVideo{
+func TransformVideoToDto(video *entities.TrainingVideo) trainings.TrainingVideoDto {
+	return trainings.TrainingVideoDto{
 		ID:     video.ID.Value.String(),
 		Name:   video.Name.Value,
 		Ext:    video.Ext.Value,
@@ -43,18 +43,18 @@ func TransformVideoToDto(video entities.TrainingVideo) models.TrainingVideo {
 	}
 }
 
-func TranformRoutineToDto(routine routine.Routine) models.Routine {
+func TranformRoutineToDto(routine *routine.Routine) routines.RoutineDto {
 
 	var trainingsId []string
 	for _, tId := range routine.TrainingsID.Values {
 		trainingsId = append(trainingsId, tId.String())
 	}
 
-	return models.Routine{
+	return routines.RoutineDto{
 		ID:          routine.ID.Value.String(),
 		Name:        routine.Name.Value,
 		UserID:      routine.UserID.Value,
 		Description: routine.Description.Value,
-		Trainings:   trainingsId,
+		TrainingsID: trainingsId,
 	}
 }

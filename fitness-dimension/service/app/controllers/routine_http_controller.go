@@ -5,7 +5,6 @@ import (
 	"fitness-dimension/application/routines/commands"
 	"fitness-dimension/service/app/auth"
 	"fitness-dimension/service/app/helpers"
-	"fitness-dimension/service/app/models"
 	"net/http"
 
 	"github.com/golang-jwt/jwt"
@@ -47,14 +46,14 @@ func (c *RoutineHttpController) GetAll(ctx echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
-	routines, err := c.Service.GetAll(userId)
+	routineList, err := c.Service.GetAll(userId)
 	if err != nil {
 		return err
 	}
 
-	var routinesDto []models.Routine
-	for _, r := range routines {
-		routinesDto = append(routinesDto, helpers.TranformRoutineToDto(r))
+	var routinesDto []routines.RoutineDto
+	for _, r := range routineList {
+		routinesDto = append(routinesDto, helpers.TranformRoutineToDto(&r))
 	}
 	return ctx.JSON(http.StatusOK, routinesDto)
 }
