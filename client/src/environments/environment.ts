@@ -2,9 +2,10 @@
 // `ng build` replaces `environment.ts` with `environment.prod.ts`.
 
 import { FixedIdentityProviderBuilder } from "src/app/services/fixed-identity-provider.builder";
+import { SynchronizedIdentityProviderService } from "src/app/services/synchronized-identity-provider.service";
 
 // The list of file replacements can be found in `angular.json`.
-const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwicm9sZXMiOlsidHJhaW5lciIsInBhcnRpY2lwYW50Il19.7sFNLPOsiMEVaQc456QocJjhMu_fC5jl_R2Gb1b2uFm5-yS8D7dW4DeLgiDVcB4-WPtSHXHEJ96zo2400DaOIQ",
+const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI5NzQ3YjM0MC0xNWY0LTQ5ODItOGExOC0xMjhjN2JlMDBjN2EiLCJyb2xlcyI6WyJwYXJ0aWNpcGFudCJdfQ.cot5UlsKpLofSjXTmexILbNYiBZJZ11j1HvGmQTvzTzSaLg6pqnyZbYSoYn5R4OarPE1BUh2_SxXk-9WRhMDOw",
   fixedAuthBuilder = new FixedIdentityProviderBuilder(token)
 
 export const environment = {
@@ -13,7 +14,7 @@ export const environment = {
   socialStreamingApiUrl: 'ws://localhost:5000',
   fitnessApiUrl: 'http://localhost:8080',
   authInterceptor: fixedAuthBuilder.authProvider,
-  identityProviderService: fixedAuthBuilder.identityProvider
+  identityProviderService: SynchronizedIdentityProviderService
 };
 
 /*

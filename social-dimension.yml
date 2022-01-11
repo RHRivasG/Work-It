@@ -1,0 +1,21 @@
+version: '3.9'
+services:
+  social-dimension-microservice:
+    container_name: social_dimension_microservice
+    build: 
+      context: ./
+      dockerfile: ./social/Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+  postgres:
+    container_name: db
+    build: './social/db'
+    command: -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key
+    volumes:
+      - ./social/db/sql/work-it-db.sql:/docker-entrypoint-initdb.d/work-it-db.sql
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=work-it

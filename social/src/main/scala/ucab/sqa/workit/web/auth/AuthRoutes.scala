@@ -102,11 +102,6 @@ class AuthRoutes[C1, C2](
             complete(issueJWT("admin", Seq("admin", "participant", "trainer")))
           }
         )
-      },
-      (path("identity") & authenticateOAuth2Async("Visible", getIdentityFromToken(_))) { id => id match {
-          case Admin() => complete("admin")
-          case UserFound(token) => complete(token)
-        }
       }
     )
 }

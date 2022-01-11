@@ -1,7 +1,7 @@
 package ucab.sqa.workit.web.profile
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import cats.syntax.all._
+import scala.concurrent.ExecutionContext.Implicits.global
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.ActorRef
 import ucab.sqa.workit.web.Request
@@ -62,10 +62,18 @@ object ProfileRoutes extends JsonSupport {
             )
 
             def authParticipant =
-                authenticateParticipant(participantService).map(_.asRight[AuthResult[TrainerModel]])
+                authenticateParticipant(participantService).map(_.asRight[AuthResult[TrainerModel]]) match {
+                    case result => 
+                        system.log.debug(f"Participant profile lookup ended with $result")
+                        result
+                }
 
             def authTrainer =
-                authenticateTrainer(trainerService).map(_.asLeft[AuthResult[ParticipantModel]])
+                authenticateTrainer(trainerService).map(_.asLeft[AuthResult[ParticipantModel]]) match {
+                    case result => 
+                        system.log.debug(f"Trainer profile lookup ended with $result")
+                        result
+                }
 
             def findParticipantOrTrainer(id: String) = {
                 val findParticipantV = Kleisli(findParticipant(_))
@@ -76,16 +84,28 @@ object ProfileRoutes extends JsonSupport {
             }
                 
     
-            (path("profile" / Segment) & (authParticipant | authTrainer)) { (id, result) =>
-                authorize(result.fold(_.has { _.id == id }, _.has { _.id == id })) { 
-                    rejectEmptyResponse {
-                        onComplete(findParticipantOrTrainer(id)) {
-                            case Failure(exception) => complete(None)
-                            case Success(Left(e)) => complete(None)
-                            case Success(Right(Right(trainer))) => complete(Profile("trainer", trainer))
-                            case Success(Right(Left(participant))) => complete(Profile("participant", participant))
-                        } 
-                    }
+            (path("profile" / Segment.?) & (authParticipant | authTrainer)) { (id, result) =>
+                val effectiveId = id.getOrElse(result.fold(_.fold("admin")(_.id), _.fold("admin")(_.id)))
+                system.log.debug(f"Profile requested with $effectiveId")
+                authorize(result.fold(_.has { _.id == effectiveId }, _.has { _.id == effectiveId })) { 
+                    onComplete(findParticipantOrTrainer(effectiveId)) {
+                        case Failure(exception) => {
+                            system.log.warn(f"Authorization failed with $exception")
+                            complete(StatusCodes.Unauthorized, exception.getMessage())
+                        }
+                        case Success(Left(e)) => {
+                            system.log.warn(f"Authorization failed with $e")
+                            complete(StatusCodes.Unauthorized, e.getMessage())
+                        }
+                        case Success(Right(Right(trainer))) => {
+                            system.log.debug(f"Authorizing trainer profile $trainer")
+                            complete(Profile("trainer", trainer))
+                        }
+                        case Success(Right(Left(participant))) => {
+                            system.log.debug(f"Authorizing participant profile $participant")
+                            complete(Profile("participant", participant))
+                        }
+                    } 
                 }
             }
         }
