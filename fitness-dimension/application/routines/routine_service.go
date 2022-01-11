@@ -2,8 +2,6 @@ package routines
 
 import (
 	"fitness-dimension/application/routines/commands"
-	"fitness-dimension/application/routines/repositories"
-	"log"
 
 	"fitness-dimension/core/routines/routine"
 	valuesObjects "fitness-dimension/core/routines/routine/values-objects"
@@ -13,10 +11,10 @@ import (
 
 type RoutineService struct {
 	Publisher  RoutinePublisher
-	Repository repositories.RoutineRepository
+	Repository RoutineRepository
 }
 
-func (s *RoutineService) Handle(c interface{}) {
+func (s *RoutineService) Handle(c interface{}) (interface{}, error) {
 	switch c.(type) {
 	case commands.CreateRoutine:
 		command := c.(commands.CreateRoutine)
@@ -29,7 +27,7 @@ func (s *RoutineService) Handle(c interface{}) {
 		for _, tId := range command.TrainingsID {
 			id, err := uuid.Parse(tId)
 			if err != nil {
-				log.Fatal(err)
+				return nil, err
 			}
 			trainingsId.Values = append(trainingsId.Values, id)
 		}
@@ -50,12 +48,16 @@ func (s *RoutineService) Handle(c interface{}) {
 		for _, tId := range command.TrainingsID {
 			id, err := uuid.Parse(tId)
 			if err != nil {
-				log.Fatal(err)
+				return nil, err
 			}
 			trainingsId.Values = append(trainingsId.Values, id)
 		}
 
-		r := s.Repository.Find(command.ID)
+		r, err := s.Repository.Find(command.ID)
+		if err != nil {
+			return nil, err
+		}
+
 		r.Update(name, userId, trainingsId, description)
 		for _, i := range r.GetEvents() {
 			s.Publisher.Publish(i)
@@ -64,7 +66,11 @@ func (s *RoutineService) Handle(c interface{}) {
 	case commands.DeleteRoutine:
 		command := c.(commands.DeleteRoutine)
 
-		r := s.Repository.Find(command.ID)
+		r, err := s.Repository.Find(command.ID)
+		if err != nil {
+			return nil, err
+		}
+
 		r.Destroy()
 		for _, i := range r.GetEvents() {
 			s.Publisher.Publish(i)
@@ -74,7 +80,11 @@ func (s *RoutineService) Handle(c interface{}) {
 		command := c.(commands.AddRoutineTraining)
 		trainingID := valuesObjects.RoutineTrainingID{Value: command.TrainingID}
 
-		r := s.Repository.Find(command.ID)
+		r, err := s.Repository.Find(command.ID)
+		if err != nil {
+			return nil, err
+		}
+
 		r.AddTraining(trainingID)
 		for _, i := range r.GetEvents() {
 			s.Publisher.Publish(i)
@@ -84,23 +94,28 @@ func (s *RoutineService) Handle(c interface{}) {
 		command := c.(commands.RemoveRoutineTraining)
 		trainingID := valuesObjects.RoutineTrainingID{Value: command.TrainingID}
 
-		r := s.Repository.Find(command.ID)
+		r, err := s.Repository.Find(command.ID)
+		if err != nil {
+			return nil, err
+		}
+
 		r.RemoveTraining(trainingID)
 		for _, i := range r.GetEvents() {
 			s.Publisher.Publish(i)
 		}
 	}
+	return nil, nil
 }
 
-func (s *RoutineService) Get(id string) routine.Routine {
+func (s *RoutineService) Get(id string) (*routine.Routine, error) {
 	routineId, err := uuid.Parse(id)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	return s.Repository.Find(routineId)
 }
 
-func (s *RoutineService) GetAll(userId string) []routine.Routine {
+func (s *RoutineService) GetAll(userId string) ([]routine.Routine, error) {
 	return s.Repository.GetAll(userId)
 }

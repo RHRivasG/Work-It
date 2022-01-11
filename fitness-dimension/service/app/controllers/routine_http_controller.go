@@ -26,7 +26,11 @@ func (c *RoutineHttpController) Get(ctx echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
-	routine := c.Service.Get(id)
+	routine, err := c.Service.Get(id)
+	if err != nil {
+		return err
+	}
+
 	routineDto := helpers.TranformRoutineToDto(routine)
 	if routineDto.UserID != userId {
 		return echo.ErrUnauthorized
@@ -43,7 +47,11 @@ func (c *RoutineHttpController) GetAll(ctx echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
-	routines := c.Service.GetAll(userId)
+	routines, err := c.Service.GetAll(userId)
+	if err != nil {
+		return err
+	}
+
 	var routinesDto []models.Routine
 	for _, r := range routines {
 		routinesDto = append(routinesDto, helpers.TranformRoutineToDto(r))
@@ -73,7 +81,10 @@ func (c *RoutineHttpController) Create(ctx echo.Context) error {
 		Description: partialCommand.Description,
 		TrainingsID: partialCommand.Trainings,
 	}
-	c.Service.Handle(command)
+	_, err := c.Service.Handle(command)
+	if err != nil {
+		return err
+	}
 
 	return ctx.String(http.StatusCreated, "Routine created")
 }
@@ -122,7 +133,10 @@ func (c *RoutineHttpController) Delete(ctx echo.Context) error {
 	command := commands.DeleteRoutine{
 		ID: routineId,
 	}
-	c.Service.Handle(command)
+	_, err = c.Service.Handle(command)
+	if err != nil {
+		return err
+	}
 
 	return ctx.String(http.StatusOK, "Routine deleted")
 }
@@ -144,7 +158,11 @@ func (c *RoutineHttpController) AddTraining(ctx echo.Context) error {
 		ID:         routineId,
 		TrainingID: trainingId,
 	}
-	c.Service.Handle(command)
+	_, err = c.Service.Handle(command)
+	if err != nil {
+		return err
+	}
+
 	return ctx.String(http.StatusOK, "Training added")
 }
 
@@ -165,6 +183,11 @@ func (c *RoutineHttpController) RemoveTraining(ctx echo.Context) error {
 		ID:         routineId,
 		TrainingID: trainingId,
 	}
-	c.Service.Handle(command)
+
+	_, err = c.Service.Handle(command)
+	if err != nil {
+		return err
+	}
+
 	return ctx.String(http.StatusOK, "Training removed")
 }

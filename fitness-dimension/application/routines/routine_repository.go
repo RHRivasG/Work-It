@@ -1,4 +1,4 @@
-package repositories
+package routines
 
 import (
 	"fitness-dimension/core/routines/routine"
@@ -7,6 +7,6 @@ import (
 )
 
 type RoutineRepository interface {
-	Find(uuid.UUID) routine.Routine
-	GetAll(userId string) []routine.Routine
+	Find(uuid.UUID) (*routine.Routine, error)
+	GetAll(userId string) ([]routine.Routine, error)
 }
