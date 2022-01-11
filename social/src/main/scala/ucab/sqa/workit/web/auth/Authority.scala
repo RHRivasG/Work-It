@@ -31,8 +31,6 @@ object AuthorityActor {
     def apply(key: String) = Behaviors.receive[AuthorityActions] { (ctx, action) => action match {
         case IssueToken(subject, roles, replyTo) => 
             val claims = JwtClaim(
-              expiration = Some(Instant.now.plusSeconds(1200).getEpochSecond),
-              issuedAt = Some(Instant.now.getEpochSecond),
               subject = Some(subject),
               audience = Some(Set("auth", "social", "fitness")),
             ) ++ (("roles", roles))

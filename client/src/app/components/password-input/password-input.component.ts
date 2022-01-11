@@ -8,7 +8,7 @@ const LOGIN_FORMAT = [
   /[a-z]+/,
   /[A-Z]+/,
   /[0-9]+/,
-  /[.,;:/\\{}\[\]()@&^*%$#!?]+/
+  /[-.,;:/\\{}\[\]()@&^*%$#!?]+/
 ]
 
 @Component({
@@ -47,7 +47,7 @@ export class PasswordInputComponent implements ControlValueAccessor, OnInit, Val
 
   validate(control: AbstractControl): ValidationErrors | null {
     const matches = LOGIN_FORMAT.map(r => this.password.match(r)).every(match => !!match)
-    if (!matches) return { badFormat: true }
+    if (!matches || this.password.length <= 8) return { badFormat: true }
     else return null
   }
 

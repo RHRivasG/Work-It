@@ -1,6 +1,7 @@
 import { EventEmitter, Input } from '@angular/core';
 import { Component, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FullRoutine } from '../../models/routine';
 import { RoutineService } from '../../services/routine.service';
@@ -18,8 +19,9 @@ export class RoutineUpdateModalComponent implements OnInit {
   close = new EventEmitter()
   routineUpdateForm: FormGroup
   loading = false
+  deleteLoading = false
 
-  constructor(formBuilder: FormBuilder, private service: RoutineService) {
+  constructor(formBuilder: FormBuilder, private service: RoutineService, private router: Router) {
     this.routineUpdateForm = formBuilder.group({
       name: ['', Validators.required],
       description: ['', Validators.required]
@@ -42,4 +44,14 @@ export class RoutineUpdateModalComponent implements OnInit {
     this.close.emit()
   }
 
+  deleteRoutine() {
+    this.deleteLoading = true
+    this.service.delete(this.routine).subscribe(
+      () => {
+        this.deleteLoading = false
+        this.closeModal()
+        this.router.navigate(['/fitness', 'routines'])
+      }
+    )
+  }
 }

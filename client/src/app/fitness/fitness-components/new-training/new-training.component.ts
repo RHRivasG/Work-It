@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Training } from '../../models/training';
 import { TrainingService } from '../../services/training.service';
 
@@ -11,11 +11,13 @@ import { TrainingService } from '../../services/training.service';
 })
 export class NewTrainingComponent implements OnInit {
   trainingForm: FormGroup
+  preferences: string[]
   loading = false
   training?: Training
 
-  constructor(route: ActivatedRoute, formBuilder: FormBuilder, private service: TrainingService) {
+  constructor(route: ActivatedRoute, formBuilder: FormBuilder, private service: TrainingService, private router: Router) {
     this.training = route.snapshot.data.training
+    this.preferences = route.snapshot.data.preferences
     if (this.training) {
       this.trainingForm = formBuilder.group({
         name: [this.training.name, Validators.required],
@@ -60,7 +62,10 @@ export class NewTrainingComponent implements OnInit {
           length: video.size,
           name: video.name
         }
-      ).subscribe(() => this.loading = false)
+      ).subscribe(() => {
+        this.router.navigate(['/fitness/trainer/trainings'])
+        this.loading = false
+      })
     }
   }
 }

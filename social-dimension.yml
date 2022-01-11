@@ -6,11 +6,16 @@ services:
       context: ./
       dockerfile: ./social/Dockerfile
     ports:
-      - "5000:5000"
+      - 5000:5000
     depends_on:
-      - postgres
-  postgres:
-    container_name: db
+      - postgres_social_dimension
+    volumes:
+      - ./social/src/main/resources/application.prod.conf:/workit-social-dimension-microservice/social/src/main/resources/application.conf
+    networks:
+      - services
+      - default
+  postgres_social_dimension:
+    container_name: db.social.dimension
     build: './social/db'
     command: -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key
     volumes:
@@ -19,3 +24,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=work-it
+
+networks:
+  services:
+    name: 'services_network'

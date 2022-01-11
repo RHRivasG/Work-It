@@ -2,9 +2,10 @@ import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { CdkPortal } from '@angular/cdk/portal';
 import { HttpClient } from '@angular/common/http';
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { faAngleDown, faEllipsisV, faFlag, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faAngleDown, faEllipsisV, faFlag, faPlus, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { Trainer } from 'src/app/social/models/trainer';
 import { environment } from 'src/environments/environment';
 import { Training } from '../../models/training';
 
@@ -20,6 +21,8 @@ export class TrainingCardComponent implements OnInit, OnDestroy, AfterViewInit {
   showMoreIcon = faAngleDown
   descriptionShown = false
   overlayRef: OverlayRef
+  trainer!: Trainer
+  spinner = faSpinner
   @Input()
   editing = false
   @Input()
@@ -63,6 +66,11 @@ export class TrainingCardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
+    console.log(this.training)
+    this.http.get<{ user: Trainer }>(environment.socialApiUrl + "/profile/" + this.training.trainerId)
+    .subscribe(profile => {
+      this.trainer = profile.user
+    })
   }
 
   toggleDescription() {

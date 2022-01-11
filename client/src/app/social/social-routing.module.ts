@@ -22,6 +22,9 @@ const routes: Routes = [
       {
         path: '',
         component: DashboardComponent,
+        data: {
+          myProfile: true
+        },
         resolve: {
           participants: ParticipantsResolver,
           trainers: TrainersResolver
@@ -45,7 +48,10 @@ const routes: Routes = [
       },
       {
         path: 'change-password/:id',
-        component: ChangePasswordComponent
+        component: ChangePasswordComponent,
+        resolve: {
+          profile: ProfileResolver
+        }
       },
       {
         path: '**',
@@ -60,6 +66,9 @@ const routes: Routes = [
       {
         path: ':id',
         component: ProfileComponent,
+        data: {
+          profile: true
+        },
         resolve: {
           profile: ProfileResolver,
           preferences: PreferencesResolver

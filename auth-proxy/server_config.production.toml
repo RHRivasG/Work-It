@@ -2,8 +2,8 @@ authority = "social"
 
 [servers.social]
 from = "/api/social"
-to = "http://social-dimension-microservice"
+to = "http://social_dimension_microservice:5000"
 
 [servers.fitness]
 from = "/api/fitness"
-to = "http://fitness-dimension-microservice"
+to = "http://fitness_dimension_microservice:8080"

@@ -1,13 +1,17 @@
 version: '3.9'
 services:
   fitness-dimension-microservice:
+    container_name: fitness_dimension_microservice
     build: './fitness-dimension'
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
-  postgres:
-    container_name: db
+      - postgres_fitness_dimension
+    networks:
+      - services
+      - default
+  postgres_fitness_dimension:
+    container_name: db.fitness.dimension
     build: './fitness-dimension/db'
     command: -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key
     volumes:
@@ -16,3 +20,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=WorkItDB
+
+networks:
+  services:
+    name: 'services_network'

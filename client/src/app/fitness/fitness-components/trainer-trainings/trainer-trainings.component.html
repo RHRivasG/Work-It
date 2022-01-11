@@ -21,8 +21,8 @@
   <div class="container mx-auto md:px-64 px-4 py-14">
     <div class="flex justify-between">
       <div>
-        <h3 class="text-3xl font-bold">Fullname's trainings</h3>
-        <small class="text-lg font-light text-gray-900">@Username</small>
+        <h3 class="text-3xl font-bold">{{ trainer.name }}'s trainings</h3>
+        <small class="text-lg font-light text-gray-900">@{{ trainer.name }}</small>
       </div>
       <a routerLink="/fitness/trainings/new" class="button bg-action my-auto h-min w-max py-3 px-4 rounded-lg shadow-lg text-white focus:ring-4 focus:ring-action focus:ring-opacity-50">
         <fa-icon [icon]="addIcon"></fa-icon>

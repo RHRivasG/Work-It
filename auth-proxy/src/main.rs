@@ -1,5 +1,7 @@
 mod config;
 mod store;
+use warp_reverse_proxy::Method;
+use warp::method;
 use crate::{
     config::get_config,
     store::{redis::RedisStore, TokenStore},
@@ -25,14 +27,20 @@ fn configure_auth_token_storage(
 ) -> impl Filter<Error = Rejection, Extract = (Response<Bytes>,)> + Clone {
     proxy
         .and(full())
-        .map(move |resp, uri: FullPath| (store.clone(), uri.as_str().contains("login"), resp))
+        .and(method())
+        .map(move |resp, uri: FullPath, method| (store.clone(), uri.as_str().contains("login"), resp, method))
         .untuple_one()
         .and(optional("work-it-session"))
         .then(
             |store: Arc<dyn TokenStore + Send + Sync>,
-             is_login,
-             response: Response<Bytes>,
-             key: Option<String>| async move {
+            is_login,
+            response: Response<Bytes>,
+            req_method: Method,
+            key: Option<String>| async move {
+                if req_method == Method::GET {
+                    return response
+                }
+
                 if is_login {
                     if let Some(session_key) = key {
                         store
@@ -44,6 +52,7 @@ fn configure_auth_token_storage(
 
                 if is_login && response.status().is_success() {
                     let token = String::from_utf8(response.body().to_vec()).unwrap();
+
                     let rand_key: String = thread_rng()
                         .sample_iter(&Alphanumeric)
                         .take(64)
@@ -179,7 +188,7 @@ fn logout(
 #[tokio::main]
 async fn main() {
     let server_config = get_config();
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     let store: Arc<dyn TokenStore + Send + Sync> = Arc::new(
         RedisStore::connect()
             .await

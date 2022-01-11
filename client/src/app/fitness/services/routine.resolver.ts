@@ -20,14 +20,18 @@ export class RoutineResolver implements Resolve<FullRoutine> {
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<FullRoutine> {
     const id = route.params.id
     return this.client.get<Routine>(environment.fitnessApiUrl + '/routines/'+ id).pipe(
-      switchMap((routine: Routine) =>
-        forkJoin(
-          routine.trainings.map(id =>
-            this.client.get<Training>(environment.fitnessApiUrl + '/trainings/' + id)
+      switchMap((routine: Routine) => {
+        if (routine.trainings) {
+          return forkJoin(
+            routine.trainings.map(id =>
+              this.client.get<Training>(environment.fitnessApiUrl + '/trainings/' + id)
+            )
           )
-        )
-        .pipe(map(trainings => ({ ...routine, trainings })))
-      ),
+          .pipe(map(trainings => ({ ...routine, trainings })))
+        } else {
+          return of({ ...routine, trainings: [] })
+        }
+      }),
     )
   }
 }

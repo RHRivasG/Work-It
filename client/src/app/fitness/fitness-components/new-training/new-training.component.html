@@ -8,7 +8,7 @@
     </div>
     <label class="font-semibold text-3xl" for="tags">Tags</label>
     <div class="col-span-2">
-      <wi-tag-input formControlName="tags" name="tags" [allTagsList]="['Arms', 'Shoulders', 'Biceps', 'Triceps']"></wi-tag-input>
+      <wi-tag-input formControlName="tags" name="tags" [allTagsList]="preferences"></wi-tag-input>
       <small class="error">Trainings must have at least three preferences</small>
     </div>
     <label class="font-semibold text-3xl mb-auto" for="description">Description</label>

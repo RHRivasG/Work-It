@@ -25,20 +25,20 @@
       </a>
     </div>
     <div class="flex-auto col-span-4">
-      <div *ngIf="activatedRoute.layout" class="search-bar">
+      <div *ngIf="searchable" class="search-bar">
         <input [(ngModel)]="searchService.searchValue" class="search-bar-input">
         <fa-icon [icon]="searchIcon" class="search-bar-icon"></fa-icon>
       </div>
     </div>
     <div class="navigation">
       <a routerLink="/fitness/trainings" class="hidden lg:block">
-        <fa-icon [ngClass]="activatedRoute.home ? 'active' : ''" [icon]="homeIcon" class="navigation-icon"></fa-icon>
+        <fa-icon [ngClass]="home ? 'active' : ''" [icon]="homeIcon" class="navigation-icon"></fa-icon>
       </a>
       <button (click)="openUserChoice(choice)" class="hidden lg:block">
-        <fa-icon [ngClass]="activatedRoute.profile ? 'active' : ''" [icon]="userIcon" class="navigation-icon"></fa-icon>
+        <fa-icon [ngClass]="profile ? 'active' : ''" [icon]="userIcon" class="navigation-icon"></fa-icon>
       </button>
       <a [routerLink]="['/fitness/trainer/trainings']" class="hidden lg:block">
-        <fa-icon [ngClass]="activatedRoute.trainings ? 'active' : ''" [icon]="trainingsIcon" class="navigation-icon"></fa-icon>
+        <fa-icon [ngClass]="trainings ? 'active' : ''" [icon]="trainingsIcon" class="navigation-icon"></fa-icon>
       </a>
       <button (click)="logout()">
         <fa-icon [icon]="logoutIcon" class="navigation-icon active"></fa-icon>
@@ -50,13 +50,13 @@
   </main>
   <footer class="lg:hidden flex flex-row items-center justify-evenly gap-4 bg-primary flex flex-row justify-even px-4 py-5">
     <a routerLink="/fitness/trainings">
-      <fa-icon [ngClass]="activatedRoute.home ? 'active' : ''" [icon]="homeIcon" class="navigation-icon"></fa-icon>
+      <fa-icon [ngClass]="home ? 'active' : ''" [icon]="homeIcon" class="navigation-icon"></fa-icon>
     </a>
-    <a [routerLink]="['/social/profile', id]">
-      <fa-icon [ngClass]="activatedRoute.profile ? 'active' : ''" [icon]="userIcon" class="navigation-icon"></fa-icon>
-    </a>
-    <a [routerLink]="['/fitness/trainings', id]">
-      <fa-icon [ngClass]="activatedRoute.trainings ? 'active' : ''" [icon]="trainingsIcon" class="navigation-icon"></fa-icon>
+    <button (click)="openUserChoice(choice)">
+      <fa-icon [ngClass]="profile ? 'active' : ''" [icon]="userIcon" class="navigation-icon"></fa-icon>
+    </button>
+    <a [routerLink]="['/fitness/trainer/trainings']">
+      <fa-icon [ngClass]="trainings ? 'active' : ''" [icon]="trainingsIcon" class="navigation-icon"></fa-icon>
     </a>
   </footer>
 </div>

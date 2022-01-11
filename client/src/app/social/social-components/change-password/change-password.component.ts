@@ -16,6 +16,7 @@ export class ChangePasswordComponent implements OnInit {
   newPasswordGroup: FormGroup
   changingPassword = false
   placeholder = ''
+  apiSlug = "/participants/"
   id!: string
 
   constructor(builder: FormBuilder, private http: HttpClient, private route: ActivatedRoute, private router: Router) {
@@ -25,6 +26,10 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log(!("requestStatus" in this.route.snapshot.data.profile))
+    if (!("requestStatus" in this.route.snapshot.data.profile)) {
+      this.apiSlug = "/trainers/"
+    }
     this.route.params
     .subscribe(params => {
       this.id = params.id
@@ -38,7 +43,7 @@ export class ChangePasswordComponent implements OnInit {
   changePassword() {
     this.changingPassword = true
     this.http.put(
-      environment.socialApiUrl + "/participants/" + this.id + "/password",
+      environment.socialApiUrl + this.apiSlug + this.id + "/password",
       { password: this.newPasswordGroup.get('password')?.value },
       { 'responseType': 'text' })
     .subscribe(() => {

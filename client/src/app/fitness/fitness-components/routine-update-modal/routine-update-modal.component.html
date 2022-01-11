@@ -25,5 +25,11 @@
       type="action">
       Save
     </wi-submit-button>
+    <wi-submit-button
+      (click)="deleteRoutine()"
+      [disabled]="deleteLoading"
+      [loading]="deleteLoading">
+      Delete
+    </wi-submit-button>
   </form>
 </div>

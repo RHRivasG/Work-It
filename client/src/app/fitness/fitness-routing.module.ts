@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { PreferencesResolver } from '../services/preferences.resolver';
+import { ProfileResolver } from '../social/services/profile.resolver';
 import { FitnessLayoutComponent } from './fitness-components/fitness-layout/fitness-layout.component';
 import { NewTrainingComponent } from './fitness-components/new-training/new-training.component';
 import { RoutineIndexComponent } from './fitness-components/routine-index/routine-index.component';
@@ -21,46 +22,58 @@ const routes: Routes = [
       {
         path: 'trainings/new',
         component: NewTrainingComponent,
+        data: {
+          myTrainings: true
+        },
         resolve: {
           training: TrainingQueryResolver,
-          // preferences: PreferencesResolver
+          preferences: PreferencesResolver
         }
       },
       {
         path: 'trainings',
         component: TrainingIndexComponent,
         data: {
-          animation: 'searchable'
+          searchable: true,
+          home: true
         },
         resolve: {
           trainings: TrainingsResolver,
-          // routines: RoutinesResolver
+          routines: RoutinesResolver
         }
       },
       {
         path:'trainer/trainings',
         data: {
-          animation: 'searchable'
+          searchable: true,
+          myTrainings: true
         },
         component: TrainerTrainingsComponent,
         resolve: {
           trainings: TrainerTrainingsResolver,
-          routines: RoutinesResolver
+          routines: RoutinesResolver,
+          profile: ProfileResolver
         }
       },
       {
         path: 'routines',
         component: RoutineIndexComponent,
         data: {
-          animation: 'searchable'
+          searchable: true,
+          myProfile: true
         },
         resolve: {
-          routines: RoutinesResolver
+          routines: RoutinesResolver,
+          profile: ProfileResolver
         }
       },
       {
         path: 'routines/:id',
         component: ShowRoutineComponent,
+        data: {
+          searchable: true,
+          myProfile: true
+        },
         resolve: {
           routine: RoutineResolver
         }

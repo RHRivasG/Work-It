@@ -59,7 +59,7 @@ object App {
     import system.executionContext
 
     val futureBinding = Http()
-      .newServerAt("localhost", 5000)
+      .newServerAt("0.0.0.0", 5000)
       .bind(
         routes
       )

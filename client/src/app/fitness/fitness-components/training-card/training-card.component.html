@@ -9,7 +9,10 @@
     </video>
   </div>
   <div class="grid grid-rows-2 grid-cols-2 px-8 gap-1 pt-8 py-6">
-    <p class="text-xl">Made by {{ training.trainerId  }}</p>
+    <p class="text-xl">
+      <fa-icon *ngIf="!trainer?.name" [icon]="spinner" [pulse]="true"></fa-icon>
+      <span *ngIf="trainer?.name">Made by {{ trainer?.name }}</span>
+    </p>
     <div class="tag-list col-start-1 row-start-2 flex flex-row flex-wrap gap-x-4">
       <div *ngFor="let category of training.categories" class="cursor-pointer rounded-3xl bg-gray-400 w-min whitespace-nowrap px-4 py-2 text-base items-center">
         {{ category }}

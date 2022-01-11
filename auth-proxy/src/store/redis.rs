@@ -11,7 +11,8 @@ pub struct RedisStore {
 
 impl RedisStore {
     pub async fn connect() -> Result<Self, RedisError> {
-        let client = Client::open("redis://127.0.0.1:6379")?;
+        let redis_host = std::env::var("DB_HOST").expect("Missing redis host");
+        let client = Client::open(format!("redis://{}:6379", redis_host))?;
 
         Ok(RedisStore { client })
     }

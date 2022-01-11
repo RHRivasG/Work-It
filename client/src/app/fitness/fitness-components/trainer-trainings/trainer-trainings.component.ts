@@ -4,6 +4,8 @@ import { Component, Inject, OnInit, TemplateRef, ViewContainerRef } from '@angul
 import { ActivatedRoute } from '@angular/router';
 import { faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { GlobalSearch, WI_GLOBAL_SEARCH } from 'src/app/services/global-search';
+import { Participant } from 'src/app/social/models/participant';
+import { Trainer } from 'src/app/social/models/trainer';
 import { Training } from '../../models/training';
 import { TrainingService } from '../../services/training.service';
 
@@ -18,6 +20,7 @@ export class TrainerTrainingsComponent implements OnInit {
   closeIcon = faTimes
   trainings!: Training[]
   selectedTraining?: Training
+  trainer: Trainer
   overlayRef: OverlayRef
 
   constructor(
@@ -28,6 +31,7 @@ export class TrainerTrainingsComponent implements OnInit {
     @Inject(WI_GLOBAL_SEARCH) private search: GlobalSearch<Training>
   ) {
     const data = route.snapshot.data
+    this.trainer = data.profile
     this.search.dataSource = data.trainings || []
     this.search.extractor = JSON.stringify
     this.search.result.subscribe(trainings => {
