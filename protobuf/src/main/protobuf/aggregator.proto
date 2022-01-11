@@ -15,7 +15,6 @@ message RequestServiceResponse {
 
 message AddServiceMessage {
   string group = 1;
-  string host = 2;
   int32 capacity = 3;
 }
 
