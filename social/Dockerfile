@@ -4,6 +4,7 @@ RUN curl -L -o sbt-${SBT_VERSION}.zip https://github.com/sbt/sbt/releases/downlo
 RUN unzip sbt-$SBT_VERSION.zip -d ops
 COPY build.sbt /workit-social-dimension-microservice/build.sbt
 COPY social/ /workit-social-dimension-microservice/social
+COPY social/src/main/resources/application.prod.conf /workit-social-dimension-microservice/social/src/main/resources/application.conf
 COPY project/ /workit-social-dimension-microservice/project
 COPY protobuf/ /workit-social-dimension-microservice/protobuf
 WORKDIR /workit-social-dimension-microservice/

@@ -1,5 +1,5 @@
 import { animate, query, style, transition, trigger } from '@angular/animations';
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { map, tap, toArray } from 'rxjs/operators';
 
@@ -10,6 +10,11 @@ import { map, tap, toArray } from 'rxjs/operators';
 })
 export class AppComponent {
   prepareAnimation(outlet: RouterOutlet) {}
+
+  @HostListener("window:unload", [ '$event' ])
+  unloadLogin() {
+    localStorage.removeItem("identity")
+  }
 
   print() {
   }

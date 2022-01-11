@@ -15,9 +15,8 @@ export class CanActivateLoginGuard implements CanActivate, CanLoad {
       map(id => {
         if (id == "admin") return this.router.createUrlTree(['/social/dashboard'])
         else return this.router.createUrlTree(['/social/profile', id])
-        // return this.router.createUrlTree(['/social/profile', id])
       }),
-      catchError(() => of(this.router.createUrlTree(['/social/auth/login'], { queryParams: { as: 'participant' } })))
+      catchError(() => of(true))
     )
   }
 
