@@ -63,10 +63,11 @@ func (t *Training) SetVideo(
 	v := entities.CreateVideo(filename, ext, video)
 	t.Video = &v
 	t.AddEvent(events.TrainingVideoCreated{
-		ID:   v.ID,
-		Name: v.Name,
-		Ext:  v.Ext,
-		Buff: v.Buff,
+		ID:         v.ID,
+		Name:       v.Name,
+		Ext:        v.Ext,
+		Buff:       v.Buff,
+		TrainingID: t.ID,
 	})
 }
 
@@ -85,8 +86,10 @@ func (t *Training) UpdateVideo(
 }
 
 func (t *Training) DestroyVideo() {
-	t.Video = nil
-	t.AddEvent(events.TrainingVideoDeleted{ID: t.Video.ID})
+	if t.Video != nil {
+		t.AddEvent(events.TrainingVideoDeleted{ID: t.Video.ID})
+		t.Video = nil
+	}
 }
 
 func (t *Training) Update(

@@ -37,10 +37,7 @@
       <button (click)="openUserChoice(choice)" class="hidden lg:block">
         <fa-icon [ngClass]="activatedRoute.profile ? 'active' : ''" [icon]="userIcon" class="navigation-icon"></fa-icon>
       </button>
-      <!-- <a [routerLink]="['/social/profile', id]" class="hidden lg:block">
-        <fa-icon [ngClass]="activatedRoute.profile ? 'active' : ''" [icon]="userIcon" class="navigation-icon"></fa-icon>
-      </a>-->
-      <a [routerLink]="['/fitness/trainings', id]" class="hidden lg:block">
+      <a [routerLink]="['/fitness/trainer/trainings']" class="hidden lg:block">
         <fa-icon [ngClass]="activatedRoute.trainings ? 'active' : ''" [icon]="trainingsIcon" class="navigation-icon"></fa-icon>
       </a>
       <button (click)="logout()">

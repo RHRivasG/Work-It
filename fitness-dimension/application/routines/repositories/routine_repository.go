@@ -8,5 +8,5 @@ import (
 
 type RoutineRepository interface {
 	Find(uuid.UUID) routine.Routine
-	GetAll() []routine.Routine
+	GetAll(userId string) []routine.Routine
 }

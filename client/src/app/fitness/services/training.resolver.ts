@@ -5,17 +5,16 @@ import {
   RouterStateSnapshot,
   ActivatedRouteSnapshot
 } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Training } from '../models/training';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class TrainingResolver implements Resolve<Training> {
+@Injectable()
+export class TrainingResolver implements Resolve<Training[]> {
   constructor(private client: HttpClient){}
-  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Training> {
+  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Training[]> {
     const id = route.params.id
-    return this.client.get<Training>(environment.fitnessApiUrl + '/trainings/' + id)
+    return this.client.get<Training[]>(environment.fitnessApiUrl + '/trainings/' + id)
   }
 }

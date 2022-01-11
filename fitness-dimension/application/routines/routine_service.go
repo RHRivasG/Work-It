@@ -26,6 +26,14 @@ func (s *RoutineService) Handle(c interface{}) {
 		description := valuesObjects.RoutineDescription{Value: command.Description}
 		trainingsId := valuesObjects.RoutineTrainingIDs{}
 
+		for _, tId := range command.TrainingsID {
+			id, err := uuid.Parse(tId)
+			if err != nil {
+				log.Fatal(err)
+			}
+			trainingsId.Values = append(trainingsId.Values, id)
+		}
+
 		r := routine.CreateRoutine(name, userId, trainingsId, description)
 		for _, i := range r.GetEvents() {
 			s.Publisher.Publish(i)
@@ -37,16 +45,30 @@ func (s *RoutineService) Handle(c interface{}) {
 		name := valuesObjects.RoutineName{Value: command.Name}
 		userId := valuesObjects.RoutineUserID{Value: command.UserID}
 		description := valuesObjects.RoutineDescription{Value: command.Description}
-		trainings := valuesObjects.RoutineTrainingIDs{}
+		trainingsId := valuesObjects.RoutineTrainingIDs{}
+
+		for _, tId := range command.TrainingsID {
+			id, err := uuid.Parse(tId)
+			if err != nil {
+				log.Fatal(err)
+			}
+			trainingsId.Values = append(trainingsId.Values, id)
+		}
 
 		r := s.Repository.Find(command.ID)
-		r.Update(name, userId, trainings, description)
+		r.Update(name, userId, trainingsId, description)
+		for _, i := range r.GetEvents() {
+			s.Publisher.Publish(i)
+		}
 
 	case commands.DeleteRoutine:
 		command := c.(commands.DeleteRoutine)
 
 		r := s.Repository.Find(command.ID)
 		r.Destroy()
+		for _, i := range r.GetEvents() {
+			s.Publisher.Publish(i)
+		}
 
 	case commands.AddRoutineTraining:
 		command := c.(commands.AddRoutineTraining)
@@ -54,6 +76,9 @@ func (s *RoutineService) Handle(c interface{}) {
 
 		r := s.Repository.Find(command.ID)
 		r.AddTraining(trainingID)
+		for _, i := range r.GetEvents() {
+			s.Publisher.Publish(i)
+		}
 
 	case commands.RemoveRoutineTraining:
 		command := c.(commands.RemoveRoutineTraining)
@@ -61,6 +86,9 @@ func (s *RoutineService) Handle(c interface{}) {
 
 		r := s.Repository.Find(command.ID)
 		r.RemoveTraining(trainingID)
+		for _, i := range r.GetEvents() {
+			s.Publisher.Publish(i)
+		}
 	}
 }
 
@@ -73,6 +101,6 @@ func (s *RoutineService) Get(id string) routine.Routine {
 	return s.Repository.Find(routineId)
 }
 
-func (s *RoutineService) GetAll() []routine.Routine {
-	return s.Repository.GetAll()
+func (s *RoutineService) GetAll(userId string) []routine.Routine {
+	return s.Repository.GetAll(userId)
 }

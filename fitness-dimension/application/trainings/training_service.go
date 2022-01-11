@@ -2,19 +2,15 @@ package trainings
 
 import (
 	"fitness-dimension/application/trainings/commands"
-	"fitness-dimension/application/trainings/repositories"
-	"log"
 
 	"fitness-dimension/core/trainings/training"
+	"fitness-dimension/core/trainings/training/entities"
 	valuesObjects "fitness-dimension/core/trainings/training/values-objects"
-
-	"github.com/google/uuid"
 )
 
 type TrainingService struct {
-	Publisher       TrainingPublisher
-	Repository      repositories.TrainingRepository
-	VideoRepository repositories.TrainingVideoRepository
+	Publisher  TrainingPublisher
+	Repository TrainingRepository
 }
 
 func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
@@ -32,15 +28,20 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 			s.Publisher.Publish(i)
 		}
 
+		return t.ID.Value.String(), nil
+
 	case commands.UpdateTraining:
 		command := c.(commands.UpdateTraining)
 
 		trainerID := valuesObjects.TrainerID{Value: command.TrainerID}
 		name := valuesObjects.TrainingName{Value: command.Name}
 		description := valuesObjects.TrainingDescription{Value: command.Description}
-		categories := valuesObjects.TrainingTaxonomies{}
+		categories := valuesObjects.TrainingTaxonomies{Values: command.Categories}
 
-		t := s.Repository.Find(command.ID)
+		t, err := s.Repository.Get(command.ID.String())
+		if err != nil {
+			return nil, err
+		}
 
 		t.Update(categories, trainerID, name, description)
 		for _, i := range t.GetEvents() {
@@ -50,7 +51,10 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 	case commands.DeleteTraining:
 		command := c.(commands.DeleteTraining)
 
-		t := s.Repository.Find(command.ID)
+		t, err := s.Repository.Get(command.ID.String())
+		if err != nil {
+			return nil, err
+		}
 
 		t.Destroy()
 		for _, i := range t.GetEvents() {
@@ -64,9 +68,13 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		video := valuesObjects.TrainingVideoBuffer{Value: command.Video}
 		ext := valuesObjects.TrainingVideoExt{Value: command.Ext}
 
-		t := s.Repository.Find(command.TrainingID)
+		t, err := s.Repository.Get(command.TrainingID.String())
+		if err != nil {
+			return nil, err
+		}
 
 		t.SetVideo(filename, video, ext)
+
 		for _, i := range t.GetEvents() {
 			s.Publisher.Publish(i)
 		}
@@ -78,19 +86,26 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 		video := valuesObjects.TrainingVideoBuffer{Value: command.Video}
 		ext := valuesObjects.TrainingVideoExt{Value: command.Ext}
 
-		t := s.Repository.Find(command.TrainingID)
+		t, err := s.Repository.Get(command.TrainingID.String())
+		if err != nil {
+			return nil, err
+		}
 
 		t.UpdateVideo(filename, video, ext)
+
 		for _, i := range t.GetEvents() {
 			s.Publisher.Publish(i)
 		}
 
 	case commands.DeleteTrainingVideo:
 		command := c.(commands.DeleteTrainingVideo)
-		t := s.Repository.Find(command.TrainingID)
-		t.DestroyVideo()
 
-		s.VideoRepository.Delete(command.ID)
+		t, err := s.Repository.Get(command.TrainingID.String())
+		if err != nil {
+			return nil, err
+		}
+
+		t.DestroyVideo()
 		for _, i := range t.GetEvents() {
 			s.Publisher.Publish(i)
 		}
@@ -98,17 +113,18 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 	return nil, nil
 }
 
-func (s *TrainingService) Get(id string) training.Training {
-	trainingId, err := uuid.Parse(id)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return s.Repository.Find(trainingId)
+func (s *TrainingService) Get(id string) (*training.Training, error) {
+	return s.Repository.Get(id)
 }
 
-func (s *TrainingService) GetAll() []training.Training {
+func (s *TrainingService) GetAll() ([]training.Training, error) {
 	return s.Repository.GetAll()
 }
 
-//func (s *TrainingService) GetVideo
+func (s *TrainingService) GetByTrainer(id string) ([]training.Training, error) {
+	return s.Repository.GetByTrainer(id)
+}
+
+func (s *TrainingService) GetVideo(id string) *entities.TrainingVideo {
+	return s.Repository.GetVideo(id)
+}

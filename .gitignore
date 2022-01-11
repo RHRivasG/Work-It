@@ -8,3 +8,7 @@ null/
 .vscode/
 .bsp/
 .sbt/
+fitness-dimension/tmp/
+fitness-dimension/.env
+fitness-dimension/db/sql/
+fitness-dimension/db/certs/

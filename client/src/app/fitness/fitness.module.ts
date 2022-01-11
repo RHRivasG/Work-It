@@ -6,7 +6,8 @@ import { FitnessComponentsModule } from './fitness-components/fitness-components
 
 
 @NgModule({
-  declarations: [],
+  declarations: [
+  ],
   imports: [
     CommonModule,
     FitnessRoutingModule,

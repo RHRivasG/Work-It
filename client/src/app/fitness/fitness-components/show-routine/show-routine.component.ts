@@ -1,8 +1,13 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { faEllipsisV, faGripLines, faPlayCircle, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { moveItemInArray } from "@angular/cdk/drag-drop"
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { CdkPortal } from '@angular/cdk/portal';
+import { ActivatedRoute } from '@angular/router';
+import { FullRoutine } from '../../models/routine';
+import { Training } from '../../models/training';
+import { RoutineService } from '../../services/routine.service';
+import { GlobalSearch, WI_GLOBAL_SEARCH } from 'src/app/services/global-search';
 
 @Component({
   selector: 'wi-show-routine',
@@ -17,25 +22,18 @@ export class ShowRoutineComponent implements OnInit {
   updateRef: OverlayRef
   @ViewChild(CdkPortal)
   updatePortal!: CdkPortal
-  trainings = [
-    {
-      name: 'Workout Name',
-      trainerId: 'Pepe Ramírez',
-      categories: [{ value: 'Tag 1' }, { value: 'Tag 2' }],
-    },
-    {
-      name: 'Workout Name',
-      trainerId: 'Pepe Ramírez',
-      categories: [{ value: 'Tag 1' }, { value: 'Tag 2' }],
-    },
-    {
-      name: 'Workout Name',
-      trainerId: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel elit eget nunc blandit malesuada at vel ex. Suspendisse volutpat libero et ex elementum ornare. Nullam odio turpis, posuere nec erat eu, congue faucibus sem. Duis convallis pharetra turpis, id vulputate ante vehicula sed. Proin congue posuere lorem, aliquam auctor neque rutrum at. Nulla nec dignissim sapien. In vitae turpis eget erat sodales lacinia sed eu leo. Vivamus efficitur in risus in dictum. Aenean felis mauris, molestie et justo id, auctor iaculis magna. Aliquam non nulla ac leo viverra ultrices at nec erat. Nunc sit amet velit et urna blandit tempus nec vel diam. Suspendisse massa purus, vestibulum ut mattis sed, consectetur et velit. Curabitur egestas bibendum metus, sed posuere felis aliquam sed. Mauris vel dui sapien. Quisque tincidunt semper egestas.',
-      categories: [{ value: 'Tag 1' }, { value: 'Tag 2' }],
-    },
-  ]
+  trainings: Training[] = []
+  routine!: FullRoutine
 
-  constructor(overlay: Overlay) {
+  constructor(private route: ActivatedRoute, private service: RoutineService, overlay: Overlay, @Inject(WI_GLOBAL_SEARCH) private search: GlobalSearch<Training>) {
+    route.data.subscribe(data => {
+      this.routine = data.routine
+      this.search.dataSource = this.routine.trainings || []
+      this.search.extractor = JSON.stringify
+      this.search.result.subscribe(trainings => {
+        this.trainings = trainings
+      })
+    })
     this.updateRef = overlay.create({
       positionStrategy: overlay.position().global().centerHorizontally().centerVertically(),
       hasBackdrop: true,
@@ -48,9 +46,17 @@ export class ShowRoutineComponent implements OnInit {
 
   drop(event: any) {
     moveItemInArray(this.trainings, event.previousIndex, event.currentIndex)
+    this.routine.trainings = this.trainings
+    this.service.update(this.routine).subscribe()
   }
 
   showUpdateModal() {
     this.updateRef.attach(this.updatePortal)
+  }
+
+  removeTraining(training: Training) {
+    this.routine.trainings = this.routine.trainings.filter(t => t != training)
+    this.trainings = this.routine.trainings
+    this.service.removeTraining(this.routine, training).subscribe()
   }
 }
