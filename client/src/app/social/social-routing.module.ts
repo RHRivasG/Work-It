@@ -67,7 +67,7 @@ const routes: Routes = [
         path: ':id',
         component: ProfileComponent,
         data: {
-          profile: true
+          myProfile: true
         },
         resolve: {
           profile: ProfileResolver,

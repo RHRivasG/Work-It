@@ -142,6 +142,7 @@ fn configure_token(
                                 "Authorization",
                                 format!("Bearer {}", token).parse().unwrap(),
                             );
+                            println!("Attaching token {} to origin {} with uri {:?}", token, proxy, uri);
                         }
                     }
                 }

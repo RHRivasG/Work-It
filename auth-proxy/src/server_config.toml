@@ -6,4 +6,4 @@ to = "http://localhost:5000"
 
 [servers.fitness]
 from = "/api/fitness"
-to = "http://localhost:5050"
+to = "http://localhost:8080"

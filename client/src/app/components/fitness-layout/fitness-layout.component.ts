@@ -79,6 +79,7 @@ export class LayoutComponent implements OnInit {
     @Inject(WI_IDENTITY_PROVIDER) identityProvider: IdentityProvider,
     @Inject(WI_GLOBAL_SEARCH) public searchService: GlobalSearch<unknown>
   ) {
+    identityProvider.identity.subscribe(id => this.id = id)
     this.userChoice = overlay.create({
       positionStrategy: overlay.position().global().centerHorizontally().centerVertically(),
       hasBackdrop: true,
