@@ -11,7 +11,7 @@
       <button class="text-yellow-600 hover:underline text-left" *ngSwitchCase="1">The participant request is pending to be responded</button>
     </p>
     <div class="mt-auto flex flex-col">
-      <a [routerLink]="['/social/profile', entity.id]" [queryParams]="{ as: role || 'participant'}" class="border-2 p-1 mt-4 border-black rounded-lg text-center text-black col-span-full hover:underline">
+      <a [routerLink]="['/social', 'profile', entity.id]" class="border-2 p-1 mt-4 border-black rounded-lg text-center text-black col-span-full hover:underline">
         Visit profile
       </a>
     </div>

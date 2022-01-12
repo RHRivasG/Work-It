@@ -12,21 +12,11 @@ import { IdentityProvider, WI_IDENTITY_PROVIDER } from './identity-provider';
 export class CanActivateDashboardGuard implements CanActivate {
   constructor(private http: HttpClient, private router: Router, @Inject(WI_IDENTITY_PROVIDER) private identityProvider: IdentityProvider) {}
 
-  private get login() {
-    return this.http.post(environment.socialApiUrl + "/login/admin", {}).pipe(
-      mapTo(true),
-      catchError(_ => of(this.router.createUrlTree(['/social', 'auth', 'login'])))
-    )
-  }
-
   get isAdmin() {
     return this.identityProvider.identity.pipe(
-      map(identity => identity == "admin"),
-      switchMap(proceed => {
-        if (proceed) return of(proceed)
-        else return this.login
-      }),
-      catchError(_ => this.login)
+      tap(console.log),
+      map(identity => identity == "admin" ? true : this.router.createUrlTree(['/social', 'auth', 'login'])),
+      catchError(e => of(this.router.createUrlTree(['/social', 'auth', 'login'])))
     )
   }
 

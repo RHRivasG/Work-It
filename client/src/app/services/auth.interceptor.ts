@@ -27,7 +27,7 @@ export class AuthInterceptor implements HttpInterceptor {
           if (destinationUrl.includes("profile")) {
             localStorage.removeItem("identity")
           }
-          if (error.status == 401 && !urlSnapshot.includes("login") && !destinationUrl.includes("profile")) {
+          if (error.status == 401 && !urlSnapshot.includes("login") && !urlSnapshot.includes("admin") && !destinationUrl.includes("profile")) {
             this.router.navigate(['/social', 'auth', 'login'], { queryParams: { as: 'participant' }})
             return throwError(error)
           }

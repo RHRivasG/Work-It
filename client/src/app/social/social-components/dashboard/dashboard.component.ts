@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { AfterViewInit, Component, Inject, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, of, Subscription } from 'rxjs';
-import { catchError, map, mapTo, switchMap } from 'rxjs/operators';
+import { catchError, map, mapTo, switchMap, tap } from 'rxjs/operators';
 import { webSocket } from 'rxjs/webSocket';
 import { GlobalSearch, WI_GLOBAL_SEARCH } from 'src/app/services/global-search';
 import { environment } from 'src/environments/environment';
@@ -75,7 +75,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         else
           this.searchService.dataSource = this.participantsDataSource
       } else {
-        this.router.navigate(['.'], { relativeTo: activatedRoute, queryParams: { tab: 'requests' } })
+        this.router.navigate(['.'], { relativeTo: activatedRoute, queryParams: { tab: 'requests', secret: activatedRoute.snapshot.queryParams.secret } })
       }
     })
     this.searchService.extractor = (p: Participant | Trainer) => p.name
@@ -91,7 +91,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     })
     this.participantsStreamSubscription = webSocket<Participant[]>(environment.socialStreamingApiUrl + "/participants/stream")
     .pipe(
-      switchMap(list => forkJoin(
+      switchMap(list => list.length == 0 ? of([]) : forkJoin(
           list.map(p => this.http.get(environment.socialApiUrl + "/participants/" + p.id + "/request")
           .pipe(
             mapTo({ ...p, requestStatus: RequestStatus.Pending }),
@@ -101,11 +101,13 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       )
     )
     .subscribe(list => {
+      console.log(list)
       this.participantsDataSource = list
       if (this.tab != "trainers")
         this.searchService.dataSource = this.participantsDataSource
     })
     this.trainersStreamSubscription = webSocket<Trainer[]>(environment.socialStreamingApiUrl + "/trainers/stream").subscribe(list => {
+      console.log(list)
       this.trainersDataSource = list
       if (this.tab == "trainers")
         this.searchService.dataSource = this.trainersDataSource
@@ -127,7 +129,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   selectTab(tab: string) {
-    this.router.navigate(['.'], { relativeTo: this.activatedRoute, queryParams: { tab } })
+    this.router.navigate(['.'], { relativeTo: this.activatedRoute, queryParams: { tab, secret: this.activatedRoute.snapshot.queryParams.secret } })
   }
 
   acceptRequest(participantId: string) {

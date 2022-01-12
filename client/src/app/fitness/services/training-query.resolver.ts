@@ -6,7 +6,7 @@ import {
   ActivatedRouteSnapshot
 } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { mapTo, switchMap } from 'rxjs/operators';
+import { map, mapTo, switchMap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Training, TrainingVideo } from '../models/training';
 
@@ -22,5 +22,16 @@ export class TrainingQueryResolver implements Resolve<Training | undefined> {
       mapTo(undefined)
     )
     return this.http.get<Training>(environment.fitnessApiUrl + "/trainings/" + id)
+    .pipe(
+      switchMap(training => {
+        return this.http.get<TrainingVideo>(environment.fitnessApiUrl + '/trainings/' + id + '/video/metadata')
+        .pipe(
+          map(video => {
+            console.log(video)
+            return { ...training, video }
+          })
+        )
+      })
+    )
   }
 }

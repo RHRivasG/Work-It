@@ -15,6 +15,7 @@ import { Trainer } from '../social/models/trainer';
 export class TrainersResolver implements Resolve<Trainer[]> {
   constructor(private http: HttpClient) {}
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Trainer[]> {
+    console.log("Resolving trainers")
     return this.http.get<Trainer[]>(environment.socialApiUrl + "/trainers")
   }
 }

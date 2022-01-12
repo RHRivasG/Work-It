@@ -16,13 +16,5 @@ export class TrainingResolver implements Resolve<Training> {
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Training> {
     const id = route.params.id
     return this.client.get<Training>(environment.fitnessApiUrl + '/trainings/' + id)
-    .pipe(
-      switchMap(training =>
-        this.client.get<TrainingVideo>(environment + '/trainings/' + id + '/video/metadata')
-        .pipe(
-          map(video => ({ ...training, video }))
-        )
-      )
-    )
   }
 }

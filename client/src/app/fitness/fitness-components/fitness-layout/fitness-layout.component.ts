@@ -41,7 +41,6 @@ export class FitnessLayoutComponent implements OnInit, AfterViewInit {
             return null;
           })
         ).subscribe((customData: any) => {
-          console.log(customData)
           this.searchable = customData.searchable
           this.profile = customData.myProfile
           this.trainings = customData.myTrainings

@@ -30,7 +30,9 @@ import scala.util.Success
 import cats.data.EitherT
 import cats.data.Kleisli
 
+case class AdminProfile(id: String)
 case class Profile[A: JsonFormat](`type`: String, user: A)
+case class PublicProfile(`type`: String, name: String)
 
 object ProfileRoutes extends JsonSupport {
     type FindResult[T] = EitherT[Future, Error, T]
@@ -84,10 +86,37 @@ object ProfileRoutes extends JsonSupport {
             }
                 
     
-            (path("profile" / Segment.?) & (authParticipant | authTrainer)) { (id, result) =>
-                val effectiveId = id.getOrElse(result.fold(_.fold("admin")(_.id), _.fold("admin")(_.id)))
-                system.log.debug(f"Profile requested with $effectiveId")
-                authorize(result.fold(_.has { _.id == effectiveId }, _.has { _.id == effectiveId })) { 
+            concat(
+                (path("profile" / Segment.?) & (authParticipant | authTrainer)) { (id, result) =>
+                    val effectiveId = id.getOrElse(result.fold(_.fold("admin")(_.id), _.fold("admin")(_.id)))
+                    system.log.debug(f"Profile requested with $effectiveId")
+                    authorize(result.fold(_.has { _.id == effectiveId }, _.has { _.id == effectiveId })) { 
+                        onComplete(findParticipantOrTrainer(effectiveId)) {
+                            case Failure(exception) => {
+                                system.log.warn(f"Authorization failed with $exception")
+                                complete(StatusCodes.Unauthorized, exception.getMessage())
+                            }
+                            case Success(Left(e)) if effectiveId == "admin" => {
+                                complete(AdminProfile("admin"))
+                            }
+                            case Success(Left(e)) => {
+                                system.log.warn(f"Authorization failed with $e")
+                                complete(StatusCodes.Unauthorized, e.getMessage())
+                            }
+                            case Success(Right(Right(trainer))) => {
+                                system.log.debug(f"Authorizing trainer profile $trainer")
+                                complete(Profile("trainer", trainer))
+                            }
+                            case Success(Right(Left(participant))) => {
+                                system.log.debug(f"Authorizing participant profile $participant")
+                                complete(Profile("participant", participant))
+                            }
+                        } 
+                    }
+                },
+                (pathPrefix("profile") & path("public" / Segment.?) & (authParticipant | authTrainer)) { (id, result) =>
+                    val effectiveId = id.getOrElse(result.fold(_.fold("admin")(_.id), _.fold("admin")(_.id)))
+                    system.log.debug(f"Public profile requested with $effectiveId")
                     onComplete(findParticipantOrTrainer(effectiveId)) {
                         case Failure(exception) => {
                             system.log.warn(f"Authorization failed with $exception")
@@ -99,15 +128,15 @@ object ProfileRoutes extends JsonSupport {
                         }
                         case Success(Right(Right(trainer))) => {
                             system.log.debug(f"Authorizing trainer profile $trainer")
-                            complete(Profile("trainer", trainer))
+                            complete(PublicProfile("trainer", trainer.name))
                         }
                         case Success(Right(Left(participant))) => {
                             system.log.debug(f"Authorizing participant profile $participant")
-                            complete(Profile("participant", participant))
+                            complete(PublicProfile("participant", participant.name))
                         }
                     } 
                 }
-            }
+            )
         }
 
 }

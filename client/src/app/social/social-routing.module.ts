@@ -7,6 +7,7 @@ import { ParticipantsResolver } from '../services/participants.resolver';
 import { PreferencesResolver } from '../services/preferences.resolver';
 import { TrainersResolver } from '../services/trainers.resolver';
 import { ProfileResolver } from './services/profile.resolver';
+import { AdminLoginComponent } from './social-components/admin-login/admin-login.component';
 import { ChangePasswordComponent } from './social-components/change-password/change-password.component';
 import { DashboardComponent } from './social-components/dashboard/dashboard.component';
 import { LayoutComponent as SocialLayoutComponent } from './social-components/layout/layout.component';
@@ -52,6 +53,11 @@ const routes: Routes = [
         resolve: {
           profile: ProfileResolver
         }
+      },
+      {
+        path: 'admin',
+        component: AdminLoginComponent,
+        canActivate: [CanActivateLoginGuard]
       },
       {
         path: '**',

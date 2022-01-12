@@ -52,6 +52,7 @@ export class ProfileResolver implements Resolve<Participant | Trainer> {
         )
       }),
       catchError((e: Error) => {
+        console.log(e)
         if (e.message == "admin") return throwError(e)
 
         this.router.navigate(['/social/auth/login'], { queryParams: { as: 'participant' } })

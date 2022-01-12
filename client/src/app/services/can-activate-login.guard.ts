@@ -13,7 +13,7 @@ export class CanActivateLoginGuard implements CanActivate, CanLoad {
   get isNotLoggedIn() {
     return this.identityProvider.identity.pipe(
       map(id => {
-        if (id == "admin") return this.router.createUrlTree(['/social/dashboard'])
+        if (id == "admin") return this.router.createUrlTree(['/social', 'dashboard'])
         else return this.router.createUrlTree(['/social/profile', id])
       }),
       catchError(() => of(true))

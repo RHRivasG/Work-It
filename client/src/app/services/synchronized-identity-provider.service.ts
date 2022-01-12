@@ -10,6 +10,10 @@ type Ideable = {
   user: { id: string }
 }
 
+type Id = {
+  id: string
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -23,10 +27,12 @@ export class SynchronizedIdentityProviderService implements IdentityProvider {
         .pipe(
           switchMap(id => {
             if (id) return of(id)
-            else return this.client.get<Ideable>(
+            else return this.client.get<Id | Ideable>(
               environment.socialApiUrl + "/profile/",
             ).pipe(
-              map(p => p.user.id),
+              map(p => {
+                return "id" in p ? p.id : p.user.id
+              }),
               tap(id => {
                 this.storage.store(id)
               })

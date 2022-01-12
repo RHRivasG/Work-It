@@ -21,7 +21,7 @@ export class TrainingCardComponent implements OnInit, OnDestroy, AfterViewInit {
   showMoreIcon = faAngleDown
   descriptionShown = false
   overlayRef: OverlayRef
-  trainer!: Trainer
+  trainerName!: String
   spinner = faSpinner
   @Input()
   editing = false
@@ -67,9 +67,9 @@ export class TrainingCardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit(): void {
     console.log(this.training)
-    this.http.get<{ user: Trainer }>(environment.socialApiUrl + "/profile/" + this.training.trainerId)
+    this.http.get<{ name: string }>(environment.socialApiUrl + "/profile/public/" + this.training.trainerId)
     .subscribe(profile => {
-      this.trainer = profile.user
+      this.trainerName = profile.name
     })
   }
 

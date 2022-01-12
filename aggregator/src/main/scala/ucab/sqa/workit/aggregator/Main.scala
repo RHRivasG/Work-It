@@ -26,6 +26,7 @@ import ucab.sqa.workit.aggregator.application.ServiceAggregatorUseCaseBuilder._
 import ucab.sqa.workit.aggregator.infrastructure.ServiceAggregatorExecutor
 import ucab.sqa.workit.aggregator.model.ServiceTable
 import cats.arrow.FunctionK
+import java.net.InetSocketAddress
 
 object Main extends IOApp.Simple {
   val aggregatorService: Resource[IO, ServerServiceDefinition] = for {
@@ -40,7 +41,7 @@ object Main extends IOApp.Simple {
   } yield ServerInterceptors.intercept(server, ipInterceptor)
 
   def runServer(service: ServerServiceDefinition) = NettyServerBuilder
-    .forPort(3000)
+    .forPort(4500)
     .addService(ProtoReflectionService.newInstance())
     .addService(service)
     .resource[IO]

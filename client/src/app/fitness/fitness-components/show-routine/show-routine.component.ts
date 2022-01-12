@@ -8,6 +8,8 @@ import { FullRoutine } from '../../models/routine';
 import { Training } from '../../models/training';
 import { RoutineService } from '../../services/routine.service';
 import { GlobalSearch, WI_GLOBAL_SEARCH } from 'src/app/services/global-search';
+import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'wi-show-routine',
@@ -25,7 +27,7 @@ export class ShowRoutineComponent implements OnInit {
   trainings: Training[] = []
   routine!: FullRoutine
 
-  constructor(private route: ActivatedRoute, private service: RoutineService, overlay: Overlay, @Inject(WI_GLOBAL_SEARCH) private search: GlobalSearch<Training>) {
+  constructor(private http: HttpClient, private route: ActivatedRoute, private service: RoutineService, overlay: Overlay, @Inject(WI_GLOBAL_SEARCH) private search: GlobalSearch<Training>) {
     route.data.subscribe(data => {
       this.routine = data.routine
       this.search.dataSource = this.routine.trainings || []
@@ -42,6 +44,14 @@ export class ShowRoutineComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.trainings.forEach(t => {
+      const trainerId = t.trainerId
+      t.trainerId = ''
+      this.http.get<{ name: string }>(environment.socialApiUrl + "/profile/public/" + trainerId)
+      .subscribe(profile => {
+        t.trainerId = profile.name
+      })
+    })
   }
 
   drop(event: any) {

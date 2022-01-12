@@ -29,7 +29,7 @@ object AuthorityActor {
         JwtSprayJson.decode(token, key, Seq(algorithm)).toEither.left.map(new Error(_))
 
     def apply(key: String) = Behaviors.receive[AuthorityActions] { (ctx, action) => action match {
-        case IssueToken(subject, roles, preferences, replyTo) => 
+        case IssueToken(subject, preferences, roles, replyTo) => 
             val claims = JwtClaim(
               subject = Some(subject),
             ) ++ (("roles", roles)) ++ (("preferences", preferences))

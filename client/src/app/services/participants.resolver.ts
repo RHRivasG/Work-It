@@ -18,9 +18,10 @@ export class ParticipantsResolver implements Resolve<Participant[]> {
   private constructor(private http: HttpClient) {}
 
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Participant[]> {
+    console.log('Resolving participants')
     return this.http.get<UnfinishedParticipant[]>(environment.socialApiUrl + "/participants")
     .pipe(
-      switchMap(ps => forkJoin(
+      switchMap(ps => ps.length == 0 ? of(ps) : forkJoin(
         ps.map(p =>
           this.http.get(environment.socialApiUrl + "/participants/" + p.id + "/request")
           .pipe(

@@ -39,6 +39,8 @@ class AuthRoutes[C1, C2](
     system.settings.config.getDuration("work-it-app.routes.ask-timeout")
   )
 
+  private val adminToken = system.settings.config.getString("work-it-app.secret.token")
+
   private def issueJWT(subject: String, preferences: Seq[String], roles: Seq[String]): Future[String] = 
     authorityService.ask(IssueToken(subject, preferences, roles, _))
 
@@ -93,13 +95,12 @@ class AuthRoutes[C1, C2](
           )) { participant =>
             complete(issueJWT(participant.id.id.toString, participant.preferences.preferences map { _.tag }, Seq("participant")))
           },
-          (path("admin") & authorize { request =>
-            val ip = request.request.getAttribute(AttributeKeys.remoteAddress)
-            ip.flatMap(_.getAddress())
-              .filter(addr => addr.isAnyLocalAddress() || addr.isLoopbackAddress())
-              .isPresent()
-          }) {
-            complete(issueJWT("admin", Seq(""), Seq("admin")))
+          (path("admin" / Segment)) { token =>
+            system.log.info(f"Authorization requested with token $token")
+            authorize(token == adminToken) {
+              system.log.info(f"Authorization granted")
+              complete(issueJWT("admin", Seq(""), Seq("admin")))
+            }
           }
         )
       }

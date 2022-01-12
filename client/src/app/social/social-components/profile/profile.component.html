@@ -2,7 +2,7 @@
   <h1 class="font-bold text-3xl text-center">Profile settings</h1>
   <div *ngIf="updateResult" class="status-message text-center text-green-500 text-lg font-bold pt-6">Success! Profile updated!</div>
   <div *ngIf="updateResult === false" class="status-message text-center text-red-500 text-lg font-bold pt-6">Oops! Something happened, try again later!</div>
-  <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" [ngClass]="updateResult || updateResult === false ? 'pt-4' : 'pt-8'" class="grid grid-cols-1 gap-4 lg:gap-0 lg:auto-rows-auto lg:grid-cols-3 pt-8 flex-auto">
+  <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" [ngClass]="updateResult || updateResult === false ? 'pt-4' : 'pt-8'" class="flex flex-col gap-4 lg:grid lg:gap-0 lg:auto-rows-auto lg:grid-cols-3 pt-8 flex-auto">
     <label class="font-semibold text-3xl my-auto hidden lg:block" for="name">Username</label>
     <div class="lg:col-span-2 my-auto">
       <wi-input formControlName="username" placeholder="Username"></wi-input>
@@ -10,11 +10,11 @@
       <small class="error" *ngIf="profileForm.get('username')?.errors?.maxlength">Your username should be less than 50 characters</small>
     </div>
     <label class="font-semibold text-3xl my-auto hidden lg:block" for="tags">Training Preferences</label>
-    <div class="lg:col-span-2 text-2xl my-auto">
+    <div class="lg:col-span-2 my-auto">
       <wi-tag-input [allTagsList]="preferences" formControlName="preferences" name="tags"></wi-tag-input>
       <small class="error" *ngIf="profileForm.get('preferences')?.errors?.minlength">You must input at least 3 training preferences!</small>
     </div>
-    <div class="lg:col-span-2 my-auto text-center lg:text-left" *ngIf="requestStatus != null" [ngSwitch]="requestStatus">
+    <div class="lg:col-span-2 lg:my-auto text-center lg:text-left" *ngIf="requestStatus != null" [ngSwitch]="requestStatus">
       <button
         type="button"
         (click)="sendRequest()"
@@ -26,7 +26,7 @@
       </button>
       <span class="text-xl lg:text-2xl text-left text-yellow-600 underline" *ngSwitchCase="1">Your request has been issued!</span>
     </div>
-    <div [ngClass]="requestStatus == null ? 'lg:col-span-full' : 'lg:col-span-1 lg:text-right'" class="my-auto text-center">
+    <div [ngClass]="requestStatus == null ? 'lg:col-span-full' : 'lg:col-span-1 lg:text-right'" class="lg:my-auto text-center">
       <a [routerLink]="['/social/auth/change-password', profile.id]" class="underline text-xl lg:text-2xl my-auto">Change Password</a>
     </div>
     <div class="lg:col-span-3 flex flex-col gap-4 mt-auto">

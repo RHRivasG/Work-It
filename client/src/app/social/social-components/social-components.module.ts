@@ -12,6 +12,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { PortalModule } from '@angular/cdk/portal';
+import { AdminLoginComponent } from './admin-login/admin-login.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { PortalModule } from '@angular/cdk/portal';
     LayoutComponent,
     ProfileComponent,
     ChangePasswordComponent,
-    DashboardComponent
+    DashboardComponent,
+    AdminLoginComponent
   ],
   imports: [
     CommonModule,

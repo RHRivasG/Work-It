@@ -1,0 +1,17 @@
+<form (ngSubmit)="login()" [formGroup]="loginForm" class="h-full pt-8 lg:h-auto lg:pt-0">
+  <div class=" h-full flex flex-col fade-in gap-4 lg:grid lg:grid-cols-5">
+    <label class="hidden lg:block lg:col-span-2 font-semibold text-3xl my-auto">Admin Token</label>
+    <div class="lg:col-span-3">
+      <wi-input formControlName="token"></wi-input>
+    </div>
+    <div class="py-4 lg:col-span-full">
+      <wi-submit-button
+        submit
+        [disabled]="loginForm.status == 'INVALID'"
+        [loading]="inLogin"
+        type="action">
+        Log In
+      </wi-submit-button>
+    </div>
+  </div>
+</form>

@@ -58,6 +58,7 @@ object ParticipantStreamActor extends JsonSupport {
         case _: Message => ResendParticipants()
       }.take(1)
       val wsOutput = builder add Flow[List[ParticipantModel]].map { (participantList: List[ParticipantModel]) =>
+        println(f"Sending to stream ${participantList.toJson.prettyPrint}")
         TextMessage(participantList.toJson.prettyPrint) 
       }
 
@@ -82,7 +83,10 @@ object ParticipantStreamActor extends JsonSupport {
                     for {
                         service <- listings.headOption
                         () <- Some(ctx.ask[Request[ParticipantCommand, ParticipantQuery, _], Either[Error, List[ParticipantModel]]](service, Query(GetAllParticipantsQuery(), _)) {
-                            case Success(e) => BroadcastResult(e)
+                            case Success(e) => {
+                                system.log.info(f"Broadcasting to participants: $e")
+                                BroadcastResult(e)
+                            }
                             case Failure(error) => BroadcastResult(Left(new Error(error)))
                         })
                     } yield ()
