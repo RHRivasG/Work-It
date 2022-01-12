@@ -26,6 +26,10 @@ func HttpServe(l net.Listener, db *pg.DB) error {
 
 	//Http Server
 	e := echo.New()
+	t := e.Group("/trainings")
+
+	//Auth
+	t.Use(auth.AuthMiddleware())
 
 	//CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -33,9 +37,6 @@ func HttpServe(l net.Listener, db *pg.DB) error {
 		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete, http.MethodOptions},
 		AllowCredentials: true,
 	}))
-
-	//Auth
-	e.Use(auth.AuthMiddleware())
 
 	//Clients
 	routineClient := pb.NewRoutineAPIClient(conn)
@@ -51,7 +52,7 @@ func HttpServe(l net.Listener, db *pg.DB) error {
 
 	//Routes
 	HttpRoutineServe(e, routineRepository, &routinePublisher)
-	HttpTrainingServe(e, trainingRepository, &trainingPublisher)
+	HttpTrainingServe(t, trainingRepository, &trainingPublisher)
 
 	s := &http.Server{Handler: e}
 	return s.Serve(l)

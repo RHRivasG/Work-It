@@ -5,6 +5,7 @@ import (
 	"fitness-dimension/application/routines/commands"
 	"fitness-dimension/service/app/auth"
 	"fitness-dimension/service/app/helpers"
+	"fmt"
 	"net/http"
 
 	"github.com/golang-jwt/jwt"
@@ -39,23 +40,25 @@ func (c *RoutineHttpController) Get(ctx echo.Context) error {
 }
 
 func (c *RoutineHttpController) GetAll(ctx echo.Context) error {
-	user := ctx.Get("user").(*jwt.Token)
-	claims := user.Claims.(*auth.JwtWorkItClaims)
-	userId := claims.Subject
-	if !helpers.Contains(claims.Roles, "participant") {
-		return echo.ErrUnauthorized
-	}
+	//user := ctx.Get("user").(*jwt.Token)
+	//claims := user.Claims.(*auth.JwtWorkItClaims)
+	//userId := claims.Subject
+	//if !helpers.Contains(claims.Roles, "participant") {
+	//	return echo.ErrUnauthorized
+	//}
 
-	routineList, err := c.Service.GetAll(userId)
-	if err != nil {
-		return err
-	}
+	//routineList, err := c.Service.GetAll(userId)
+	//if err != nil {
+	//	return err
+	//}
 
-	var routinesDto []routines.RoutineDto
-	for _, r := range routineList {
-		routinesDto = append(routinesDto, helpers.TranformRoutineToDto(&r))
-	}
-	return ctx.JSON(http.StatusOK, routinesDto)
+	//var routinesDto []routines.RoutineDto
+	//for _, r := range routineList {
+	//	routinesDto = append(routinesDto, helpers.TranformRoutineToDto(&r))
+	//}
+	//return ctx.JSON(http.StatusOK, routinesDto)
+	fmt.Println(ctx.Request().Header)
+	return nil
 }
 
 func (c *RoutineHttpController) Create(ctx echo.Context) error {
