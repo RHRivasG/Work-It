@@ -27,9 +27,11 @@ func HttpServe(l net.Listener, db *pg.DB) error {
 	//Http Server
 	e := echo.New()
 	t := e.Group("/trainings")
+	r := e.Group("/routines")
 
 	//Auth
 	t.Use(auth.AuthMiddleware())
+	r.Use(auth.AuthMiddleware())
 
 	//CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -51,7 +53,7 @@ func HttpServe(l net.Listener, db *pg.DB) error {
 	trainingRepository := repositories.PgTrainingRepository{DB: db}
 
 	//Routes
-	HttpRoutineServe(e, routineRepository, &routinePublisher)
+	HttpRoutineServe(r, routineRepository, &routinePublisher)
 	HttpTrainingServe(t, trainingRepository, &trainingPublisher)
 
 	s := &http.Server{Handler: e}

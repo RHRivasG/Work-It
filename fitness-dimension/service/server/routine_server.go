@@ -11,19 +11,19 @@ import (
 	pb "fitness-dimension/gen/proto"
 )
 
-func HttpRoutineServe(e *echo.Echo, r routines.RoutineRepository, p routines.RoutinePublisher) {
+func HttpRoutineServe(e *echo.Group, r routines.RoutineRepository, p routines.RoutinePublisher) {
 
 	service := routines.RoutineService{Repository: r, Publisher: p}
 	controller := controllers.RoutineHttpController{Service: service}
 
-	e.POST("/routines", controller.Create)
-	e.GET("/routines", controller.GetAll)
-	e.GET("/routines/:id", controller.Get)
-	e.PUT("/routines/:id", controller.Update)
-	e.DELETE("/routines/:id", controller.Delete)
+	e.POST("", controller.Create)
+	e.GET("", controller.GetAll)
+	e.GET("/:id", controller.Get)
+	e.PUT("/:id", controller.Update)
+	e.DELETE("/:id", controller.Delete)
 
-	e.POST("/routines/:id/training/:idt", controller.AddTraining)
-	e.DELETE("/routines/:id/training/:idt", controller.RemoveTraining)
+	e.POST("/:id/training/:idt", controller.AddTraining)
+	e.DELETE("/:id/training/:idt", controller.RemoveTraining)
 }
 
 func GrpcRoutineServe(s *grpc.Server, db *pg.DB) {
