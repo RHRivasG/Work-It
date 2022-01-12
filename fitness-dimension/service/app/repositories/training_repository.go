@@ -136,7 +136,7 @@ func (r PgTrainingRepository) GetVideo(id string) *entities.TrainingVideo {
 }
 
 func (r PgTrainingRepository) GetVideoMetadata(id string) *entities.TrainingVideo {
-	var video models.TrainingVideo
+	var video models.TrainingVideoMetadata
 	err := r.DB.Model().Table("videos").
 		Where("training_id = ?", id).
 		ColumnExpr("id, name, ext, length(buff) AS length_video").
@@ -156,7 +156,6 @@ func (r PgTrainingRepository) GetVideoMetadata(id string) *entities.TrainingVide
 		ID:     valuesObjects.TrainingVideoID{Value: videoID},
 		Name:   valuesObjects.TrainingVideoName{Value: video.Name},
 		Ext:    valuesObjects.TrainingVideoExt{Value: video.Ext},
-		Buff:   valuesObjects.TrainingVideoBuffer{Value: video.Buff},
 		Length: valuesObjects.TrainingVideoLength{Value: video.Length},
 	}
 }

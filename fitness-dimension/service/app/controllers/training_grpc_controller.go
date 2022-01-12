@@ -60,7 +60,6 @@ func (s *TrainingApiServer) Delete(ctx context.Context, req *pb.TrainingDeleted)
 	training := &models.Training{
 		ID: req.Id,
 	}
-	fmt.Println(training)
 	_, err := s.DB.Model(training).WherePK().Delete()
 	if err != nil {
 		return nil, err
