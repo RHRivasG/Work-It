@@ -27,6 +27,7 @@ type TrainingAPIClient interface {
 	Delete(ctx context.Context, in *TrainingDeleted, opts ...grpc.CallOption) (*Response, error)
 	SaveVideo(ctx context.Context, in *TrainingVideoCreated, opts ...grpc.CallOption) (*Response, error)
 	DeleteVideo(ctx context.Context, in *TrainingVideoDeleted, opts ...grpc.CallOption) (*Response, error)
+	DeleteByTrainer(ctx context.Context, in *TrainerDeleted, opts ...grpc.CallOption) (*Response, error)
 }
 
 type trainingAPIClient struct {
@@ -82,6 +83,15 @@ func (c *trainingAPIClient) DeleteVideo(ctx context.Context, in *TrainingVideoDe
 	return out, nil
 }
 
+func (c *trainingAPIClient) DeleteByTrainer(ctx context.Context, in *TrainerDeleted, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/main.trainingAPI/DeleteByTrainer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TrainingAPIServer is the server API for TrainingAPI service.
 // All implementations must embed UnimplementedTrainingAPIServer
 // for forward compatibility
@@ -91,6 +101,7 @@ type TrainingAPIServer interface {
 	Delete(context.Context, *TrainingDeleted) (*Response, error)
 	SaveVideo(context.Context, *TrainingVideoCreated) (*Response, error)
 	DeleteVideo(context.Context, *TrainingVideoDeleted) (*Response, error)
+	DeleteByTrainer(context.Context, *TrainerDeleted) (*Response, error)
 	mustEmbedUnimplementedTrainingAPIServer()
 }
 
@@ -112,6 +123,9 @@ func (UnimplementedTrainingAPIServer) SaveVideo(context.Context, *TrainingVideoC
 }
 func (UnimplementedTrainingAPIServer) DeleteVideo(context.Context, *TrainingVideoDeleted) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteVideo not implemented")
+}
+func (UnimplementedTrainingAPIServer) DeleteByTrainer(context.Context, *TrainerDeleted) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteByTrainer not implemented")
 }
 func (UnimplementedTrainingAPIServer) mustEmbedUnimplementedTrainingAPIServer() {}
 
@@ -216,6 +230,24 @@ func _TrainingAPI_DeleteVideo_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TrainingAPI_DeleteByTrainer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TrainerDeleted)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrainingAPIServer).DeleteByTrainer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.trainingAPI/DeleteByTrainer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrainingAPIServer).DeleteByTrainer(ctx, req.(*TrainerDeleted))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TrainingAPI_ServiceDesc is the grpc.ServiceDesc for TrainingAPI service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -243,6 +275,10 @@ var TrainingAPI_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "DeleteVideo",
 			Handler:    _TrainingAPI_DeleteVideo_Handler,
 		},
+		{
+			MethodName: "DeleteByTrainer",
+			Handler:    _TrainingAPI_DeleteByTrainer_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "fitness.proto",
@@ -257,6 +293,7 @@ type RoutineAPIClient interface {
 	Delete(ctx context.Context, in *RoutineDeleted, opts ...grpc.CallOption) (*Response, error)
 	AddTraining(ctx context.Context, in *TrainingAdded, opts ...grpc.CallOption) (*Response, error)
 	RemoveTraining(ctx context.Context, in *TrainingRemoved, opts ...grpc.CallOption) (*Response, error)
+	DeleteByParticipant(ctx context.Context, in *ParticipantDeleted, opts ...grpc.CallOption) (*Response, error)
 }
 
 type routineAPIClient struct {
@@ -312,6 +349,15 @@ func (c *routineAPIClient) RemoveTraining(ctx context.Context, in *TrainingRemov
 	return out, nil
 }
 
+func (c *routineAPIClient) DeleteByParticipant(ctx context.Context, in *ParticipantDeleted, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/main.routineAPI/DeleteByParticipant", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RoutineAPIServer is the server API for RoutineAPI service.
 // All implementations must embed UnimplementedRoutineAPIServer
 // for forward compatibility
@@ -321,6 +367,7 @@ type RoutineAPIServer interface {
 	Delete(context.Context, *RoutineDeleted) (*Response, error)
 	AddTraining(context.Context, *TrainingAdded) (*Response, error)
 	RemoveTraining(context.Context, *TrainingRemoved) (*Response, error)
+	DeleteByParticipant(context.Context, *ParticipantDeleted) (*Response, error)
 	mustEmbedUnimplementedRoutineAPIServer()
 }
 
@@ -342,6 +389,9 @@ func (UnimplementedRoutineAPIServer) AddTraining(context.Context, *TrainingAdded
 }
 func (UnimplementedRoutineAPIServer) RemoveTraining(context.Context, *TrainingRemoved) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveTraining not implemented")
+}
+func (UnimplementedRoutineAPIServer) DeleteByParticipant(context.Context, *ParticipantDeleted) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteByParticipant not implemented")
 }
 func (UnimplementedRoutineAPIServer) mustEmbedUnimplementedRoutineAPIServer() {}
 
@@ -446,6 +496,24 @@ func _RoutineAPI_RemoveTraining_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RoutineAPI_DeleteByParticipant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ParticipantDeleted)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoutineAPIServer).DeleteByParticipant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.routineAPI/DeleteByParticipant",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoutineAPIServer).DeleteByParticipant(ctx, req.(*ParticipantDeleted))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RoutineAPI_ServiceDesc is the grpc.ServiceDesc for RoutineAPI service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -472,6 +540,10 @@ var RoutineAPI_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveTraining",
 			Handler:    _RoutineAPI_RemoveTraining_Handler,
+		},
+		{
+			MethodName: "DeleteByParticipant",
+			Handler:    _RoutineAPI_DeleteByParticipant_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

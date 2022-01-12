@@ -9,6 +9,7 @@ service trainingAPI{
     rpc Delete(TrainingDeleted) returns (Response){}
     rpc SaveVideo(TrainingVideoCreated) returns (Response){}
     rpc DeleteVideo(TrainingVideoDeleted) returns (Response){}
+    rpc DeleteByTrainer(TrainerDeleted) returns (Response) {}
 }
 
 service routineAPI{
@@ -17,6 +18,7 @@ service routineAPI{
     rpc Delete(RoutineDeleted) returns (Response){}
     rpc AddTraining(TrainingAdded) returns (Response){}
     rpc RemoveTraining(TrainingRemoved) returns (Response){}
+    rpc DeleteByParticipant(ParticipantDeleted) returns (Response) {}
 }
 
 message Response{
@@ -56,6 +58,10 @@ message TrainingVideoDeleted{
     string id = 1;
 }
 
+message TrainerDeleted {
+    string id = 1;
+}
+
 message RoutineCreated{
     string id = 1;
     string name = 2;
@@ -85,4 +91,8 @@ message TrainingAdded{
 message TrainingRemoved{
     string routineId = 1;
     string trainingId = 2;
+}
+
+message ParticipantDeleted {
+    string id = 1;
 }

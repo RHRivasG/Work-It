@@ -131,3 +131,18 @@ func (s *RoutineApiServer) RemoveTraining(ctx context.Context, req *pb.TrainingR
 	msg := pb.Response{Msg: "Training removed"}
 	return &msg, nil
 }
+
+func (s *RoutineApiServer) DeleteByParticipant(ctx context.Context, req *pb.ParticipantDeleted) (*pb.Response, error) {
+	fmt.Println("Deleting routines")
+
+	routine := &models.Routine{
+		UserID: req.Id,
+	}
+	_, err := s.DB.Model(routine).Where("user_id = ?", routine.UserID).Delete()
+	if err != nil {
+		return nil, err
+	}
+
+	msg := pb.Response{Msg: "Routines deleted"}
+	return &msg, nil
+}

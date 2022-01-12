@@ -2,6 +2,7 @@ syntax = "proto3";
 
 option java_multiple_files = true;
 option java_package = "ucab.sqa.workit.probobuf";
+option go_package = "./proto";
 
 package ucab.sqa.workit.protobuf;
 

@@ -115,3 +115,20 @@ func (s *TrainingApiServer) DeleteVideo(ctx context.Context, req *pb.TrainingVid
 	msg := pb.Response{Msg: "Video deleted"}
 	return &msg, nil
 }
+
+func (s *TrainingApiServer) DeleteByTrainer(ctx context.Context, req *pb.TrainerDeleted) (*pb.Response, error) {
+	fmt.Println("Deleting trainings")
+
+	training := &models.Training{
+		TrainerID: req.Id,
+	}
+
+	_, err := s.DB.Model(training).Where("trainer_id = ?", &training.TrainerID).Delete()
+	if err != nil {
+		return nil, err
+	}
+
+	msg := pb.Response{Msg: "trainings deleted"}
+	return &msg, nil
+
+}
