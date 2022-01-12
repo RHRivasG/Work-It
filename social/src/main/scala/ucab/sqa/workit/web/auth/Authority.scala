@@ -16,7 +16,7 @@ import cats.data.EitherT
 
 sealed trait AuthorityActions
 
-case class IssueToken(subject: String, roles: Seq[String], replyTo: ActorRef[String]) extends AuthorityActions
+case class IssueToken(subject: String, preferences: Seq[String], roles: Seq[String], replyTo: ActorRef[String]) extends AuthorityActions
 case class ValidateToken[T](token: String, validationMethod: String => Future[Either[Error, T]], replyTo: ActorRef[Option[helpers.auth.AuthResult[T]]]) extends AuthorityActions
 
 object AuthorityActor {
@@ -29,11 +29,10 @@ object AuthorityActor {
         JwtSprayJson.decode(token, key, Seq(algorithm)).toEither.left.map(new Error(_))
 
     def apply(key: String) = Behaviors.receive[AuthorityActions] { (ctx, action) => action match {
-        case IssueToken(subject, roles, replyTo) => 
+        case IssueToken(subject, roles, preferences, replyTo) => 
             val claims = JwtClaim(
               subject = Some(subject),
-              audience = Some(Set("auth", "social", "fitness")),
-            ) ++ (("roles", roles))
+            ) ++ (("roles", roles)) ++ (("preferences", preferences))
 
             replyTo ! encode(claims, key)
             Behaviors.same
