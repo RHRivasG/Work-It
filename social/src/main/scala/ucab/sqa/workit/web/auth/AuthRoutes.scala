@@ -39,8 +39,8 @@ class AuthRoutes[C1, C2](
     system.settings.config.getDuration("work-it-app.routes.ask-timeout")
   )
 
-  private def issueJWT(subject: String, roles: Seq[String]): Future[String] = 
-    authorityService.ask(IssueToken(subject, roles, _))
+  private def issueJWT(subject: String, preferences: Seq[String], roles: Seq[String]): Future[String] = 
+    authorityService.ask(IssueToken(subject, preferences, roles, _))
 
   private def getIdentityFromToken(credentials: Credentials): Future[Option[helpers.auth.AuthResult[String]]] = credentials match {
     case Provided(token) => authorityService.ask(ValidateToken(token, id => Future.successful(id.asRight), _))
@@ -85,13 +85,13 @@ class AuthRoutes[C1, C2](
             "Trainer Visible",
             authenticate(getTrainer(_)) { _.password.password }
           )) { trainer =>
-            complete(issueJWT(trainer.id.id.toString, Seq("trainer", "participant")))
+            complete(issueJWT(trainer.id.id.toString, trainer.preferences.preferences map { _.tag }, Seq("trainer", "participant")))
           },
           (path("participant") & authenticateBasicAsync(
             "Participant Visible",
             authenticate(getParticipant(_)) { _.password.password }
           )) { participant =>
-            complete(issueJWT(participant.id.id.toString, Seq("participant")))
+            complete(issueJWT(participant.id.id.toString, participant.preferences.preferences map { _.tag }, Seq("participant")))
           },
           (path("admin") & authorize { request =>
             val ip = request.request.getAttribute(AttributeKeys.remoteAddress)
@@ -99,7 +99,7 @@ class AuthRoutes[C1, C2](
               .filter(addr => addr.isAnyLocalAddress() || addr.isLoopbackAddress())
               .isPresent()
           }) {
-            complete(issueJWT("admin", Seq("admin", "participant", "trainer")))
+            complete(issueJWT("admin", Seq(""), Seq("admin")))
           }
         )
       }
