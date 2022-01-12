@@ -134,3 +134,29 @@ func (r PgTrainingRepository) GetVideo(id string) *entities.TrainingVideo {
 		Buff: valuesObjects.TrainingVideoBuffer{Value: video.Buff},
 	}
 }
+
+func (r PgTrainingRepository) GetVideoMetadata(id string) *entities.TrainingVideo {
+	var video models.TrainingVideo
+	err := r.DB.Model().Table("videos").
+		Where("training_id = ?", id).
+		ColumnExpr("id, name, ext, length(buff) AS length_video").
+		Select(&video)
+	if err != nil && err != pg.ErrNoRows {
+		log.Fatal(err)
+	} else if err == pg.ErrNoRows {
+		return nil
+	}
+
+	videoID, err := uuid.Parse(video.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &entities.TrainingVideo{
+		ID:     valuesObjects.TrainingVideoID{Value: videoID},
+		Name:   valuesObjects.TrainingVideoName{Value: video.Name},
+		Ext:    valuesObjects.TrainingVideoExt{Value: video.Ext},
+		Buff:   valuesObjects.TrainingVideoBuffer{Value: video.Buff},
+		Length: valuesObjects.TrainingVideoLength{Value: video.Length},
+	}
+}

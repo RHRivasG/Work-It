@@ -10,4 +10,5 @@ type TrainingRepository interface {
 	GetAll() ([]training.Training, error)
 	GetByTrainer(id string) ([]training.Training, error)
 	GetVideo(id string) *entities.TrainingVideo
+	GetVideoMetadata(id string) *entities.TrainingVideo
 }

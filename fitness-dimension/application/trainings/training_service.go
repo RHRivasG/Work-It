@@ -143,3 +143,7 @@ func (s *TrainingService) GetByTrainer(id string) ([]training.Training, error) {
 func (s *TrainingService) GetVideo(id string) *entities.TrainingVideo {
 	return s.Repository.GetVideo(id)
 }
+
+func (s *TrainingService) GetVideoMetadata(id string) *entities.TrainingVideo {
+	return s.Repository.GetVideoMetadata(id)
+}

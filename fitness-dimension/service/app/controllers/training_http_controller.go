@@ -166,6 +166,20 @@ func (c *TrainingHttpController) GetVideo(ctx echo.Context) error {
 	return ctx.String(200, base64.StdEncoding.EncodeToString(video.Buff.Value))
 }
 
+func (c *TrainingHttpController) GetVideoMetadata(ctx echo.Context) error {
+
+	id := ctx.Param("id")
+
+	video := c.Service.GetVideoMetadata(id)
+	if video == nil {
+		return ctx.NoContent(http.StatusNotFound)
+	}
+
+	videoDto := helpers.TransformVideoToDto(video)
+
+	return ctx.JSON(200, videoDto)
+}
+
 func (c *TrainingHttpController) CreateVideo(ctx echo.Context) error {
 	var body struct {
 		Name  string `json:"name"`

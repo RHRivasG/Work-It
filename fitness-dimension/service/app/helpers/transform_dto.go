@@ -39,7 +39,7 @@ func TransformVideoToDto(video *entities.TrainingVideo) trainings.TrainingVideoD
 		ID:     video.ID.Value.String(),
 		Name:   video.Name.Value,
 		Ext:    video.Ext.Value,
-		Length: len(video.Buff.Value),
+		Length: video.Length.Value,
 	}
 }
 
