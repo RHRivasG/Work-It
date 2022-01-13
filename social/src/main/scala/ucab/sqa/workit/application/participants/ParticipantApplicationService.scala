@@ -79,7 +79,11 @@ object ParticipantApplicationService
       preferences: List[String]
   ) =
     for {
-      (event, _) <- of(Participant.of(name, password, preferences))
+      participants <- getAllParticipants
+      (event, p) <- of(Participant.of(name, password, preferences))
+      _ <- of(participants.find(_.name == p.name)
+            .as(new Error("There already exists a participant with that name"))
+            .toLeft(()))
       () <- handle(event)
     } yield ()
 

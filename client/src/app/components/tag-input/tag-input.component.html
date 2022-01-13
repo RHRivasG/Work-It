@@ -1,5 +1,5 @@
-<div #input [ngClass]="disabled ? 'bg-gray-400 bg-opacity-50' : ''" [ngClass]="focused ? 'ring-4 ring-primary ring-opacity-50 outline-none' : ''" class="flex flex-row flex-wrap gap-2 border-2 border-gray-400 p-2 rounded-lg transition duration-400">
-  <div *ngFor="let value of tagList" [ngClass]="value == updatingTag ? 'bg-blue-200 transition duration-400':''" class="shadow-md cursor-pointer rounded-3xl bg-gray-400 w-min whitespace-nowrap px-4 py-2 text-base flex flex-row gap-4 items-center">
+<div #input [ngClass]="disabled ? 'bg-gray-400 bg-opacity-50' : ''" [ngClass]="focused ? 'ring-4 ring-primary ring-opacity-50 outline-none expanded' : ''" class="input flex flex-row flex-wrap gap-2 border-2 border-gray-400 p-2 rounded-lg transition duration-400">
+  <div *ngFor="let value of tagList" [ngClass]="value == updatingTag ? 'bg-blue-200 transition duration-400':''" class="shadow-md cursor-pointer rounded-3xl bg-gray-400 w-min whitespace-nowrap px-3 py-1 text-xs flex flex-row gap-4 items-center">
     {{ value }}
     <fa-icon [icon]="closeIcon" (click)="removeTagFromInput($event, value)" class="flex flex-row items-center h-full"></fa-icon>
   </div>
@@ -12,7 +12,7 @@
   <ng-container *ngIf="focused">
     <hr class="border border-gray-400 w-full">
 
-    <button (click)="addTagFromAllList($event, value)" *ngFor="let value of allTagsList" class="cursor-pointer rounded-3xl bg-gray-400 w-min whitespace-nowrap px-4 py-2 text-base gap-4 items-center">
+    <button (click)="addTagFromAllList($event, value)" *ngFor="let value of allTagsList" class="cursor-pointer rounded-3xl bg-gray-400 w-min whitespace-nowrap px-4 py-2 text-sm gap-4 items-center">
       {{ value }}
     </button>
   </ng-container>

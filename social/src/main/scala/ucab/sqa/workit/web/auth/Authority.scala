@@ -51,7 +51,7 @@ object AuthorityActor {
 
             subject.value.andThen {
                 case Success(Left(e)) => 
-                    logger.error(f"Token invalid with error", e) 
+                    logger.warn(f"Token invalid with error", e) 
                     replyTo ! None
                 case Success(Right(value)) => 
                     logger.info(f"Token valid with value: $value") 

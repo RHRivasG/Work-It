@@ -41,6 +41,7 @@ export class RegisterComponent implements OnInit {
   loadingIcon = faSpinner
   taxonomies: string[] = []
   status = 0
+  statusMsg = ""
 
   constructor(formBuilder: FormBuilder, private client: HttpClient, private router: Router) {
     this.registerForm = formBuilder.group({
@@ -65,13 +66,19 @@ export class RegisterComponent implements OnInit {
       preferences: this.registerForm.get('tags')?.value
     })
     .pipe(
-      mapTo({ status: 200 }),
-      catchError((e: HttpErrorResponse) => of({ status: e.status || 500 })),
+      mapTo({ status: 200, msg: '' }),
+      catchError((e: HttpErrorResponse) => {
+        console.log(e)
+        return of({
+          status: e.status || 500,
+          msg: e.error && e.error != '' ? e.error : "Registration Failed! There were errors in your input"
+        })}),
       tap(_ => this.loading = false)
     )
-    .subscribe(({ status }) => {
+    .subscribe(({ status, msg }) => {
       this.status = status
-      if (status >= 200) this.router.navigate(['/social/auth/login'], { queryParams: { as: 'participant' }})
+      this.statusMsg = msg
+      if (status >= 200 && status <= 300) this.router.navigate(['/social/auth/login'], { queryParams: { as: 'participant' }})
     })
   }
 }

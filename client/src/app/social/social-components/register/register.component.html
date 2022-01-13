@@ -1,6 +1,6 @@
 <form [formGroup]="registerForm" (ngSubmit)="register()">
   <div [ngSwitch]="status">
-    <div *ngSwitchCase="403" class="status-message text-center text-red-500 text-lg font-bold">Registration Failed! There were errors in your input</div>
+    <div *ngSwitchCase="400" class="status-message text-center text-red-500 text-lg font-bold">{{ statusMsg }}</div>
     <div *ngSwitchCase="status >= 500 ? status : -1" class="status-message text-center text-red-500 text-lg font-bold">Oops! Something happened, try again later!</div>
   </div>
   <div class="gap-10 py-12 grid grid-cols-1 lg:grid-cols-5">
