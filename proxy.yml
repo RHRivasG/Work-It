@@ -1,0 +1,23 @@
+version: '3.9'
+services:
+  authentication-proxy:
+    container_name: proxy
+    build: ./auth-proxy
+    ports:
+      - 3000:3000
+    depends_on:
+      - redis_proxy
+    volumes:
+      - ./auth-proxy/server_config.production.toml:/auth-proxy/src/server_config.toml
+    networks:
+      - services
+      - default
+    environment:
+      - DB_HOST=db.auth.proxy
+  redis_proxy:
+    container_name: db.auth.proxy
+    image: redis:6.2.6-alpine
+
+networks:
+  services:
+    name: 'services_network'

@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "ucab.sqa.workit.probobuf";
+option go_package = "./proto";
+
+package ucab.sqa.workit.protobuf;
+
+message RequestServiceMessage {
+  string group = 1;
+}
+
+message RequestServiceResponse {
+  string host = 1;
+}
+
+message AddServiceMessage {
+  string group = 1;
+  int32 capacity = 3;
+}
+
+message AddServiceResponse {
+  int32 status = 3;
+}
+
+message RemoveServiceMessage {
+  string group = 1;
+  string host = 2;
+}
+
+message RemoveServiceResponse {
+  int32 status = 3;
+}
+
+service ServiceAggregator {
+  rpc RequestService(RequestServiceMessage) returns (RequestServiceResponse);
+  rpc AddService(AddServiceMessage) returns (AddServiceResponse);
+  rpc RemoveService(RemoveServiceMessage) returns (RemoveServiceResponse);
+}

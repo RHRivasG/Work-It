@@ -1,0 +1,15 @@
+version: '3.9'
+services:
+  work-it-server:
+    container_name: server
+    build: ./client
+    ports:
+      - 443:443
+      - 80:80
+    networks:
+      - services
+      - default
+
+networks:
+  services:
+    name: 'services_network'

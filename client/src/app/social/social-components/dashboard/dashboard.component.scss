@@ -1,0 +1,19 @@
+.active {
+  @apply font-bold border-b-2 border-black transition duration-500;
+}
+
+.participant-name {
+  @apply font-bold;
+}
+
+.participant-request {
+  @apply text-sm;
+}
+
+.participant-preferences {
+  @apply flex flex-row flex-wrap gap-1;
+}
+
+.request-summary-card {
+  min-height: 200px;
+}

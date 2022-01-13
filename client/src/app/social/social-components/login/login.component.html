@@ -1,0 +1,34 @@
+<form [formGroup]="loginForm" (ngSubmit)="login()">
+  <div [ngSwitch]="status">
+    <div *ngSwitchCase="401" class="status-message text-center text-red-500 text-lg font-bold">Authentication failed! Credentials are not valid</div>
+    <div *ngSwitchCase="status >= 500 ? status : -1" class="status-message text-center text-red-500 text-lg font-bold">Oops! Something happened, try again later!</div>
+  </div>
+  <div class="grid grid-cols-1 gap-6 lg:gap-10 lg:grid-cols-3">
+    <label class="font-semibold hidden lg:block text-3xl my-auto">Username</label>
+    <div class="lg:col-span-2">
+      <wi-input name="username" formControlName="username" placeholder="Usename"></wi-input>
+      <small class="error" *ngIf="loginForm.get('username')?.errors?.required">Username cannot be empty!</small>
+      <small class="error" *ngIf="loginForm.get('username')?.errors?.maxlength">Username should be less than 50 characters</small>
+    </div>
+    <label class="font-semibold hidden lg:block text-3xl my-auto">Password</label>
+    <div class="lg:col-span-2">
+      <wi-password-input formControlName="password"></wi-password-input>
+      <small class="error" *ngIf="loginForm.get('password')?.errors?.badFormat">Password must have at least 8 characters, one uppercase and lowercase letter and one special character</small>
+    </div>
+    <a routerLink="/social/auth/register" class="text-xl underline text-center text-black pt-4 col-span-full">
+      Don't have an account? Register now!
+    </a>
+    <a routerLink="/auth/login" [queryParams]="{ as: otherRole }" class="text-xl underline text-center text-black pt-4 col-span-full">
+      {{ loginAsAnotherMessage }}
+    </a>
+    <div class="py-4 lg:pt-4 lg:pb-0 col-span-full">
+      <wi-submit-button
+        submit
+        [disabled]="loginForm.status == 'INVALID'"
+        type="action"
+        [loading]="loading">
+        Sign Up
+      </wi-submit-button>
+    </div>
+  </div>
+</form>

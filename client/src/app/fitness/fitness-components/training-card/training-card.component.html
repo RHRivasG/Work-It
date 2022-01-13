@@ -1,26 +1,30 @@
-<wi-routine-modal (close)="overlayRef.detach()" *cdkPortal class="w-full"></wi-routine-modal>
+<wi-routine-modal [training]="training" (close)="overlayRef.detach()" *cdkPortal class="w-full"></wi-routine-modal>
 <div class="relative card bg-white w-full border-4 border-gray-400 py-4 rounded-lg shadow-md overflow-y-hidden">
   <div class="flex flex-row px-8 pb-4">
     <h3 class="flex-auto text-2xl">{{ training.name }}</h3>
-    <fa-icon class="flex-shrink flex flex-row items-center text-xl" [icon]="moreIcon"></fa-icon>
+    <fa-icon (click)="optionsClicked()" *ngIf="editing" class="flex-shrink cursor-pointer flex flex-row items-center text-xl" [icon]="moreIcon"></fa-icon>
   </div>
   <div class="video-container w-full bg-black">
-    <video class="w-full h-full" src="assets/Famous Person Speech.mp4" controls></video>
+    <video #video class="w-full h-full" controls>
+    </video>
   </div>
-  <div class="grid grid-rows-2 grid-cols-2 px-8 gap-1 pt-8 py-6">
-    <p class="text-xl">Made by {{ training.trainerId  }}</p>
-    <div class="tag-list col-start-1 row-start-2 flex flex-row flex-wrap gap-x-4">
+  <div class="flex flex-col lg:grid lg:grid-rows-2 lg:grid-cols-2 px-8 gap-4 pt-8 py-6">
+    <p class="text-xl">
+      <fa-icon *ngIf="!trainerName" [icon]="spinner" [pulse]="true"></fa-icon>
+      <span *ngIf="trainerName">Made by {{ trainerName }}</span>
+    </p>
+    <div class="tag-list lg:col-start-1 lg:row-start-2 flex flex-row flex-wrap gap-x-1 gap-y-1 lg:gap-x-4 lg:gap-y-0">
       <div *ngFor="let category of training.categories" class="cursor-pointer rounded-3xl bg-gray-400 w-min whitespace-nowrap px-4 py-2 text-base items-center">
-        {{ category.value }}
+        {{ category }}
       </div>
     </div>
-    <div class="row-span-full col-start-2 py-5 flex flex-row justify-end gap-4">
-      <button class="button bg-red-500 w-max px-4 rounded-lg shadow-lg text-white focus:ring-4 focus:ring-red-500 focus:ring-opacity-50">
+    <div class="row-span-full col-start-2 py-5 flex flex-col lg:flex-row justify-center lg:justify-end gap-4">
+      <button class="button bg-red-500 w-full lg:w-max px-4 py-2 lg:py-0 rounded-lg shadow-lg text-white focus:ring-4 focus:ring-red-500 focus:ring-opacity-50">
         <fa-icon [icon]="reportIcon"></fa-icon>
         Report training
       </button>
 
-      <button (click)="addToRoutine()" class="button bg-action w-max px-4 rounded-lg shadow-lg text-white focus:ring-4 focus:ring-action focus:ring-opacity-50">
+      <button (click)="addToRoutine()" class="button bg-action w-full lg:w-max px-4 py-2 lg:py-0 rounded-lg shadow-lg text-white focus:ring-4 focus:ring-action focus:ring-opacity-50">
         <fa-icon [icon]="addIcon"></fa-icon>
         Add to Routine
       </button>

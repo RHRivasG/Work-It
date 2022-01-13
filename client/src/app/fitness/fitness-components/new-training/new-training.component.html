@@ -1,22 +1,32 @@
-<div class="lg:container mx-auto p-12 h-full flex flex-col w-full lg:w-6/7 xl:w-2/3">
+<div class="lg:container mx-auto px-12 py-8 h-full flex flex-col w-full lg:w-6/7 xl:w-2/3">
   <h1 class="font-bold text-black text-4xl text-center">Create a training</h1>
-  <form class="grid auto-rows-auto grid-cols-3 pt-16 gap-4 flex-auto">
-    <label class="font-semibold text-4xl" for="name">Name</label>
-    <div class="col-span-2 text-4xl">
-      <input class="border-2 border-gray-400 text-xl p-2 w-full rounded-lg focus:ring-4 focus:ring-primary focus:ring-opacity-50 focus:outline-none transition duration-400" name="name">
+  <form (ngSubmit)="submit()" [formGroup]="trainingForm" class="grid auto-rows-auto grid-cols-3 pt-8 gap-8 flex-auto">
+    <label class="font-semibold text-3xl" for="name">Name</label>
+    <div class="col-span-2">
+      <wi-input class="w-full" formControlName="name" name="name"></wi-input>
+      <small class="error">Training name cannot be empty</small>
     </div>
-    <label class="font-semibold text-4xl" for="tags">Tags</label>
-    <wi-tag-input class="col-span-2 text-4xl" name="tags" [allTagsList]="['Arms', 'Shoulders', 'Biceps', 'Triceps']"></wi-tag-input>
-    <label class="font-semibold text-4xl mb-auto" for="description">Description</label>
-    <div class="col-span-2 text-4xl">
-      <textarea class="border-2 border-gray-400 text-xl p-2 w-full rounded-lg focus:ring-4 focus:ring-primary focus:ring-opacity-50 focus:outline-none h-full transition duration-400" name="description"></textarea>
+    <label class="font-semibold text-3xl" for="tags">Tags</label>
+    <div class="col-span-2">
+      <wi-tag-input formControlName="tags" name="tags" [allTagsList]="preferences"></wi-tag-input>
+      <small class="error">Trainings must have at least three preferences</small>
     </div>
-    <label class="font-semibold text-4xl mt-auto" for="video">Upload Video</label>
-    <wi-file-input class="col-span-2 text-4xl mt-auto"></wi-file-input>
+    <label class="font-semibold text-3xl mb-auto" for="description">Description</label>
+    <div class="col-span-2">
+      <textarea formControlName="description" class="border-2 border-gray-400 text-xl p-2 w-full rounded-lg focus:ring-4 focus:ring-primary focus:ring-opacity-50 focus:outline-none h-full transition duration-400" name="description"></textarea>
+      <small class="error">Training description cannot be empty</small>
+    </div>
+    <label class="font-semibold text-3xl mt-auto" for="video">Upload Video</label>
+    <wi-file-input formControlName="video" class="col-span-2 text-xl mt-auto"></wi-file-input>
     <div class="col-span-3 w-full mt-auto">
-      <button class="bg-action w-full p-4 rounded-lg text-2xl font-semibold text-white focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 focus:outline-none shadow-lg">
+      <wi-submit-button
+        submit
+        [disabled]="loading || trainingForm.status == 'INVALID'"
+        type="action"
+        [loading]="loading"
+      >
         Save
-      </button>
+      </wi-submit-button>
     </div>
   </form>
 </div>

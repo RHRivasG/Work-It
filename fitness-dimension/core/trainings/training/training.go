@@ -1,14 +1,16 @@
 package training
 
 import (
-	"fitness-dimension-core/trainings/events"
-	entities "fitness-dimension-core/trainings/training/entities"
-	valuesObjects "fitness-dimension-core/trainings/training/values-objects"
+	"fitness-dimension/core/trainings/events"
+	entities "fitness-dimension/core/trainings/training/entities"
+	valuesObjects "fitness-dimension/core/trainings/training/values-objects"
+
+	"github.com/google/uuid"
 )
 
 type Training struct {
 	ID            valuesObjects.TrainingID
-	Categories    []valuesObjects.TrainingTaxonomy
+	Categories    valuesObjects.TrainingTaxonomies
 	TrainerID     valuesObjects.TrainerID
 	Name          valuesObjects.TrainingName
 	Description   valuesObjects.TrainingDescription
@@ -16,18 +18,25 @@ type Training struct {
 	eventRecorder []interface{}
 }
 
+func (t *Training) GetEvents() []interface{} {
+	return t.eventRecorder
+}
+
 func (t *Training) AddEvent(event interface{}) {
 	t.eventRecorder = append(t.eventRecorder, event)
 }
 
 func CreateTraining(
-	categories []valuesObjects.TrainingTaxonomy,
+	categories valuesObjects.TrainingTaxonomies,
 	trainerID valuesObjects.TrainerID,
 	name valuesObjects.TrainingName,
 	description valuesObjects.TrainingDescription,
 ) (Training, error) {
 
+	id := valuesObjects.TrainingID{Value: uuid.New()}
+
 	t := Training{
+		ID:          id,
 		Categories:  categories,
 		TrainerID:   trainerID,
 		Name:        name,
@@ -47,23 +56,24 @@ func CreateTraining(
 
 func (t *Training) SetVideo(
 	filename valuesObjects.TrainingVideoName,
-	video valuesObjects.TrainingVideoVideo,
+	video valuesObjects.TrainingVideoBuffer,
 	ext valuesObjects.TrainingVideoExt,
 ) {
 
 	v := entities.CreateVideo(filename, ext, video)
 	t.Video = &v
 	t.AddEvent(events.TrainingVideoCreated{
-		ID:    v.ID,
-		Name:  v.Name,
-		Ext:   v.Ext,
-		Video: v.Buff,
+		ID:         v.ID,
+		Name:       v.Name,
+		Ext:        v.Ext,
+		Buff:       v.Buff,
+		TrainingID: t.ID,
 	})
 }
 
 func (t *Training) UpdateVideo(
 	filename valuesObjects.TrainingVideoName,
-	video valuesObjects.TrainingVideoVideo,
+	video valuesObjects.TrainingVideoBuffer,
 	ext valuesObjects.TrainingVideoExt,
 ) {
 	t.Video.Update(filename, ext, video)
@@ -76,12 +86,14 @@ func (t *Training) UpdateVideo(
 }
 
 func (t *Training) DestroyVideo() {
-	t.Video = nil
-	t.AddEvent(events.TrainingVideoDeleted{ID: t.Video.ID})
+	if t.Video != nil {
+		t.AddEvent(events.TrainingVideoDeleted{ID: t.Video.ID})
+		t.Video = nil
+	}
 }
 
 func (t *Training) Update(
-	categories []valuesObjects.TrainingTaxonomy,
+	categories valuesObjects.TrainingTaxonomies,
 	trainerID valuesObjects.TrainerID,
 	name valuesObjects.TrainingName,
 	description valuesObjects.TrainingDescription,

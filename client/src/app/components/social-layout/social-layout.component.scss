@@ -1,0 +1,17 @@
+.logo-img {
+  max-width: 200px;
+}
+
+.divisor {
+  position: relative;
+}
+
+.divisor::after {
+  position: absolute;
+  width: 2px;
+  top: 7.5%;
+  bottom: 7.5%;
+  right: 0;
+  content: ' ';
+  @apply bg-gray-400;
+}

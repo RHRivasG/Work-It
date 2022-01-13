@@ -8,6 +8,36 @@ body {
   @apply font-sans;
 }
 
+input.ng-invalid.ng-dirty,
+input.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched,
+wi-tag-input.ng-invalid.ng-touched > div,
+wi-password-input.ng-invalid.ng-touched > div,
+wi-input.ng-invalid.ng-touched > div
+{
+  @apply border-2 border-red-600;
+  transform: translateY(-10px);
+  transition: transform 400ms;
+}
+
+input.ng-invalid.ng-dirty ~ .error,
+input.ng-invalid.ng-touched ~ .error,
+wi-tag-input.ng-invalid.ng-touched ~ .error,
+wi-password-input.ng-invalid.ng-touched ~ .error,
+wi-input.ng-invalid.ng-touched ~ .error
+{
+  @apply block pt-0;
+  animation: fade-up 400ms;
+}
+
+textarea.ng-invalid.ng-touched ~ .error {
+  @apply block;
+  animation: fade-up-small 400ms;
+}
+
+.error {
+  @apply text-red-600 text-sm hidden;
+}
 
 .rotation > * {
   @apply transition-transform duration-500;
@@ -15,4 +45,28 @@ body {
 
 .rotation.rotate > * {
   @apply transform rotate-180;
+}
+
+.fade-in  {
+  animation: fade-in 400ms;
+}
+
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; }
+}
+
+@keyframes fade-up-small {
+  0% { opacity: 0; transform: translateY(7px); }
+  100% { opacity: 1; }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.status-message {
+  // @apply pb-16;
+  animation: fade-up 400ms;
 }

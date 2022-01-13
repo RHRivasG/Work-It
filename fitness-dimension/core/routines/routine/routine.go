@@ -1,17 +1,23 @@
 package routine
 
 import (
-	"fitness-dimension-core/routines/events"
-	valuesObjects "fitness-dimension-core/routines/routine/values-objects"
+	"fitness-dimension/core/routines/events"
+	valuesObjects "fitness-dimension/core/routines/routine/values-objects"
+
+	"github.com/google/uuid"
 )
 
 type Routine struct {
 	ID            valuesObjects.RoutineID
 	Name          valuesObjects.RoutineName
 	UserID        valuesObjects.RoutineUserID
-	TrainingsID   []valuesObjects.RoutineTrainingID
+	TrainingsID   valuesObjects.RoutineTrainingIDs
 	Description   valuesObjects.RoutineDescription
 	eventRecorder []interface{}
+}
+
+func (r *Routine) GetEvents() []interface{} {
+	return r.eventRecorder
 }
 
 func (r *Routine) AddEvent(event interface{}) {
@@ -21,41 +27,47 @@ func (r *Routine) AddEvent(event interface{}) {
 func CreateRoutine(
 	name valuesObjects.RoutineName,
 	userID valuesObjects.RoutineUserID,
-	trainings []valuesObjects.RoutineTrainingID,
+	trainings valuesObjects.RoutineTrainingIDs,
 	description valuesObjects.RoutineDescription,
 ) Routine {
 
-	r := Routine{
+	id := valuesObjects.RoutineID{Value: uuid.New()}
+
+	routine := Routine{
+		ID:          id,
 		Name:        name,
 		UserID:      userID,
 		TrainingsID: trainings,
 		Description: description,
 	}
 
-	r.AddEvent(events.RoutineCreated{
-		Name:        r.Name,
-		UserID:      r.UserID,
-		TrainingsID: r.TrainingsID,
-		Description: r.Description,
+	routine.AddEvent(events.RoutineCreated{
+		ID:          routine.ID,
+		Name:        routine.Name,
+		UserID:      routine.UserID,
+		TrainingsID: routine.TrainingsID,
+		Description: routine.Description,
 	})
 
-	return r
+	return routine
 }
 
-func (r *Routine) AddTrainingVideo(trainingID valuesObjects.RoutineTrainingID) {
-	r.TrainingsID = append(r.TrainingsID, trainingID)
+func (r *Routine) AddTraining(trainingID valuesObjects.RoutineTrainingID) {
+	r.TrainingsID.Values = append(r.TrainingsID.Values, trainingID.Value)
+	lastTraining := len(r.TrainingsID.Values)
 	r.AddEvent(events.TrainingAdded{
 		ID:         r.ID,
 		TrainingID: trainingID,
+		Order:      valuesObjects.RoutineTrainingOrder{Value: lastTraining},
 	})
 }
 
-func (r *Routine) RemoveTrainingVideo(trainingID valuesObjects.RoutineTrainingID) {
+func (r *Routine) RemoveTraining(trainingID valuesObjects.RoutineTrainingID) {
 
-	trainings := []valuesObjects.RoutineTrainingID{}
-	for _, id := range r.TrainingsID {
-		if id != trainingID {
-			trainings = append(trainings, id)
+	trainings := valuesObjects.RoutineTrainingIDs{}
+	for _, id := range r.TrainingsID.Values {
+		if id != trainingID.Value {
+			trainings.Values = append(trainings.Values, id)
 		}
 	}
 
@@ -70,7 +82,7 @@ func (r *Routine) RemoveTrainingVideo(trainingID valuesObjects.RoutineTrainingID
 func (r *Routine) Update(
 	name valuesObjects.RoutineName,
 	userID valuesObjects.RoutineUserID,
-	trainings []valuesObjects.RoutineTrainingID,
+	trainings valuesObjects.RoutineTrainingIDs,
 	description valuesObjects.RoutineDescription,
 ) {
 
@@ -80,6 +92,7 @@ func (r *Routine) Update(
 	r.Description = description
 
 	r.AddEvent(events.RoutineUpdated{
+		ID:          r.ID,
 		Name:        r.Name,
 		UserID:      r.UserID,
 		TrainingsID: r.TrainingsID,

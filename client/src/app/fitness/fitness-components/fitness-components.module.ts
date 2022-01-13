@@ -8,11 +8,14 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { RoutineIndexComponent } from './routine-index/routine-index.component';
 import { ShowRoutineComponent } from './show-routine/show-routine.component';
 import { RoutineModalComponent } from './routine-modal/routine-modal.component';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FullscreenOverlayContainer, OverlayContainer, OverlayModule } from '@angular/cdk/overlay';
 import { PortalModule } from '@angular/cdk/portal';
 import { RoutineUpdateModalComponent } from './routine-update-modal/routine-update-modal.component';
+import { FitnessLayoutComponent } from './fitness-layout/fitness-layout.component';
+import { FitnessRoutingModule } from '../fitness-routing.module';
+import { TrainerTrainingsComponent } from './trainer-trainings/trainer-trainings.component';
 
 
 
@@ -24,7 +27,9 @@ import { RoutineUpdateModalComponent } from './routine-update-modal/routine-upda
     ShowRoutineComponent,
     RoutineIndexComponent,
     RoutineModalComponent,
-    RoutineUpdateModalComponent
+    RoutineUpdateModalComponent,
+    FitnessLayoutComponent,
+    TrainerTrainingsComponent,
   ],
   exports: [
     NewTrainingComponent
@@ -33,10 +38,12 @@ import { RoutineUpdateModalComponent } from './routine-update-modal/routine-upda
     CommonModule,
     ComponentsModule,
     FontAwesomeModule,
+    FormsModule,
     ReactiveFormsModule,
     PortalModule,
     OverlayModule,
-    DragDropModule
+    DragDropModule,
+    FitnessRoutingModule
   ],
   providers: [
     {

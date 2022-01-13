@@ -1,0 +1,38 @@
+<ng-template #modal let-training>
+  <div class="bg-white p-4 rounded-lg shadow-lg w-full">
+    <div class="flex flex-row">
+      <p class="flex-auto font-semibold">Actions</p>
+      <button class="shrink-1 text-gray-400" (click)="closeChoice()">
+        <fa-icon [icon]="closeIcon"></fa-icon>
+      </button>
+    </div>
+    <div class="flex flex-col gap-2 pt-4 pb-2">
+      <a [routerLink]="['/fitness/trainings/new']" [queryParams]="{ trainingId: training.id }" (click)="closeChoice()" class="p-2 rounded-md text-blue-500 hover:bg-blue-100">
+        Edit training
+      </a>
+      <button (click)="deleteTraining(training)" class="p-2 rounded-md text-red-500 hover:bg-red-100 text-left">
+        Delete training
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<div class="h-full w-full overflow-auto">
+  <div class="container mx-auto md:px-64 px-4 py-14">
+    <div class="flex justify-between">
+      <div>
+        <h3 class="text-3xl font-bold">{{ trainer.name }}'s trainings</h3>
+        <small class="text-lg font-light text-gray-900">@{{ trainer.name }}</small>
+      </div>
+      <a routerLink="/fitness/trainings/new" class="button bg-action my-auto h-min w-max py-3 px-4 rounded-lg shadow-lg text-white focus:ring-4 focus:ring-action focus:ring-opacity-50">
+        <fa-icon [icon]="addIcon"></fa-icon>
+      </a>
+    </div>
+    <div class="flex flex-col gap-12 pt-8">
+      <ng-container *ngFor="let training of trainings">
+        <wi-training-card [editing]="true" class="flex-shrink-0" (options)="startModal(training, modal)" [training]="training"></wi-training-card>
+      </ng-container>
+    </div>
+  </div>
+</div>
+

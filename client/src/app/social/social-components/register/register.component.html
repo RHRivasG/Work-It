@@ -1,0 +1,41 @@
+<form [formGroup]="registerForm" (ngSubmit)="register()">
+  <div [ngSwitch]="status">
+    <div *ngSwitchCase="400" class="status-message text-center text-red-500 text-lg font-bold">{{ statusMsg }}</div>
+    <div *ngSwitchCase="status >= 500 ? status : -1" class="status-message text-center text-red-500 text-lg font-bold">Oops! Something happened, try again later!</div>
+  </div>
+  <div class="gap-10 py-12 grid grid-cols-1 lg:grid-cols-5">
+    <label class="font-semibold text-3xl hidden lg:block my-auto col-span-2">Username</label>
+    <div class="lg:col-span-3">
+      <wi-input placeholder="Username" formControlName="username"></wi-input>
+      <small class="error" *ngIf="registerForm.get('username')?.errors?.required">Username cannot be empty!</small>
+      <small class="error" *ngIf="registerForm.get('username')?.errors?.maxlength">Username should be less than 50 characters</small>
+    </div>
+    <label class="font-semibold text-3xl hidden lg:block my-auto col-span-2">Password</label>
+    <div class="lg:col-span-3">
+      <wi-password-input formControlName="password"></wi-password-input>
+      <small class="error" *ngIf="registerForm.get('password')?.errors?.badFormat">Password must have at least 8 characters, one uppercase and lowercase letter and one special character</small>
+    </div>
+    <label class="font-semibold text-3xl hidden lg:block my-auto col-span-2">Confirm Password</label>
+    <div class="lg:col-span-3">
+      <wi-input formControlName="confirmPassword" placeholder="Confirm Password" type="password" [icon]="confirmPasswordIcon"></wi-input>
+      <small class="error" *ngIf="registerForm.get('confirmPassword')?.errors?.passwordsDoNotMatch">Passwords do not match!</small>
+    </div>
+    <label class="font-semibold text-3xl hidden lg:block my-auto col-span-2">Training Preferences</label>
+    <div class="lg:col-span-3">
+      <wi-tag-input placeholder="Training preferences" formControlName="tags" class="col-span-2 text-xl" [allTagsList]="taxonomies"></wi-tag-input>
+      <small class="error" *ngIf="registerForm.get('tags')?.errors?.minlength">You must have at least 3 preferences!</small>
+    </div>
+    <a routerLink="/social/auth/login" [queryParams]="{ as: 'participant' }" class="text-xl underline text-center text-black pt-4 col-span-full">
+      Have an account? Sign in!
+    </a>
+    <div class="pt-4 col-span-full">
+      <button
+        [disabled]="registerForm.status == 'INVALID' || loading"
+        class="bg-action w-full px-4 py-3 rounded-lg text-2xl font-semibold text-white focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 focus:outline-none shadow-lg disabled:bg-gray-300 disabled:border-500 disabled:shadow-none">
+        <fa-icon class="mr-2" [pulse]="true" [icon]="loadingIcon" *ngIf="loading"></fa-icon>
+        Register
+      </button>
+    </div>
+  </div>
+</form>
+

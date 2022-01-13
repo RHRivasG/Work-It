@@ -40,7 +40,9 @@ export class FileInputComponent implements OnInit, OnDestroy, AfterViewInit, Con
   loading = false
 
   get fileInfo(): string {
-    return `${this.value.name} ${this.value.size == 0 ? '' : '(' + pretty_bytes(this.value.size) + ')'}`
+    const hasExt = this.value.name.includes(".")
+    const visibleExt = hasExt ? '' : "." + this.value.ext
+    return `${this.value.name}${visibleExt} ${this.value.size == 0 ? '' : '(' + pretty_bytes(this.value.size) + ')'}`
   }
 
   @ViewChild('fileInput') inputRef!: ElementRef<HTMLInputElement>
@@ -52,7 +54,7 @@ export class FileInputComponent implements OnInit, OnDestroy, AfterViewInit, Con
   }
 
   writeValue(val: any): void {
-    if (val.name && val.value && val.ext && val.size) this.value = val
+    if (val.name && val.ext && val.size) this.value = val
   }
 
   registerOnChange(fn: any): void {
