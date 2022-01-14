@@ -1,8 +1,9 @@
 FROM node:17-alpine AS build
 
-COPY ./ /workit-client/
 WORKDIR /workit-client/
+COPY ./package.json /workit-client/
 RUN npm i
+COPY ./ /workit-client/
 RUN npm run build
 
 FROM httpd:2.4.52-alpine
