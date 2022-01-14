@@ -67,6 +67,6 @@ textarea.ng-invalid.ng-touched ~ .error {
 }
 
 .status-message {
-  // @apply pb-16;
+  @apply pb-16;
   animation: fade-up 400ms;
 }

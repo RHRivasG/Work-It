@@ -1,7 +1,7 @@
 package routines
 
 import (
-	"fitness-dimension/core/routines/routine"
+	"fitness-dimension/core/routine"
 
 	"github.com/google/uuid"
 )

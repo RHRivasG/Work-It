@@ -152,3 +152,18 @@ ALTER TABLE ONLY public.videos
 -- PostgreSQL database dump complete
 --
 
+INSERT INTO public.trainings VALUES (
+    '80f029e4-acb0-4063-b01c-99a5027b4225',
+    'EntrenamientoPrueba',
+    'EntrenamientoPrueba description',
+    'b8dc009f-e7b6-48b0-8685-63bbcf8153a9',
+    ARRAY['Legs','Split Quats','Cardio']
+);
+
+INSERT INTO public.videos VALUES (
+    'fd660598-7215-4cba-ad1b-e8550e93a4a2',
+    'How to PROPERLY Bulgarian Split Squat To Grow Your Quads.mp4',
+    'mp4',
+    NULL,
+    '80f029e4-acb0-4063-b01c-99a5027b4225'
+);

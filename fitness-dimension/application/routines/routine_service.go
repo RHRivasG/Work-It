@@ -3,8 +3,8 @@ package routines
 import (
 	"fitness-dimension/application/routines/commands"
 
-	"fitness-dimension/core/routines/routine"
-	valuesObjects "fitness-dimension/core/routines/routine/values-objects"
+	"fitness-dimension/core/routine"
+	valueObjects "fitness-dimension/core/routine/values"
 
 	"github.com/google/uuid"
 )
@@ -19,20 +19,40 @@ func (s *RoutineService) Handle(c interface{}) (interface{}, error) {
 	case commands.CreateRoutine:
 		command := c.(commands.CreateRoutine)
 
-		name := valuesObjects.RoutineName{Value: command.Name}
-		userId := valuesObjects.RoutineUserID{Value: command.UserID}
-		description := valuesObjects.RoutineDescription{Value: command.Description}
-		trainingsId := valuesObjects.RoutineTrainingIDs{}
+		var errs []error
 
+		name, err := valueObjects.NewRoutineName(command.Name)
+		errs = append(errs, err)
+
+		userId, err := valueObjects.NewRoutineUserID(command.UserID)
+		errs = append(errs, err)
+
+		description, err := valueObjects.NewRoutineDescription(command.Description)
+		errs = append(errs, err)
+
+		var trainingsId []uuid.UUID
 		for _, tId := range command.TrainingsID {
+
 			id, err := uuid.Parse(tId)
 			if err != nil {
 				return nil, err
 			}
-			trainingsId.Values = append(trainingsId.Values, id)
+
+			trainingsId = append(trainingsId, id)
 		}
 
-		r := routine.CreateRoutine(name, userId, trainingsId, description)
+		trainings, err := valueObjects.NewRoutineTrainingIDs(trainingsId)
+		errs = append(errs, err)
+
+		r, err := routine.CreateRoutine(name, userId, trainings, description)
+		errs = append(errs, err)
+
+		for _, err := range errs {
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		for _, i := range r.GetEvents() {
 			s.Publisher.Publish(i)
 		}
@@ -40,25 +60,39 @@ func (s *RoutineService) Handle(c interface{}) (interface{}, error) {
 	case commands.UpdateRoutine:
 		command := c.(commands.UpdateRoutine)
 
-		name := valuesObjects.RoutineName{Value: command.Name}
-		userId := valuesObjects.RoutineUserID{Value: command.UserID}
-		description := valuesObjects.RoutineDescription{Value: command.Description}
-		trainingsId := valuesObjects.RoutineTrainingIDs{}
+		var errs []error
 
+		name, err := valueObjects.NewRoutineName(command.Name)
+		errs = append(errs, err)
+
+		userId, err := valueObjects.NewRoutineUserID(command.UserID)
+		errs = append(errs, err)
+
+		description, err := valueObjects.NewRoutineDescription(command.Description)
+		errs = append(errs, err)
+
+		var trainingsId []uuid.UUID
 		for _, tId := range command.TrainingsID {
 			id, err := uuid.Parse(tId)
 			if err != nil {
 				return nil, err
 			}
-			trainingsId.Values = append(trainingsId.Values, id)
+			trainingsId = append(trainingsId, id)
 		}
+
+		trainings, err := valueObjects.NewRoutineTrainingIDs(trainingsId)
+		errs = append(errs, err)
 
 		r, err := s.Repository.Find(command.ID)
-		if err != nil {
-			return nil, err
+		errs = append(errs, err)
+
+		for _, err := range errs {
+			if err != nil {
+				return nil, err
+			}
 		}
 
-		r.Update(name, userId, trainingsId, description)
+		r.Update(name, userId, trainings, description)
 		for _, i := range r.GetEvents() {
 			s.Publisher.Publish(i)
 		}
@@ -78,7 +112,10 @@ func (s *RoutineService) Handle(c interface{}) (interface{}, error) {
 
 	case commands.AddRoutineTraining:
 		command := c.(commands.AddRoutineTraining)
-		trainingID := valuesObjects.RoutineTrainingID{Value: command.TrainingID}
+		trainingID, err := valueObjects.NewRoutineTrainingID(command.TrainingID)
+		if err != nil {
+			return nil, err
+		}
 
 		r, err := s.Repository.Find(command.ID)
 		if err != nil {
@@ -92,7 +129,10 @@ func (s *RoutineService) Handle(c interface{}) (interface{}, error) {
 
 	case commands.RemoveRoutineTraining:
 		command := c.(commands.RemoveRoutineTraining)
-		trainingID := valuesObjects.RoutineTrainingID{Value: command.TrainingID}
+		trainingID, err := valueObjects.NewRoutineTrainingID(command.TrainingID)
+		if err != nil {
+			return nil, err
+		}
 
 		r, err := s.Repository.Find(command.ID)
 		if err != nil {
