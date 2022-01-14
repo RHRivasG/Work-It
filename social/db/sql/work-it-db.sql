@@ -37,4 +37,4 @@ INSERT INTO preferences(value) VALUES ('Woman');
 
 INSERT INTO participants VALUES ('8f61fc06-1fd6-4421-9091-e29f1191648e', 'PruebaEncriptacion', '123456aA$');
 
-INSERT INTO participants VALUES ('b8dc009f-e7b6-48b0-8685-63bbcf8153a9', 'EntrenadorPrueba', '123456aA$');
+INSERT INTO trainers VALUES ('b8dc009f-e7b6-48b0-8685-63bbcf8153a9', 'EntrenadorPrueba', '123456aA$');

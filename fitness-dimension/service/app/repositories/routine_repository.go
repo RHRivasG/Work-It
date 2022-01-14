@@ -2,8 +2,8 @@ package repositories
 
 import (
 	"fitness-dimension/application/routines"
-	"fitness-dimension/core/routines/routine"
-	valuesObjects "fitness-dimension/core/routines/routine/values-objects"
+	"fitness-dimension/core/routine"
+	valuesObjects "fitness-dimension/core/routine/values"
 	"fitness-dimension/service/app/models"
 
 	"github.com/go-pg/pg/v10"
@@ -29,22 +29,47 @@ func (r PgRoutineRepository) Find(id uuid.UUID) (*routine.Routine, error) {
 		return nil, nil
 	}
 
+	var errs []error
+
 	id, err = uuid.Parse(routineModel.ID)
-	if err != nil {
-		return nil, err
+	errs = append(errs, err)
+
+	trainings, err := r.getTrainings(routineModel)
+	errs = append(errs, err)
+
+	for _, e := range errs {
+		if e != nil {
+			return nil, e
+		}
 	}
 
-	trainingsId, err := r.getTrainings(routineModel)
-	if err != nil {
-		return nil, err
+	routineId, err := valuesObjects.NewRoutineID(id)
+	errs = append(errs, err)
+
+	name, err := valuesObjects.NewRoutineName(routineModel.Name)
+	errs = append(errs, err)
+
+	userId, err := valuesObjects.NewRoutineUserID(routineModel.UserID)
+	errs = append(errs, err)
+
+	description, err := valuesObjects.NewRoutineDescription(routineModel.Description)
+	errs = append(errs, err)
+
+	trainingsId, err := valuesObjects.NewRoutineTrainingIDs(trainings)
+	errs = append(errs, err)
+
+	for _, e := range errs {
+		if e != nil {
+			return nil, e
+		}
 	}
 
 	return &routine.Routine{
-		ID:          valuesObjects.RoutineID{Value: id},
-		Name:        valuesObjects.RoutineName{Value: routineModel.Name},
-		UserID:      valuesObjects.RoutineUserID{Value: routineModel.UserID},
-		Description: valuesObjects.RoutineDescription{Value: routineModel.Description},
-		TrainingsID: valuesObjects.RoutineTrainingIDs{Values: trainingsId},
+		ID:          routineId,
+		Name:        name,
+		UserID:      userId,
+		Description: description,
+		TrainingsID: trainingsId,
 	}, nil
 
 }
@@ -65,7 +90,7 @@ func (r PgRoutineRepository) GetAll(userId string) ([]routine.Routine, error) {
 	var routines []routine.Routine
 	for _, routineItem := range routineList {
 
-		trainingsId, err := r.getTrainings(routineItem)
+		trainings, err := r.getTrainings(routineItem)
 		if err != nil {
 			return nil, err
 		}
@@ -75,12 +100,35 @@ func (r PgRoutineRepository) GetAll(userId string) ([]routine.Routine, error) {
 			return nil, err
 		}
 
+		var errs []error
+
+		routineId, err := valuesObjects.NewRoutineID(id)
+		errs = append(errs, err)
+
+		name, err := valuesObjects.NewRoutineName(routineItem.Name)
+		errs = append(errs, err)
+
+		userId, err := valuesObjects.NewRoutineUserID(routineItem.UserID)
+		errs = append(errs, err)
+
+		description, err := valuesObjects.NewRoutineDescription(routineItem.Description)
+		errs = append(errs, err)
+
+		trainingsId, err := valuesObjects.NewRoutineTrainingIDs(trainings)
+		errs = append(errs, err)
+
+		for _, e := range errs {
+			if e != nil {
+				return nil, e
+			}
+		}
+
 		routines = append(routines, routine.Routine{
-			ID:          valuesObjects.RoutineID{Value: id},
-			Name:        valuesObjects.RoutineName{Value: routineItem.Name},
-			UserID:      valuesObjects.RoutineUserID{Value: routineItem.UserID},
-			Description: valuesObjects.RoutineDescription{Value: routineItem.Description},
-			TrainingsID: valuesObjects.RoutineTrainingIDs{Values: trainingsId},
+			ID:          routineId,
+			Name:        name,
+			UserID:      userId,
+			Description: description,
+			TrainingsID: trainingsId,
 		})
 
 	}
