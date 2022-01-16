@@ -23,17 +23,14 @@ message AddServiceResponse {
   int32 status = 3;
 }
 
-message RemoveServiceMessage {
-  string group = 1;
-  string host = 2;
-}
+message UnsubscribeMessage {}
 
-message RemoveServiceResponse {
-  int32 status = 3;
+message UnsubscribeResponse {
+  int32 status = 1;
 }
 
 service ServiceAggregator {
   rpc RequestService(RequestServiceMessage) returns (RequestServiceResponse);
   rpc AddService(AddServiceMessage) returns (AddServiceResponse);
-  rpc RemoveService(RemoveServiceMessage) returns (RemoveServiceResponse);
+  rpc Unsubscribe(UnsubscribeMessage) returns (UnsubscribeResponse);
 }

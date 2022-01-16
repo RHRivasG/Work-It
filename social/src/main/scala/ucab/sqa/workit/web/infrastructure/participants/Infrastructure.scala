@@ -9,13 +9,14 @@ import ucab.sqa.workit.application.trainers.TrainerCommand
 import ucab.sqa.workit.application.trainers.CreateTrainerCommand
 import ucab.sqa.workit.web.infrastructure.database.Request.ParticipantDatabaseRequest
 import ucab.sqa.workit.web.infrastructure.database
+import ucab.sqa.workit.web.infrastructure.services.FitnessDimensionService
+import ucab.sqa.workit.web.participants.ParticipantStreamMessage
+import ucab.sqa.workit.web.participants.ResendParticipants
 import akka.actor.typed.scaladsl.AskPattern._
 import scala.concurrent.Future
 import ucab.sqa.workit.domain.participants.Participant
 import akka.actor.typed.ActorSystem
 import akka.util.Timeout
-import ucab.sqa.workit.web.participants.ParticipantStreamMessage
-import ucab.sqa.workit.web.participants.ResendParticipants
 import scala.util.Success
 import cats.data.EitherT
 
@@ -87,11 +88,13 @@ object Infrastructure {
   def deleteHandler(id: UUID)(implicit
       ref: ActorRef[DatabaseRequest],
       stream: ActorRef[ParticipantStreamMessage],
+      fitness: ActorRef[FitnessDimensionService.Command],
       system: ActorSystem[_],
       to: Timeout
   ) = (
     for {
       _ <- EitherT(ref.ask(database.Request.DeleteParticipant(id, _)))
+      _ <- EitherT.pure[Future, Error](fitness ! FitnessDimensionService.DeleteRoutinesOf(id.toString))
       _ <- EitherT.pure[Future, Error](stream ! ResendParticipants())
     } yield ()
   ).value

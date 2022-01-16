@@ -14,6 +14,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import ucab.sqa.workit.web.infrastructure.database.Request
 import ucab.sqa.workit.domain.trainers.Trainer
 import ucab.sqa.workit.web.trainers.TrainerStreamMessage
+import ucab.sqa.workit.web.infrastructure.services.FitnessDimensionService
 import cats.data.EitherT
 import ucab.sqa.workit.web.trainers.ResendTrainers
 
@@ -78,10 +79,13 @@ object Infrastructure {
   def deleteTrainerHandler(id: UUID)(implicit
       ref: ActorRef[DatabaseRequest],
       system: ActorSystem[_],
+      fitness: ActorRef[FitnessDimensionService.Command],
       stream: ActorRef[TrainerStreamMessage],
       to: Timeout
   ) = (for {
     _ <- EitherT(ref.ask(Request.DeleteTrainer(id, _)))
+    _ <- EitherT.pure[Future, Error](fitness ! FitnessDimensionService.DeleteRoutinesOf(id.toString))
+    _ <- EitherT.pure[Future, Error](fitness ! FitnessDimensionService.DeleteTrainingsOf(id.toString))
     _ <- EitherT.pure[Future, Error](stream ! ResendTrainers())
   } yield ()).value
 
