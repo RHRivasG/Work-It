@@ -26,9 +26,6 @@ import (
 
 func main() {
 
-	sigChannel := make(chan os.Signal, 1)
-	signal.Notify(sigChannel, os.Interrupt, syscall.SIGTERM)
-
 	//Service Aggregator
 	conn, client, err := aggregator.SetServiceAggregator()
 	if err != nil {
@@ -36,7 +33,6 @@ func main() {
 	}
 	defer client.Unsubscribe(context.Background(), &pb.UnsubscribeMessage{})
 	defer conn.Close()
-	go aggregator.CleanUp(client, conn, sigChannel)
 
 	//Database
 	database, err := db.ConnectDatabase()
@@ -44,6 +40,10 @@ func main() {
 		panic(err)
 	}
 	defer database.Close()
+
+	sigChannel := make(chan os.Signal, 1)
+	signal.Notify(sigChannel, os.Interrupt, syscall.SIGTERM)
+	go aggregator.CleanUp(client, conn, sigChannel)
 	go db.CleanUp(database, sigChannel)
 
 	//Server
