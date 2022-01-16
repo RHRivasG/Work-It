@@ -11,30 +11,28 @@ import (
 	"google.golang.org/grpc"
 )
 
-func SetServiceAggregator(sigChannel chan os.Signal) error {
+func SetServiceAggregator() (*grpc.ClientConn, pb.ServiceAggregatorClient, error) {
+
 	host := env.GoDotEnvVariable("SERVICE_AGGREGATOR")
 	conn, err := grpc.Dial(host, grpc.WithInsecure())
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
+
 	client := pb.NewServiceAggregatorClient(conn)
 	res, err := client.AddService(context.Background(), &pb.AddServiceMessage{
 		Group:    "fitness",
 		Capacity: 1,
 	})
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	log.Println(res)
 
-	defer client.Unsubscribe(context.Background(), &pb.UnsubscribeMessage{})
-	defer conn.Close()
-	go cleanUp(conn, client, sigChannel)
-
-	return nil
+	return conn, client, nil
 }
 
-func cleanUp(conn *grpc.ClientConn, client pb.ServiceAggregatorClient, sigChannel chan os.Signal) {
+func CleanUp(client pb.ServiceAggregatorClient, conn *grpc.ClientConn, sigChannel chan os.Signal) {
 	select {
 	case <-sigChannel:
 		client.Unsubscribe(context.Background(), &pb.UnsubscribeMessage{})

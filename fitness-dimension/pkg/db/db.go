@@ -7,7 +7,7 @@ import (
 	"github.com/go-pg/pg/v10"
 )
 
-func ConnectDatabase(sigChannel chan os.Signal) (*pg.DB, error) {
+func ConnectDatabase() (*pg.DB, error) {
 
 	user := env.GoDotEnvVariable("DB_USER")
 	password := env.GoDotEnvVariable("DB_PASSWORD")
@@ -21,13 +21,10 @@ func ConnectDatabase(sigChannel chan os.Signal) (*pg.DB, error) {
 
 	db := pg.Connect(opt)
 
-	defer db.Close()
-	go cleanUp(db, sigChannel)
-
 	return db, nil
 }
 
-func cleanUp(db *pg.DB, sigChannel chan os.Signal) {
+func CleanUp(db *pg.DB, sigChannel chan os.Signal) {
 	select {
 	case <-sigChannel:
 		db.Close()

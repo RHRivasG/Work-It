@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fitness-dimension/pkg/auth"
 	"fitness-dimension/pkg/db"
 	"fitness-dimension/pkg/server/aggregator"
@@ -29,16 +30,21 @@ func main() {
 	signal.Notify(sigChannel, os.Interrupt, syscall.SIGTERM)
 
 	//Service Aggregator
-	err := aggregator.SetServiceAggregator(sigChannel)
+	conn, client, err := aggregator.SetServiceAggregator()
 	if err != nil {
 		panic(err)
 	}
+	defer client.Unsubscribe(context.Background(), &pb.UnsubscribeMessage{})
+	defer conn.Close()
+	go aggregator.CleanUp(client, conn, sigChannel)
 
 	//Database
 	database, err := db.ConnectDatabase()
 	if err != nil {
 		panic(err)
 	}
+	defer database.Close()
+	go db.CleanUp(database, sigChannel)
 
 	//Server
 	if err := serve(database); err != nil {
@@ -120,13 +126,13 @@ func httpServe(l net.Listener, db *pg.DB) error {
 	routineClient := pb.NewRoutineAPIClient(conn)
 	trainingClient := pb.NewTrainingAPIClient(conn)
 
-	//Publishers
-	routinePublisher := routine.RoutinePublisher{Client: routineClient}
-	trainingPublisher := training.TrainingPublisher{Client: trainingClient}
-
 	//Repositories
 	routineRepository := routine.PgRoutineRepository{DB: db}
 	trainingRepository := training.PgTrainingRepository{DB: db}
+
+	//Publishers
+	routinePublisher := routine.RoutinePublisher{Client: routineClient}
+	trainingPublisher := training.TrainingPublisher{Client: trainingClient}
 
 	//Routes
 	routine.HttpRoutineServe(r, routineRepository, &routinePublisher)
