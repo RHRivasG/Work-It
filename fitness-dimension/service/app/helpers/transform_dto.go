@@ -3,7 +3,7 @@ package helpers
 import (
 	"fitness-dimension/application/routines"
 	"fitness-dimension/application/trainings"
-	"fitness-dimension/core/routines/routine"
+	"fitness-dimension/core/routine"
 	"fitness-dimension/core/trainings/training"
 	"fitness-dimension/core/trainings/training/entities"
 )
@@ -46,15 +46,15 @@ func TransformVideoToDto(video *entities.TrainingVideo) trainings.TrainingVideoD
 func TranformRoutineToDto(routine *routine.Routine) routines.RoutineDto {
 
 	var trainingsId []string
-	for _, tId := range routine.TrainingsID.Values {
+	for _, tId := range routine.TrainingsID.Values() {
 		trainingsId = append(trainingsId, tId.String())
 	}
 
 	return routines.RoutineDto{
-		ID:          routine.ID.Value.String(),
-		Name:        routine.Name.Value,
-		UserID:      routine.UserID.Value,
-		Description: routine.Description.Value,
+		ID:          routine.ID.Value().String(),
+		Name:        routine.Name.Value(),
+		UserID:      routine.UserID.Value(),
+		Description: routine.Description.Value(),
 		TrainingsID: trainingsId,
 	}
 }

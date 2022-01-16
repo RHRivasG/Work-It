@@ -15,9 +15,9 @@ func HttpTrainingServe(e *echo.Group, r trainings.TrainingRepository, p training
 	service := trainings.TrainingService{Repository: r, Publisher: p}
 	controller := controllers.TrainingHttpController{Service: service}
 
+	e.POST("", controller.Create)
 	e.GET("", controller.GetAll)
 	e.GET("/:id", controller.Get)
-	e.POST("", controller.Create)
 	e.PUT("/:id", controller.Update)
 	e.DELETE("/:id", controller.Delete)
 

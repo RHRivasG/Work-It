@@ -3,7 +3,7 @@ package publishers
 import (
 	"context"
 	"fitness-dimension/application/routines"
-	"fitness-dimension/core/routines/events"
+	"fitness-dimension/core/routine/events"
 	pb "fitness-dimension/gen/proto"
 	"fmt"
 	"log"
@@ -20,15 +20,15 @@ func (p *RoutinePublisher) Publish(e interface{}) {
 		event := e.(events.RoutineCreated)
 
 		var trainings []string
-		for _, t := range event.TrainingsID.Values {
+		for _, t := range event.TrainingsID.Values() {
 			trainings = append(trainings, t.String())
 		}
 
 		res, err := p.Client.Save(context.Background(), &pb.RoutineCreated{
-			Id:          event.ID.Value.String(),
-			Name:        event.Name.Value,
-			UserId:      event.UserID.Value,
-			Description: event.Description.Value,
+			Id:          event.ID.Value().String(),
+			Name:        event.Name.Value(),
+			UserId:      event.UserID.Value(),
+			Description: event.Description.Value(),
 			TrainingsId: trainings,
 		})
 
@@ -41,15 +41,15 @@ func (p *RoutinePublisher) Publish(e interface{}) {
 		event := e.(events.RoutineUpdated)
 
 		var trainings []string
-		for _, t := range event.TrainingsID.Values {
+		for _, t := range event.TrainingsID.Values() {
 			trainings = append(trainings, t.String())
 		}
 
 		res, err := p.Client.Update(context.Background(), &pb.RoutineUpdated{
-			Id:          event.ID.Value.String(),
-			Name:        event.Name.Value,
-			UserId:      event.UserID.Value,
-			Description: event.Description.Value,
+			Id:          event.ID.Value().String(),
+			Name:        event.Name.Value(),
+			UserId:      event.UserID.Value(),
+			Description: event.Description.Value(),
 			TrainingsId: trainings,
 		})
 
@@ -61,7 +61,7 @@ func (p *RoutinePublisher) Publish(e interface{}) {
 	case events.RoutineDeleted:
 		event := e.(events.RoutineDeleted)
 		res, err := p.Client.Delete(context.Background(), &pb.RoutineDeleted{
-			Id: event.ID.Value.String(),
+			Id: event.ID.Value().String(),
 		})
 
 		if err != nil {
@@ -72,9 +72,9 @@ func (p *RoutinePublisher) Publish(e interface{}) {
 	case events.TrainingAdded:
 		event := e.(events.TrainingAdded)
 		res, err := p.Client.AddTraining(context.Background(), &pb.TrainingAdded{
-			RoutineId:  event.ID.Value.String(),
-			TrainingId: event.TrainingID.Value.String(),
-			Order:      int32(event.Order.Value),
+			RoutineId:  event.ID.Value().String(),
+			TrainingId: event.TrainingID.Value().String(),
+			Order:      int32(event.Order.Value()),
 		})
 
 		if err != nil {
@@ -85,8 +85,8 @@ func (p *RoutinePublisher) Publish(e interface{}) {
 	case events.TrainingRemoved:
 		event := e.(events.TrainingRemoved)
 		res, err := p.Client.RemoveTraining(context.Background(), &pb.TrainingRemoved{
-			RoutineId:  event.ID.Value.String(),
-			TrainingId: event.TrainingID.Value.String(),
+			RoutineId:  event.ID.Value().String(),
+			TrainingId: event.TrainingID.Value().String(),
 		})
 
 		if err != nil {
