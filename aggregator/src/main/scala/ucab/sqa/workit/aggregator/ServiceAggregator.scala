@@ -6,7 +6,6 @@ import cats.syntax.all._
 import ucab.sqa.workit.probobuf.aggregator.ServiceAggregatorFs2Grpc
 import ucab.sqa.workit.probobuf.aggregator.{RequestServiceMessage, RequestServiceResponse}
 import ucab.sqa.workit.probobuf.aggregator.{AddServiceMessage, AddServiceResponse}
-import ucab.sqa.workit.probobuf.aggregator.{RemoveServiceMessage, RemoveServiceResponse}
 import ucab.sqa.workit.aggregator.application.ServiceAggregatorOrder
 import ucab.sqa.workit.aggregator.application.ServiceAggregatorDsl._
 import ucab.sqa.workit.aggregator.application.ServiceAggregatorAction
@@ -19,12 +18,13 @@ import ucab.sqa.workit.aggregator.application.Next
 import cats.effect.kernel.Ref
 import ucab.sqa.workit.aggregator.application.AddService
 import ucab.sqa.workit.aggregator.application.AddServiceCommand
+import ucab.sqa.workit.aggregator.application.Unsubscribe
 import io.grpc.Metadata
 import io.grpc.Grpc
 import io.grpc.Context
-import ucab.sqa.workit.aggregator.application.RemoveServiceCommand
 import cats.effect.std.Semaphore
 import ucab.sqa.workit.aggregator.infrastructure.ServiceAggregatorExecutor._
+import ucab.sqa.workit.probobuf.aggregator.{UnsubscribeMessage, UnsubscribeResponse}
 
 object ServiceAggregator {
     def apply[A](
@@ -46,9 +46,11 @@ object ServiceAggregator {
             _ <- executeUseCase(AddServiceCommand(request.group, ip, request.capacity))
         } yield AddServiceResponse(0)
 
-        override def removeService(request: RemoveServiceMessage, ctx: Metadata): IO[RemoveServiceResponse] =
-            executeUseCase(RemoveServiceCommand(request.group, request.host))
-            .as(RemoveServiceResponse(0))
+        override def unsubscribe(request: UnsubscribeMessage, ctx: Metadata): IO[UnsubscribeResponse] = for {
+            _ <- IO.println("Unsubsribing service")
+            ip <- IO.fromEither { Either.catchNonFatal { ctx.get(ipKey) } }
+            _ <- executeUseCase(Unsubscribe(ip))
+        } yield UnsubscribeResponse(0)
     }
 
 }

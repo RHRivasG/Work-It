@@ -24,5 +24,5 @@ object ServiceAggregatorDsl {
 
     def addService(group: String, id: UUID, host: String, factor: Int) = lift(AddService(group, id, host, factor))
 
-    def removeService(group: String, id: String) = lift(RemoveService(group, id))
+    def unsubscribe(host: String) = lift(UnsubscribeHost(host))
 }

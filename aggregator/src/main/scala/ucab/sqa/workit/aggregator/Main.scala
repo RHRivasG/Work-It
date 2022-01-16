@@ -47,7 +47,7 @@ object Main extends IOApp.Simple {
     .resource[IO]
     .evalMap(server => for {
       server <- IO.pure(server.start())
-      _ <- IO.println("Started server on port 3000")
+      _ <- IO.println("Started server on port 4500")
     } yield server)
     .useForever
 

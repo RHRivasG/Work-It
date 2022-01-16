@@ -5,7 +5,7 @@ import akka.actor.DeadLetter
 
 object DeadLetterActor {
     def apply = Behaviors.receive[DeadLetter] { (ctx, deadLetter) =>
-        ctx.log.error(f"Could not deliver message: ${deadLetter.message} to ${deadLetter.recipient} from ${deadLetter.sender}")
+        ctx.log.warn(f"Could not deliver message: ${deadLetter.message} to ${deadLetter.recipient} from ${deadLetter.sender}")
         Behaviors.same
     }
 }

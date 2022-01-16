@@ -9,7 +9,6 @@ import ucab.sqa.workit.aggregator.model.DomainError
 import ucab.sqa.workit.aggregator.model.ServiceTable
 import ucab.sqa.workit.aggregator.application.ServiceAggregatorAction
 import ucab.sqa.workit.aggregator.application.AddService
-import ucab.sqa.workit.aggregator.application.RemoveService
 import ucab.sqa.workit.aggregator.application.CurrentState
 import ucab.sqa.workit.aggregator.application.SetCurrentState
 import ucab.sqa.workit.aggregator.application.ServiceAggregatorOrder

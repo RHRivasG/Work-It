@@ -35,11 +35,13 @@ object FitnessDimensionService {
                 val service = connect(routineAPIClient(_))
                 system.log.info(f"Deleting routines of participant with $participantId")
                 service.deleteByParticipant(ParticipantDeleted(participantId))
+                service.close()
             }
             case DeleteTrainingsOf(trainerID) => {
                 val service = connect(trainingAPIClient(_))
                 system.log.info(f"Deleting trainings of trainer with $trainerID")
                 service.deleteByTrainer(TrainerDeleted(trainerID))
+                service.close()
             }
         }
         Behaviors.same
