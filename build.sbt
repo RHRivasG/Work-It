@@ -1,3 +1,5 @@
+import Path._
+
 lazy val akkaHttpVersion = "10.2.7"
 lazy val akkaVersion = "2.6.17"
 lazy val akkaGrpcVersion = "2.1.2"
@@ -38,6 +40,13 @@ lazy val social = (project in file("social")).settings(
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
   assembly / assemblyJarName := "workit.socialMicroservice.jar",
   name := "Work-It Social Dimension",
+  Compile / resourceGenerators += Def.task {
+    val rootDir = baseDirectory.value.getParentFile / "certs" 
+    val catarget = (Compile / resourceManaged).value / "ca"
+    val cafiles = (rootDir / "ca" ** "*.pem").get pair flat(catarget)
+
+    IO.copy(cafiles).toSeq
+  }.taskValue,
   libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
@@ -64,6 +73,15 @@ lazy val aggregator = (project in file("aggregator")).settings(
   assembly / assemblyJarName := "workit.serviceAggregator.jar",
   autoCompilerPlugins := true,
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
+  Compile / resourceGenerators += Def.task {
+    val rootDir = baseDirectory.value.getParentFile / "certs" 
+    val aggtarget = (Compile / resourceManaged).value / "aggregator"
+    val aggfiles = (rootDir / "aggregator" ** "*.pem").get pair flat(aggtarget)
+    val catarget = (Compile / resourceManaged).value / "ca"
+    val cafiles = (rootDir / "ca" ** "*.pem").get pair flat(catarget)
+
+    IO.copy(aggfiles ++ cafiles).toSeq
+  }.taskValue,
   name := "Work-It Service Aggregator",
   libraryDependencies ++= Seq(
     // "core" module - IO, IOApp, schedulers

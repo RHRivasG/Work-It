@@ -29,6 +29,9 @@ import akka.util.Timeout
 import akka.actor.TypedActor
 import akka.actor.CoordinatedShutdown
 import akka.Done
+import io.grpc.util.AdvancedTlsX509TrustManager
+import akka.grpc.scaladsl.AkkaGrpcClient
+import akka.grpc.SSLContextUtils
 
 private object ServiceAggregatorDiscovery {
     sealed trait Request
@@ -42,7 +45,13 @@ private object ServiceAggregatorDiscovery {
         val serviceAggregator = ServiceAggregatorClient(
             GrpcClientSettings
             .connectToServiceAt(serviceAggregatorHost, serviceAggregatorPort)
-            .withTls(false)
+            .withTls(true)
+            .withTrustManager(
+                SSLContextUtils
+                .trustManagerFromStream(
+                    getClass.getClassLoader.getResourceAsStream("ca/cert.pem")
+                )
+            )
         )
         serviceAggregator.addService(AddServiceMessage(group = "social", capacity = 1)).andThen {
             case Failure(exception) =>
