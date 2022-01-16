@@ -9,7 +9,7 @@ COPY .env.production /work-it/fitness-dimension/.env
 WORKDIR /work-it/fitness-dimension/
 
 # compile source code and copy into $PATH
-RUN go build
+RUN go build -o fitness-dimension.exe ./cmd/server/main.go 
 
 # the default command runs the service in the foreground
 CMD ["./fitness-dimension"]

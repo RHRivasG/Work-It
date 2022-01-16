@@ -8,6 +8,3 @@ null/
 .vscode/
 .bsp/
 .sbt/
-fitness-dimension/tmp/
-fitness-dimension/.env
-fitness-dimension/main
