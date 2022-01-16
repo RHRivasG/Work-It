@@ -24,7 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ServiceAggregatorClient interface {
 	RequestService(ctx context.Context, in *RequestServiceMessage, opts ...grpc.CallOption) (*RequestServiceResponse, error)
 	AddService(ctx context.Context, in *AddServiceMessage, opts ...grpc.CallOption) (*AddServiceResponse, error)
-	RemoveService(ctx context.Context, in *RemoveServiceMessage, opts ...grpc.CallOption) (*RemoveServiceResponse, error)
+	Unsubscribe(ctx context.Context, in *UnsubscribeMessage, opts ...grpc.CallOption) (*UnsubscribeResponse, error)
 }
 
 type serviceAggregatorClient struct {
@@ -53,9 +53,9 @@ func (c *serviceAggregatorClient) AddService(ctx context.Context, in *AddService
 	return out, nil
 }
 
-func (c *serviceAggregatorClient) RemoveService(ctx context.Context, in *RemoveServiceMessage, opts ...grpc.CallOption) (*RemoveServiceResponse, error) {
-	out := new(RemoveServiceResponse)
-	err := c.cc.Invoke(ctx, "/ucab.sqa.workit.protobuf.ServiceAggregator/RemoveService", in, out, opts...)
+func (c *serviceAggregatorClient) Unsubscribe(ctx context.Context, in *UnsubscribeMessage, opts ...grpc.CallOption) (*UnsubscribeResponse, error) {
+	out := new(UnsubscribeResponse)
+	err := c.cc.Invoke(ctx, "/ucab.sqa.workit.protobuf.ServiceAggregator/Unsubscribe", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (c *serviceAggregatorClient) RemoveService(ctx context.Context, in *RemoveS
 type ServiceAggregatorServer interface {
 	RequestService(context.Context, *RequestServiceMessage) (*RequestServiceResponse, error)
 	AddService(context.Context, *AddServiceMessage) (*AddServiceResponse, error)
-	RemoveService(context.Context, *RemoveServiceMessage) (*RemoveServiceResponse, error)
+	Unsubscribe(context.Context, *UnsubscribeMessage) (*UnsubscribeResponse, error)
 	mustEmbedUnimplementedServiceAggregatorServer()
 }
 
@@ -82,8 +82,8 @@ func (UnimplementedServiceAggregatorServer) RequestService(context.Context, *Req
 func (UnimplementedServiceAggregatorServer) AddService(context.Context, *AddServiceMessage) (*AddServiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddService not implemented")
 }
-func (UnimplementedServiceAggregatorServer) RemoveService(context.Context, *RemoveServiceMessage) (*RemoveServiceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveService not implemented")
+func (UnimplementedServiceAggregatorServer) Unsubscribe(context.Context, *UnsubscribeMessage) (*UnsubscribeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Unsubscribe not implemented")
 }
 func (UnimplementedServiceAggregatorServer) mustEmbedUnimplementedServiceAggregatorServer() {}
 
@@ -134,20 +134,20 @@ func _ServiceAggregator_AddService_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServiceAggregator_RemoveService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemoveServiceMessage)
+func _ServiceAggregator_Unsubscribe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnsubscribeMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServiceAggregatorServer).RemoveService(ctx, in)
+		return srv.(ServiceAggregatorServer).Unsubscribe(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/ucab.sqa.workit.protobuf.ServiceAggregator/RemoveService",
+		FullMethod: "/ucab.sqa.workit.protobuf.ServiceAggregator/Unsubscribe",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceAggregatorServer).RemoveService(ctx, req.(*RemoveServiceMessage))
+		return srv.(ServiceAggregatorServer).Unsubscribe(ctx, req.(*UnsubscribeMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -168,8 +168,8 @@ var ServiceAggregator_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ServiceAggregator_AddService_Handler,
 		},
 		{
-			MethodName: "RemoveService",
-			Handler:    _ServiceAggregator_RemoveService_Handler,
+			MethodName: "Unsubscribe",
+			Handler:    _ServiceAggregator_Unsubscribe_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
