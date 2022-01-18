@@ -6,6 +6,7 @@ import (
 	"fitness-dimension/internal/core/training/events"
 	pb "fitness-dimension/pkg/api/proto"
 	"fmt"
+	"log"
 )
 
 type TrainingPublisher struct {
@@ -26,6 +27,7 @@ func (p *TrainingPublisher) Publish(e interface{}) error {
 		})
 
 		if err != nil {
+			log.Fatal(err)
 			return err
 		}
 
@@ -41,6 +43,7 @@ func (p *TrainingPublisher) Publish(e interface{}) error {
 		})
 
 		if err != nil {
+			log.Fatal(err)
 			return err
 		}
 
@@ -52,6 +55,7 @@ func (p *TrainingPublisher) Publish(e interface{}) error {
 		})
 
 		if err != nil {
+			log.Fatal(err)
 			return nil
 		}
 
@@ -67,7 +71,8 @@ func (p *TrainingPublisher) Publish(e interface{}) error {
 		})
 
 		if err != nil {
-			return nil
+			log.Fatal(err)
+			return err
 		}
 
 		fmt.Println(res)
@@ -78,7 +83,8 @@ func (p *TrainingPublisher) Publish(e interface{}) error {
 		})
 
 		if err != nil {
-			return nil
+			log.Fatal(err)
+			return err
 		}
 
 		fmt.Println(res)

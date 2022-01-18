@@ -4,7 +4,8 @@ FROM golang:1.17.6-alpine3.15
 EXPOSE 8080
 
 # copy source code into the $GOPATH and switch to that directory
-COPY . /work-it/fitness-dimension/
+COPY fitness-dimension /work-it/fitness-dimension/
+COPY certs /work-it/certs/
 COPY .env.production /work-it/fitness-dimension/.env
 WORKDIR /work-it/fitness-dimension/
 

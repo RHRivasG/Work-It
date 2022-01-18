@@ -1,0 +1,21 @@
+version: '3.9'
+services:
+  service-aggregator-microservice:
+    container_name: service_aggregator_microservice
+    build: 
+      context: ./
+      dockerfile: ./aggregator/Dockerfile
+    ports:
+      - 5000:5000
+    depends_on:
+      - mongodb
+    networks:
+      - services
+      - default
+  mongodb:
+    container_name: mongodb_aggregator
+    image: mongo
+
+networks:
+  services:
+    name: 'services_network'
