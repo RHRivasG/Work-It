@@ -91,6 +91,7 @@ lazy val aggregator = (project in file("aggregator")).settings(
     // concurrency abstractions and primitives (Concurrent, Sync, Async etc.)jjj
     "org.typelevel" %% "cats-effect-kernel" % "3.3.3",
     // standard "effect" library (Queues, Console, Random etc.)
+    "com.typesafe" % "config" % "1.4.1",
     "org.typelevel" %% "cats-effect-std" % "3.3.3",
     "co.fs2" %% "fs2-core" % "3.2.0",
     "co.fs2" %% "fs2-io" % "3.2.0",

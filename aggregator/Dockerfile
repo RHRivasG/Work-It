@@ -7,15 +7,16 @@ WORKDIR /workit-service-aggregator-microservice/
 
 COPY certs/ /workit-service-aggregator-microservice/certs
 
-WORKDIR /workit-service-aggregator-microservice/work-it
+WORKDIR /workit-service-aggregator-microservice
 
-COPY project/ /workit-service-aggregator-microservice/work-it/project
-COPY build.sbt /workit-service-aggregator-microservice/work-it/build.sbt
+COPY project/ /workit-service-aggregator-microservice/project
+COPY build.sbt /workit-service-aggregator-microservice/build.sbt
 
 RUN /ops/sbt/bin/sbt aggregator/update
 
-COPY aggregator/ /workit-service-aggregator-microservice/work-it/aggregator
-COPY protobuf/ /workit-service-aggregator-microservice/work-it/protobuf
+COPY aggregator/ /workit-service-aggregator-microservice/aggregator
+COPY aggregator/src/main/resources/application.prod.conf /workit-service-aggregator-microservice/aggregator/src/main/resources/application.conf
+COPY protobuf/ /workit-service-aggregator-microservice/protobuf
 
 RUN /ops/sbt/bin/sbt aggregator/assembly
 EXPOSE 5000

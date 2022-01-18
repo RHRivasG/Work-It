@@ -6,16 +6,14 @@ RUN unzip sbt-$SBT_VERSION.zip -d ops
 WORKDIR /workit-social-dimension-microservice/
 COPY certs /workit-social-dimension-microservice/certs
 
-WORKDIR /workit-social-dimension-microservice/work-it/
-
-COPY project/ /workit-social-dimension-microservice/work-it/project
-COPY build.sbt /workit-social-dimension-microservice/work-it/build.sbt
+COPY project/ /workit-social-dimension-microservice/project
+COPY build.sbt /workit-social-dimension-microservice/build.sbt
 
 RUN /ops/sbt/bin/sbt social/update
 
-COPY social/ /workit-social-dimension-microservice/work-it/social
-COPY social/src/main/resources/application.prod.conf /workit-social-dimension-microservice/work-it/social/src/main/resources/application.conf
-COPY protobuf/ /workit-social-dimension-microservice/work-it/protobuf
+COPY social/ /workit-social-dimension-microservice/social
+COPY social/src/main/resources/application.prod.conf /workit-social-dimension-microservice/social/src/main/resources/application.conf
+COPY protobuf/ /workit-social-dimension-microservice/protobuf
 
 RUN /ops/sbt/bin/sbt social/assembly
 EXPOSE 5000
