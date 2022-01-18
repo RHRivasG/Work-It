@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   service-aggregator-microservice:
-    container_name: service_aggregator_microservice
+    container_name: aggregator 
     build: 
       context: ./
       dockerfile: ./aggregator/Dockerfile

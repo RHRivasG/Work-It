@@ -1,1 +1,1 @@
-subjectAltName=DNS:localhost,DNS:service_aggregator_microservice,IP:192.168.128.182,IP:192.168.0.101
+subjectAltName=DNS:localhost,DNS:aggregator,IP:192.168.128.182,IP:192.168.0.101
