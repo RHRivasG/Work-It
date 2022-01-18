@@ -51,21 +51,18 @@ object Main extends IOApp.Simple {
   private val keyFile = Resource.eval {
     for {
       file <- IO { getClass.getClassLoader.getResourceAsStream("aggregator/key.pem") }
-      () <- IO.println(f"Is key file available? ${file.available()}")
     } yield file
   }
 
   private val certFile = Resource.eval {
     for {
       file <- IO.blocking(getClass.getClassLoader.getResourceAsStream("aggregator/cert.pem")) 
-      () <- IO.println(f"Is cert file available? ${file.available()}")
     } yield file
   }
 
   private val caFile = Resource.eval {
     for {
       file <- IO.blocking(getClass.getClassLoader.getResourceAsStream("ca/cert.pem")) 
-      () <- IO.println(f"Is ca-key file available? ${file.available()}")
     } yield file
   }
 

@@ -45,7 +45,6 @@ private object ServiceAggregatorDiscovery {
         val serviceAggregator = ServiceAggregatorClient(
             GrpcClientSettings
             .connectToServiceAt(serviceAggregatorHost, serviceAggregatorPort)
-            .withTls(true)
             .withTrustManager(
                 SSLContextUtils
                 .trustManagerFromStream(
@@ -67,6 +66,7 @@ private object ServiceAggregatorDiscovery {
                 .map {
                     case RequestServiceResponse(host, _) => {
                         val uri = new URI(host)
+                        system.log.info(f"Returning ${uri.getHost()}:${uri.getPort()} to query $lookup")
                         ServiceDiscovery.Resolved(lookup.serviceName, Seq(ServiceDiscovery.ResolvedTarget(uri.getHost(), Some(uri.getPort()), None)))
                     }
                 }
