@@ -20,6 +20,7 @@ service routineAPI{
     rpc AddTraining(TrainingAdded) returns (Response){}
     rpc RemoveTraining(TrainingRemoved) returns (Response){}
     rpc DeleteByParticipant(ParticipantDeleted) returns (Response) {}
+    rpc ChangeParticipant(ParticipantChanged) returns (Response) {}
 }
 
 message Response{
@@ -96,4 +97,9 @@ message TrainingRemoved{
 
 message ParticipantDeleted {
     string id = 1;
+}
+
+message ParticipantChanged {
+    string oldId = 1;
+    string newId = 2;
 }

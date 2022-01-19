@@ -294,6 +294,7 @@ type RoutineAPIClient interface {
 	AddTraining(ctx context.Context, in *TrainingAdded, opts ...grpc.CallOption) (*Response, error)
 	RemoveTraining(ctx context.Context, in *TrainingRemoved, opts ...grpc.CallOption) (*Response, error)
 	DeleteByParticipant(ctx context.Context, in *ParticipantDeleted, opts ...grpc.CallOption) (*Response, error)
+	ChangeParticipant(ctx context.Context, in *ParticipantChanged, opts ...grpc.CallOption) (*Response, error)
 }
 
 type routineAPIClient struct {
@@ -358,6 +359,15 @@ func (c *routineAPIClient) DeleteByParticipant(ctx context.Context, in *Particip
 	return out, nil
 }
 
+func (c *routineAPIClient) ChangeParticipant(ctx context.Context, in *ParticipantChanged, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/main.routineAPI/ChangeParticipant", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RoutineAPIServer is the server API for RoutineAPI service.
 // All implementations must embed UnimplementedRoutineAPIServer
 // for forward compatibility
@@ -368,6 +378,7 @@ type RoutineAPIServer interface {
 	AddTraining(context.Context, *TrainingAdded) (*Response, error)
 	RemoveTraining(context.Context, *TrainingRemoved) (*Response, error)
 	DeleteByParticipant(context.Context, *ParticipantDeleted) (*Response, error)
+	ChangeParticipant(context.Context, *ParticipantChanged) (*Response, error)
 	mustEmbedUnimplementedRoutineAPIServer()
 }
 
@@ -392,6 +403,9 @@ func (UnimplementedRoutineAPIServer) RemoveTraining(context.Context, *TrainingRe
 }
 func (UnimplementedRoutineAPIServer) DeleteByParticipant(context.Context, *ParticipantDeleted) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteByParticipant not implemented")
+}
+func (UnimplementedRoutineAPIServer) ChangeParticipant(context.Context, *ParticipantChanged) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeParticipant not implemented")
 }
 func (UnimplementedRoutineAPIServer) mustEmbedUnimplementedRoutineAPIServer() {}
 
@@ -514,6 +528,24 @@ func _RoutineAPI_DeleteByParticipant_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RoutineAPI_ChangeParticipant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ParticipantChanged)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoutineAPIServer).ChangeParticipant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.routineAPI/ChangeParticipant",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoutineAPIServer).ChangeParticipant(ctx, req.(*ParticipantChanged))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RoutineAPI_ServiceDesc is the grpc.ServiceDesc for RoutineAPI service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -544,6 +576,10 @@ var RoutineAPI_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteByParticipant",
 			Handler:    _RoutineAPI_DeleteByParticipant_Handler,
+		},
+		{
+			MethodName: "ChangeParticipant",
+			Handler:    _RoutineAPI_ChangeParticipant_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

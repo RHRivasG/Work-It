@@ -145,3 +145,18 @@ func (s *RoutineApiServer) DeleteByParticipant(ctx context.Context, req *pb.Part
 	msg := pb.Response{Msg: "Routines deleted"}
 	return &msg, nil
 }
+
+func (s *RoutineApiServer) ChangeParticipant(ctx context.Context, req *pb.ParticipantChanged) (*pb.Response, error) {
+	fmt.Println("Changing participant on routines")
+
+	routine := &Routine{
+		UserID: req.NewId,
+	}
+	_, err := s.DB.Model(routine).Where("user_id = ?", req.OldId).Update()
+	if err != nil {
+		return nil, err
+	}
+
+	msg := pb.Response{Msg: "Participant changed on routines"}
+	return &msg, nil
+}
