@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"net/http"
+
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -19,4 +21,12 @@ func AuthMiddleware() echo.MiddlewareFunc {
 		SigningMethod: "HS512",
 	}
 	return middleware.JWTWithConfig(config)
+}
+
+func AuthErrorHandler(err error, c echo.Context) {
+	if err == middleware.ErrJWTMissing {
+		c.Error(echo.NewHTTPError(http.StatusUnauthorized, "Login required"))
+		return
+	}
+	c.Echo().DefaultHTTPErrorHandler(err, c)
 }

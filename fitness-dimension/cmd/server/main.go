@@ -138,6 +138,7 @@ func httpServe(l net.Listener, db *pg.DB) error {
 	r := e.Group("/routines")
 
 	//Auth
+	e.HTTPErrorHandler = auth.AuthErrorHandler
 	t.Use(auth.AuthMiddleware())
 	r.Use(auth.AuthMiddleware())
 
