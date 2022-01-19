@@ -131,7 +131,6 @@ object ParticipantApplicationService
     participant <- getParticipant(id)
     event <- of(participant.acceptRequestToBecomeTrainer)
     () <- handle(event)
-    () <- handle(participant.destroy)
   } yield ()
 
   private def rejectRequestParticipantToTrainer(id: String) = for {

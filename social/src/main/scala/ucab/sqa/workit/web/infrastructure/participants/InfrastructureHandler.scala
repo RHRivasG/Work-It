@@ -53,6 +53,7 @@ case class InfrastructureHandler(
     requestIssuedHandler: (UUID, UUID) => Future[Either[Error, Unit]],
     requestApprovedHandler: (
         UUID,
+        UUID,
         String,
         String,
         List[String]
@@ -100,6 +101,7 @@ case class InfrastructureHandler(
     case Handle(
           ParticipantRequestToConvertToTrainerApprovedEvent(
             id,
+            participantId,
             name,
             password,
             preferences
@@ -107,6 +109,7 @@ case class InfrastructureHandler(
         ) =>
       requestApprovedHandler(
         id.id,
+        participantId.id,
         name.name,
         password.password,
         preferences.preferences.map(_.tag)

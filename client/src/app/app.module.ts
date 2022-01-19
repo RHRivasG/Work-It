@@ -10,6 +10,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { WI_IDENTITY_PROVIDER } from './services/identity-provider';
 import { environment } from 'src/environments/environment';
+import { LogoutService } from './services/logout.service';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { environment } from 'src/environments/environment';
     {
       provide: WI_IDENTITY_PROVIDER ,
       useClass: environment.identityProviderService
-    }
+    },
+    LogoutService
   ],
   bootstrap: [AppComponent]
 })

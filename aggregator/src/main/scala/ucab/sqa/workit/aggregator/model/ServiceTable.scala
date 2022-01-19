@@ -11,12 +11,15 @@ case class ServiceTable(table: Map[Group, Map[UUID, ServiceDescriptor]]) {
     def addService(group: Group, service: Service) =
         copy(table = table.updatedWith(group) { _.fold(newTableFrom(service))(_.updated(service.id, ServiceDescriptor(service))).some } )
     
-    def removeService(group: Group, host: String) = for {
-        serviceTable <- table.get(group).toRight(GroupNotFound(group))
-        (id, _) <- serviceTable.find {
-            case (_, d) => d.service.host == new URI(host)
-        }.toRight(ServiceWithHostNotFound(host))
-    } yield copy(table = table.updatedWith(group) { _.map(_.removed(id)) })
+    def unsubscribeHost(host: URI) = {
+        println(f"Removing $host")
+        copy(table = table.map {
+            case (g, map) =>
+                val keys = map.filter(_._2.service.host.getHost == host.getHost).map(_._1)
+                keys.foreach { uri => println(f"Found matching host $uri")}
+                (g, keys.foldLeft(map)(_.removed(_)))
+        })
+    }
     
     def nextService(group: Group) = for {
         services <- table.get(group).toRight(GroupNotFound(group))

@@ -7,6 +7,7 @@ import { faDumbbell, faHome, faSearch, faSignOutAlt, faTimes, faUser } from '@fo
 import { GlobalSearch, WI_GLOBAL_SEARCH } from 'src/app/services/global-search';
 import { GlobalSearchService } from 'src/app/services/global-search.service';
 import { IdentityProvider, WI_IDENTITY_PROVIDER } from 'src/app/services/identity-provider';
+import { LogoutService } from 'src/app/services/logout.service';
 
 @Component({
   selector: 'wi-fitness-layout',
@@ -74,6 +75,7 @@ export class LayoutComponent implements OnInit {
   constructor(
     router: Router,
     activatedRoute: ActivatedRoute,
+    private logoutService: LogoutService,
     overlay: Overlay,
     private container: ViewContainerRef,
     @Inject(WI_IDENTITY_PROVIDER) identityProvider: IdentityProvider,
@@ -104,5 +106,6 @@ export class LayoutComponent implements OnInit {
   }
 
   logout() {
+    this.logoutService.logout()
   }
 }

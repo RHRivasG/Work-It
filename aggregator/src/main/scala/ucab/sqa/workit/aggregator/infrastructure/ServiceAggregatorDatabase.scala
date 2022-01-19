@@ -22,6 +22,8 @@ import ucab.sqa.workit.aggregator.model
 import ucab.sqa.workit.aggregator.model.ServiceTable
 import ucab.sqa.workit.aggregator.model.Operations._
 import mongo4cats.collection.ReplaceOptions
+import com.typesafe.config.ConfigFactory
+import scala.util.Try
 
 object ServiceAggregatorDatabase {
     private case class ServiceInfo(id: UUID, host: String, factor: Int)
@@ -31,8 +33,12 @@ object ServiceAggregatorDatabase {
     private implicit val infoEncoder: Encoder[ServiceInfo] = Encoder.forProduct3("id", "host", "factor")(e => (e.id, e.host, e.factor))
     private implicit val entryDecoder: Decoder[ServiceEntry] = Decoder.forProduct2("group", "services")(ServiceEntry.apply)
     private implicit val entryEncoder: Encoder[ServiceEntry] = Encoder.forProduct2("group", "services")(e => (e.group, e.services))
+
     private val entriesCollection = for {
-        client <- MongoClient.fromServerAddress[IO](ServerAddress("localhost", 27017))
+        config <- Resource.eval { IO.blocking { ConfigFactory.load("application.conf") } }
+        host <- Resource.eval { IO.fromTry { Try { config.getString("db.host") } } }
+        port <- Resource.eval { IO.fromTry { Try { config.getInt("db.port") } } }
+        client <- MongoClient.fromServerAddress[IO](ServerAddress(host, port))
         db <- Resource.eval { client.getDatabase("serviceAggregator") }
         entries <- Resource.eval { db.getCollectionWithCodec[ServiceEntry]("entries") }
     } yield entries

@@ -33,6 +33,7 @@ import akka.http.scaladsl.model.headers._
 import akka.actor.DeadLetter
 import akka.actor.typed.eventstream.EventStream
 import akka.actor.typed.receptionist.ServiceKey
+import ucab.sqa.workit.web.infrastructure.services.FitnessDimensionService
 import ucab.sqa.workit.application.participants.ParticipantQuery
 import ucab.sqa.workit.application.participants.ParticipantCommand
 import ucab.sqa.workit.web.participants.ParticipantStreamMessage
@@ -41,6 +42,7 @@ import ucab.sqa.workit.application.trainers.TrainerCommand
 import ucab.sqa.workit.application.trainers.TrainerQuery
 import ucab.sqa.workit.web.trainers.TrainerStreamActor
 import ucab.sqa.workit.web.profile.ProfileRoutes
+import akka.discovery.Discovery
 
 object App {
   implicit val participantServiceKey: ServiceKey[Request[ParticipantCommand, ParticipantQuery, _]] = ServiceKey("Participants")
@@ -102,6 +104,13 @@ object App {
       val deadLetterActor = context.system.systemActorOf(
         infrastructure.log.DeadLetterActor.apply,
         "DeadLetterActor"
+      )
+
+      val discovery = Discovery(system).discovery
+
+      implicit val fitnessActor = context.spawn(
+        FitnessDimensionService(discovery),
+        "FitnessDimensionActor"
       )
 
       implicit val authorityActor = context.spawn(
