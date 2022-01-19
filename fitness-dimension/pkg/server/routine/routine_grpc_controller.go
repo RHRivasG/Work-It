@@ -149,10 +149,11 @@ func (s *RoutineApiServer) DeleteByParticipant(ctx context.Context, req *pb.Part
 func (s *RoutineApiServer) ChangeParticipant(ctx context.Context, req *pb.ParticipantChanged) (*pb.Response, error) {
 	fmt.Println("Changing participant on routines")
 
-	routine := &Routine{
-		UserID: req.NewId,
-	}
-	_, err := s.DB.Model(routine).Where("user_id = ?", req.OldId).Update()
+	_, err := s.DB.Model(&Routine{}).Exec(fmt.Sprintf(`
+		UPDATE routines
+		SET "user_id" = '%s'
+		WHERE "user_id" = '%s'
+	`, req.NewId, req.OldId))
 	if err != nil {
 		return nil, err
 	}
