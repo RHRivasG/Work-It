@@ -97,7 +97,7 @@ func (s *RoutineApiServer) AddTraining(ctx context.Context, req *pb.TrainingAdde
 		Order:      int(req.Order),
 	}
 	_, err := s.DB.Model(routineTraining).Insert()
-	if err != nil {
+	if err != nil && !err.(pg.Error).IntegrityViolation() {
 		return nil, err
 	}
 
