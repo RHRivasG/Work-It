@@ -1,11 +1,8 @@
 package app
 
 import (
-	"fitness-dimension/internal/app/training/commands"
-
 	"fitness-dimension/internal/core/training"
 	"fitness-dimension/internal/core/training/entities"
-	"fitness-dimension/internal/core/training/values"
 )
 
 type TrainingService struct {
@@ -13,6 +10,7 @@ type TrainingService struct {
 	Repository TrainingRepository
 }
 
+/*
 func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 	switch c.(type) {
 	case commands.CreateTraining:
@@ -127,6 +125,7 @@ func (s *TrainingService) Handle(c interface{}) (interface{}, error) {
 	}
 	return nil, nil
 }
+*/
 
 func (s *TrainingService) Get(id string) (*training.Training, error) {
 	return s.Repository.Get(id)

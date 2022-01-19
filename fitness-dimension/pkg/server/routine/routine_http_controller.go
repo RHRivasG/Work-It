@@ -5,6 +5,7 @@ import (
 	"fitness-dimension/internal/app/routine/commands"
 	"fitness-dimension/pkg/auth"
 	"fitness-dimension/pkg/helpers"
+	"log"
 	"net/http"
 
 	"github.com/golang-jwt/jwt"
@@ -48,6 +49,7 @@ func (c *RoutineHttpController) GetAll(ctx echo.Context) error {
 
 	routineList, err := c.Service.GetAll(userId)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -80,7 +82,8 @@ func (c *RoutineHttpController) Create(ctx echo.Context) error {
 		Description: partialCommand.Description,
 		TrainingsID: partialCommand.Trainings,
 	}
-	_, err := c.Service.Handle(command)
+
+	_, err := command.Execute(&c.Service)
 	if err != nil {
 		return err
 	}
@@ -117,7 +120,11 @@ func (c *RoutineHttpController) Update(ctx echo.Context) error {
 		Description: partialCommand.Description,
 		TrainingsID: partialCommand.Trainings,
 	}
-	c.Service.Handle(command)
+
+	_, err = command.Execute(&c.Service)
+	if err != nil {
+		return err
+	}
 
 	return ctx.String(http.StatusOK, "Routine updated")
 }
@@ -132,7 +139,8 @@ func (c *RoutineHttpController) Delete(ctx echo.Context) error {
 	command := commands.DeleteRoutine{
 		ID: routineId,
 	}
-	_, err = c.Service.Handle(command)
+
+	_, err = command.Execute(&c.Service)
 	if err != nil {
 		return err
 	}
@@ -157,7 +165,8 @@ func (c *RoutineHttpController) AddTraining(ctx echo.Context) error {
 		ID:         routineId,
 		TrainingID: trainingId,
 	}
-	_, err = c.Service.Handle(command)
+
+	_, err = command.Execute(&c.Service)
 	if err != nil {
 		return err
 	}
@@ -183,7 +192,7 @@ func (c *RoutineHttpController) RemoveTraining(ctx echo.Context) error {
 		TrainingID: trainingId,
 	}
 
-	_, err = c.Service.Handle(command)
+	_, err = command.Execute(&c.Service)
 	if err != nil {
 		return err
 	}

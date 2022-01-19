@@ -91,7 +91,7 @@ func (c *TrainingHttpController) Create(ctx echo.Context) error {
 		TrainerID:   trainerId,
 	}
 
-	trainingId, err := c.Service.Handle(command)
+	trainingId, err := command.Execute(&c.Service)
 	if err != nil {
 		return err
 	}
@@ -132,7 +132,7 @@ func (c *TrainingHttpController) Update(ctx echo.Context) error {
 		TrainerID:   trainerId,
 	}
 
-	_, err = c.Service.Handle(command)
+	_, err = command.Execute(&c.Service)
 	if err != nil {
 		return err
 	}
@@ -149,7 +149,11 @@ func (c *TrainingHttpController) Delete(ctx echo.Context) error {
 	}
 
 	command := commands.DeleteTraining{ID: trainingId}
-	c.Service.Handle(command)
+	_, err = command.Execute(&c.Service)
+	if err != nil {
+		return err
+	}
+
 	return ctx.String(http.StatusOK, "Training deleted")
 }
 
@@ -209,7 +213,8 @@ func (c *TrainingHttpController) CreateVideo(ctx echo.Context) error {
 		Ext:        body.Ext,
 		Video:      buff,
 	}
-	_, err = c.Service.Handle(command)
+
+	_, err = command.Execute(&c.Service)
 	if err != nil {
 		return err
 	}
@@ -226,7 +231,10 @@ func (c *TrainingHttpController) DeleteVideo(ctx echo.Context) error {
 	}
 
 	command := commands.DeleteTrainingVideo{TrainingID: trainingId}
-	c.Service.Handle(command)
+	_, err = command.Execute(&c.Service)
+	if err != nil {
+		return err
+	}
 
 	return ctx.String(http.StatusOK, "Video deleted")
 }
