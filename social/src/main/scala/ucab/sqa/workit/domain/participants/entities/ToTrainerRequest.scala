@@ -12,12 +12,14 @@ import ucab.sqa.workit.domain.participants.valueobjects.ParticipantPreferences
 
 private[participants] case class ToTrainerRequest(id: ToTrainerRequestId) {
   def accept(
+      participantId: ParticipantId,
       name: ParticipantName,
       password: ParticipantPassword,
       preferences: ParticipantPreferences
   ) =
     ParticipantRequestToConvertToTrainerApprovedEvent(
       id,
+      participantId,
       name,
       password,
       preferences

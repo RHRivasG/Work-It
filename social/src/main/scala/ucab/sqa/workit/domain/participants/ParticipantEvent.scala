@@ -46,6 +46,7 @@ final case class ParticipantRequestToConvertToTrainerIssuedEvent(
 
 final case class ParticipantRequestToConvertToTrainerApprovedEvent(
     id: ToTrainerRequestId,
+    participantId: ParticipantId,
     name: ParticipantName,
     password: ParticipantPassword,
     preferences: ParticipantPreferences

@@ -46,11 +46,13 @@ object Infrastructure {
       preferences: List[String]
   )(implicit
       ref: ActorRef[DatabaseRequest],
+      fitness: ActorRef[FitnessDimensionService.Command],
       stream: ActorRef[TrainerStreamMessage],
       system: ActorSystem[_],
       to: Timeout
   ) = (for {
     _ <- EitherT(ref.ask(Request.CreateTrainer(id, name, password, preferences, _)))
+    _ <- EitherT.pure[Future, Error](fitness ! FitnessDimensionService.ReassignRoutinesTo(id.toString))
     _ <- EitherT.pure[Future, Error](stream ! ResendTrainers())
   } yield ()).value
 

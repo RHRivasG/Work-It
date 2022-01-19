@@ -49,7 +49,7 @@ case class Participant private (
 
   def acceptRequestToBecomeTrainer() = for {
     request <- request.toRight(new Error("Request was not issued"))
-  } yield request.accept(name, password, preferences)
+  } yield request.accept(id, name, password, preferences)
 
   def rejectRequestToBecomeTrainer() = for {
     request <- request.toRight(new Error("Request was not issued"))

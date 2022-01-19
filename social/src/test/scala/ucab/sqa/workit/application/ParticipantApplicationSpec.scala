@@ -94,7 +94,7 @@ class ParticipantApplicationSpec extends AnyFunSpec with Matchers {
               } yield newPart 
             }
             Right(())
-      case Handle(ParticipantRequestToConvertToTrainerApprovedEvent(id, name, password, preferences)) =>
+      case Handle(ParticipantRequestToConvertToTrainerApprovedEvent(id, _, name, password, preferences)) =>
             mockParticipants.updateWith(id.id) { for {
                 part <- _
                 _ <- part.acceptRequestToBecomeTrainer.toOption

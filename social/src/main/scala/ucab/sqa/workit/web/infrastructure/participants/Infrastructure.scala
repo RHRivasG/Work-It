@@ -137,6 +137,7 @@ object Infrastructure {
 
   def requestApprovedHandler[Q[_]](
       id: UUID,
+      participantId: UUID,
       name: String,
       password: String,
       preferences: List[String]
@@ -144,15 +145,18 @@ object Infrastructure {
       actorRef: ActorRef[
         Request[TrainerCommand, Q, _]
       ],
+      fitness: ActorRef[FitnessDimensionService.Command],
       stream: ActorRef[ParticipantStreamMessage],
       ref: ActorRef[DatabaseRequest],
       system: ActorSystem[_],
       to: Timeout
   ) = {
-    actorRef ! Notification(CreateTrainerCommand(name, password, preferences))
     (
       for {
         _ <- EitherT(ref.ask(database.Request.AcceptParticipantRequest(id, _)))
+        _ <- EitherT(ref.ask(database.Request.DeleteParticipant(participantId, _)))
+        _ <- EitherT.pure[Future, Error](fitness ! FitnessDimensionService.ReassignRoutinesOf(participantId.toString))
+        _ <- EitherT.pure[Future, Error](actorRef ! Notification(CreateTrainerCommand(name, password, preferences)))
         _ <- EitherT.pure[Future, Error](stream ! ResendParticipants())
       } yield ()
     ).value
