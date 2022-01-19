@@ -178,7 +178,7 @@ fn logout(
                         .expect("Failed building response")
                 } else {
                     Response::builder()
-                        .status(405)
+                        .status(401)
                         .body(Bytes::from_static(b"Must be logged in first"))
                         .expect("Failed building response")
                 }
