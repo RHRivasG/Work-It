@@ -2,16 +2,12 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/tls"
-	"crypto/x509"
+	"fitness-dimension/pkg/api/tls"
 	"fitness-dimension/pkg/auth"
 	"fitness-dimension/pkg/db"
 	"fitness-dimension/pkg/server/aggregator"
 	"fitness-dimension/pkg/server/routine"
 	"fitness-dimension/pkg/server/training"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -25,10 +21,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/soheilhy/cmux"
-	"golang.org/x/net/http2"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 )
 
 func main() {
@@ -70,7 +64,7 @@ func serve(db *pg.DB) error {
 	httpListener := m.Match(cmux.HTTP1())
 	otherwiseL := m.Match(cmux.Any())
 
-	tlsl := gimmeTLS(otherwiseL, "../certs/fitness/cert.pem", "../certs/fitness/key.pem")
+	tlsl := tls.GimmeTLS(otherwiseL, "../certs/fitness/cert.pem", "../certs/fitness/key.pem")
 	tlsm := cmux.New(tlsl)
 
 	grpcListener := tlsm.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
@@ -85,24 +79,6 @@ func serve(db *pg.DB) error {
 	g.Wait()
 
 	return nil
-}
-
-func gimmeTLS(tcpl net.Listener, cert, key string) (tlsl net.Listener) {
-	certificate, err := tls.LoadX509KeyPair(cert, key)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	const requiredCipher = tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-	config := &tls.Config{
-		CipherSuites: []uint16{requiredCipher},
-		NextProtos:   []string{http2.NextProtoTLS, "h2-14"}, // h2-14 is just for compatibility. will be eventually removed.
-		Certificates: []tls.Certificate{certificate},
-	}
-	config.Rand = rand.Reader
-
-	tlsl = tls.NewListener(tcpl, config)
-	return
 }
 
 func grpcServe(l net.Listener, db *pg.DB) error {
@@ -128,7 +104,7 @@ func grpcServe(l net.Listener, db *pg.DB) error {
 
 func httpServe(l net.Listener, db *pg.DB) error {
 
-	tlsCredentials, err := loadTLSCredentials()
+	tlsCredentials, err := tls.LoadTLSCredentials()
 	if err != nil {
 		return err
 	}
@@ -183,24 +159,4 @@ func httpServe(l net.Listener, db *pg.DB) error {
 
 	s := &http.Server{Handler: e}
 	return s.Serve(l)
-}
-
-func loadTLSCredentials() (credentials.TransportCredentials, error) {
-	// Load certificate of the CA who signed server's certificate
-	pemServerCA, err := ioutil.ReadFile("../certs/ca/cert.pem")
-	if err != nil {
-		return nil, err
-	}
-
-	certPool := x509.NewCertPool()
-	if !certPool.AppendCertsFromPEM(pemServerCA) {
-		return nil, fmt.Errorf("failed to add server CA's certificate")
-	}
-
-	// Create the credentials and return it
-	config := &tls.Config{
-		RootCAs: certPool,
-	}
-
-	return credentials.NewTLS(config), nil
 }
