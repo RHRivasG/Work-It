@@ -47,7 +47,7 @@ func (s *Summary) Update(t vo.SummaryTime) error {
 	var err error
 	updated := false
 
-	if (s.MinTime == nil) || (s.MinTime != nil && s.MinTime.Value() > t.Value()) {
+	if (s.MinTime == nil) || (s.MinTime.Value().Microseconds() == 0) || (s.MinTime != nil && s.MinTime.Value() > t.Value()) {
 		s.MinTime, err = vo.NewSummaryMinTime(t.Value())
 		if err != nil {
 			return err
@@ -55,7 +55,7 @@ func (s *Summary) Update(t vo.SummaryTime) error {
 		updated = true
 	}
 
-	if (s.MaxTime == nil) || (s.MaxTime != nil && s.MaxTime.Value() < t.Value()) {
+	if (s.MaxTime == nil) || (s.MaxTime.Value().Microseconds() == 0) || (s.MaxTime != nil && s.MaxTime.Value() < t.Value()) {
 		s.MaxTime, err = vo.NewSummaryMaxTime(t.Value())
 		if err != nil {
 			return err
