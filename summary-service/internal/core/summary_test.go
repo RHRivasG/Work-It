@@ -56,6 +56,7 @@ func TestUpdateWithoutTime(t *testing.T) {
 	if event.MinTime.Value() != newTimeDuration {
 		t.Errorf("got %q, wanted %q", event.ID.Value(), newTimeDuration)
 	}
+
 }
 
 func TestUpdateNewMaxtime(t *testing.T) {

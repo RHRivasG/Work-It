@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"summary-service/internal/core/events"
 	pb "summary-service/pkg/api/proto"
@@ -13,7 +12,6 @@ type SummaryPublisher struct {
 }
 
 func (p SummaryPublisher) Publish(event interface{}) {
-	fmt.Println("daj")
 	switch event.(type) {
 	case events.SummaryCreated:
 		p.publishSummaryCreated(event.(events.SummaryCreated))
@@ -38,7 +36,6 @@ func (p SummaryPublisher) publishSummaryCreated(event events.SummaryCreated) {
 }
 
 func (p SummaryPublisher) publishSummaryUpdated(event events.SummaryUpdated) {
-	fmt.Println("dah")
 
 	res, err := p.Client.Update(context.Background(), &pb.SummaryUpdated{
 		Id:        event.ID.Value().String(),

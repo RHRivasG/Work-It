@@ -70,8 +70,6 @@ func (h *SummaryHandler) Update(ctx context.Context, req *pb.SummaryUpdated) (*p
 		Mintime: mintime,
 	}
 
-	fmt.Println(summary.Maxtime)
-
 	_, err = h.DB.Model(summary).WherePK().Update()
 	if err != nil {
 		return nil, err
