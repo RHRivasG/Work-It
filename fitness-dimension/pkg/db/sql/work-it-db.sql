@@ -52,6 +52,21 @@ CREATE TABLE public.routines (
 ALTER TABLE public.routines OWNER TO postgres;
 
 --
+-- TOC entry 209 (class 1259 OID 16395)
+-- Name: routines; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.summaries (
+    id uuid NOT NULL,
+    routine character varying,
+    mintime int8,
+    maxtime int8
+);
+
+
+ALTER TABLE public.summaries OWNER TO postgres;
+
+--
 -- TOC entry 210 (class 1259 OID 16402)
 -- Name: trainings; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -100,6 +115,14 @@ ALTER TABLE ONLY public.routine_training
 ALTER TABLE ONLY public.routines
     ADD CONSTRAINT routines_pkey PRIMARY KEY (id);
 
+--
+-- TOC entry 3176 (class 2606 OID 16401)
+-- Name: routines routines_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.summaries
+    ADD CONSTRAINT summaries_pkey PRIMARY KEY (id);
+
 
 --
 -- TOC entry 3178 (class 2606 OID 16417)
@@ -135,6 +158,14 @@ ALTER TABLE ONLY public.routine_training
 
 ALTER TABLE ONLY public.routine_training
     ADD CONSTRAINT training_fk FOREIGN KEY (id_training) REFERENCES public.trainings(id) ON UPDATE CASCADE ON DELETE CASCADE NOT VALID;
+
+--
+-- TOC entry 3184 (class 2606 OID 32835)
+-- Name: routine_training training_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.summaries
+    ADD CONSTRAINT routine_fk FOREIGN KEY (routine) REFERENCES public.routines(id) ON UPDATE CASCADE ON DELETE CASCADE NOT VALID;
 
 
 --
