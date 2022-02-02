@@ -1,7 +1,7 @@
 package application
 
 type SummaryDto struct {
-	Routine string
-	MinTime string
-	MaxTime string
+	Routine string `json:"routine"`
+	MinTime string `json:"mintime"`
+	MaxTime string `json:"maxtime"`
 }
