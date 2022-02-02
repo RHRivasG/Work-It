@@ -1,1 +1,1 @@
-subjectAltName=DNS:localhost,DNS:aggregator,IP:192.168.128.182,IP:192.168.0.103
+subjectAltName=DNS:localhost,DNS:host.docker.internal,DNS:aggregator,IP:192.168.128.182,IP:192.168.0.101

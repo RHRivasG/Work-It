@@ -11,3 +11,7 @@ to = "http://localhost:5000"
 [servers.fitness]
 from = "/api/fitness"
 to = "http://localhost:8080"
+
+[servers.reports]
+from = "/api/reports"
+to = "http://localhost:3500"
