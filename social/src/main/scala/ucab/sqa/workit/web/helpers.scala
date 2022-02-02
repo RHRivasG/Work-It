@@ -5,21 +5,11 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import scala.concurrent.Future
-import spray.json.JsonFormat
-import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
-import _root_.ucab.sqa.workit.web.participants.ParticipantRoutes
-import akka.http.scaladsl.server.RequestContext
 import akka.http.scaladsl.server.Rejection
-import akka.http.scaladsl.server.StandardRoute
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.server.RejectionHandler
-import akka.event.Logging
-import akka.http.scaladsl.server.RouteResult
 import akka.http.scaladsl.server.Directive
-import akka.http.javadsl.server.RejectionHandlerBuilder
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.server.directives.Credentials
 import ucab.sqa.workit.application.participants.ParticipantModel
 import akka.actor.typed.ActorRef
@@ -42,18 +32,18 @@ object helpers {
 
     val rejectDomainErrorAsBadRequest: Directive[Unit] = {
       val domainHandler =
-        RejectionHandler.newBuilder.handle { case DomainRejection(e) =>
+        RejectionHandler.newBuilder().handle { case DomainRejection(e) =>
           complete(StatusCodes.BadRequest, e.getMessage)
-        }.result
+        }.result()
 
       handleRejections(domainHandler)
     }
 
     val rejectDomainErrorAsNotFound: Directive[Unit] = {
       val domainHandler =
-        RejectionHandler.newBuilder.handle { case DomainRejection(e) =>
+        RejectionHandler.newBuilder().handle { case DomainRejection(e) =>
           complete(StatusCodes.NotFound, e.getMessage)
-        }.result
+        }.result()
 
       handleRejections(domainHandler)
     }

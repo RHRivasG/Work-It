@@ -15,11 +15,9 @@ import ucab.sqa.workit.web.helpers.auth._
 import akka.actor.typed.ActorSystem
 import akka.util.Timeout
 import ucab.sqa.workit.web.auth.AuthorityActions
-import akka.http.scaladsl.server.directives.AuthenticationDirective
 import ucab.sqa.workit.application.trainers.TrainerModel
 import ucab.sqa.workit.application.participants.ParticipantModel
 import ucab.sqa.workit.web.JsonSupport
-import spray.json.JsObject
 import spray.json.JsonFormat
 import ucab.sqa.workit.web.Query
 import ucab.sqa.workit.application.participants.GetParticipantQuery
@@ -96,7 +94,7 @@ object ProfileRoutes extends JsonSupport {
                                 system.log.warn(f"Authorization failed with $exception")
                                 complete(StatusCodes.Unauthorized, exception.getMessage())
                             }
-                            case Success(Left(e)) if effectiveId == "admin" => {
+                            case Success(Left(_)) if effectiveId == "admin" => {
                                 complete(AdminProfile("admin"))
                             }
                             case Success(Left(e)) => {

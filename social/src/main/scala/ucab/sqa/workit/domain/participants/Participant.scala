@@ -53,7 +53,7 @@ case class Participant private (
 
   def rejectRequestToBecomeTrainer() = for {
     request <- request.toRight(new Error("Request was not issued"))
-  } yield request.reject
+  } yield request.reject()
 
   def changePassword(password: ParticipantPassword) =
     if (password.password == this.password)
@@ -80,7 +80,7 @@ object Participant {
   ) =
     (
       ParticipantCreatedEvent(id, name, password, preferences),
-      new Participant(name, password, preferences, id)
+      new Participant(name, password, preferences, id, request)
     )
 
   def of(

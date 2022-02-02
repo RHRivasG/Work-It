@@ -1,6 +1,5 @@
 package ucab.sqa.workit.domain.participants.valueobjects
 
-import cats.Applicative
 import cats.implicits._
 
 case class ParticipantPassword private[participants] (password: String) {

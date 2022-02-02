@@ -3,7 +3,6 @@ package ucab.sqa.workit.application.participants
 import cats.implicits._
 import ucab.sqa.workit.application.participants.ParticipantActions._
 import ucab.sqa.workit.domain.participants.Participant
-import ucab.sqa.workit.domain.participants.ParticipantCreatedEvent
 import ucab.sqa.workit.domain.participants.valueobjects.ParticipantName
 import ucab.sqa.workit.domain.participants.valueobjects.ParticipantPreferences
 import ucab.sqa.workit.domain.participants.valueobjects.ParticipantPassword
@@ -55,13 +54,6 @@ object ParticipantApplicationService
         Right(participantToModel(participant))
     )
   } yield result
-
-  private def getAllParticipantsWithRequestIssued() = for {
-    participants <- getAllParticipants
-    participantsAccepted <- of(Right(for {
-      participant <- participants if participant.request.isDefined
-    } yield participant))
-  } yield participants
 
   private def deleteParticipant(id: String) =
     for {
@@ -120,7 +112,7 @@ object ParticipantApplicationService
         UUID.fromString(id)
       }.toEither.left.map(_ => new Error("Invalid UUID")))
     participant <- getParticipant(id)
-    (event, trainer) <- of(participant.requestToBecomeTrainer)
+    (event, trainer) <- of(participant.requestToBecomeTrainer())
     () <- handle(event)
   } yield ()
 
@@ -129,7 +121,7 @@ object ParticipantApplicationService
       UUID.fromString(id)
     }.toEither.left.map(_ => new Error("Invalid UUID")))
     participant <- getParticipant(id)
-    event <- of(participant.acceptRequestToBecomeTrainer)
+    event <- of(participant.acceptRequestToBecomeTrainer())
     () <- handle(event)
   } yield ()
 
@@ -138,7 +130,7 @@ object ParticipantApplicationService
       UUID.fromString(id)
     }.toEither.left.map(_ => new Error("Invalid UUID")))
     participant <- getParticipant(id)
-    event <- of(participant.rejectRequestToBecomeTrainer)
+    event <- of(participant.rejectRequestToBecomeTrainer())
     () <- handle(event)
   } yield ()
 
@@ -163,7 +155,7 @@ object ParticipantApplicationService
     case GetParticipantQuery(id) => findParticipantById(id)
     case GetParticipantWithUsernameQuery(username) =>
       getParticipantWithUsername(username)
-    case GetAllParticipantsQuery() => allParticipants
+    case GetAllParticipantsQuery() => allParticipants()
     case GetAllPreferencesQuery()  => allPreferences
     case GetParticipantWithRequestIssuedQuery(id) =>
       getParticipantWithRequestIssued(id)

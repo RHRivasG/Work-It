@@ -2,10 +2,8 @@ package ucab.sqa.workit.web
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.ActorRef
-import akka.actor.typed.scaladsl.ActorContext
 import _root_.ucab.sqa.workit.application.ApplicationService
 import cats._
-import cats.instances.future._
 import cats.implicits._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global

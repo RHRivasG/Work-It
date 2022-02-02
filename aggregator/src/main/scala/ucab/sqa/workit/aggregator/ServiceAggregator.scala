@@ -1,33 +1,20 @@
 package ucab.sqa.workit.aggregator
 
 import cats.effect.IO
-import cats._
 import cats.syntax.all._
 import ucab.sqa.workit.probobuf.aggregator.ServiceAggregatorFs2Grpc
 import ucab.sqa.workit.probobuf.aggregator.{RequestServiceMessage, RequestServiceResponse}
 import ucab.sqa.workit.probobuf.aggregator.{AddServiceMessage, AddServiceResponse}
 import ucab.sqa.workit.aggregator.application.ServiceAggregatorOrder
-import ucab.sqa.workit.aggregator.application.ServiceAggregatorDsl._
-import ucab.sqa.workit.aggregator.application.ServiceAggregatorAction
-import cats.effect.kernel.Resource
-import ucab.sqa.workit.aggregator.model.ServiceTable
-import cats.data.EitherT
-import cats.data.StateT
-import ucab.sqa.workit.aggregator.model.DomainError
 import ucab.sqa.workit.aggregator.application.Next
-import cats.effect.kernel.Ref
-import ucab.sqa.workit.aggregator.application.AddService
 import ucab.sqa.workit.aggregator.application.AddServiceCommand
 import ucab.sqa.workit.aggregator.application.Unsubscribe
 import io.grpc.Metadata
-import io.grpc.Grpc
-import io.grpc.Context
-import cats.effect.std.Semaphore
 import ucab.sqa.workit.aggregator.infrastructure.ServiceAggregatorExecutor._
 import ucab.sqa.workit.probobuf.aggregator.{UnsubscribeMessage, UnsubscribeResponse}
 
 object ServiceAggregator {
-    def apply[A](
+    def apply(
         ipKey: Metadata.Key[String],
         service: Service,
     ) = new ServiceAggregatorFs2Grpc[IO, Metadata] {

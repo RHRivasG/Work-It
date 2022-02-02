@@ -2,16 +2,9 @@ package ucab.sqa.workit.web
 
 //#json-formats
 import spray.json.DefaultJsonProtocol
-import spray.json.RootJsonFormat
-import spray.json.JsObject
-import spray.json.JsArray
-import spray.json.JsString
-import spray.json.JsValue
 import spray.json.JsonFormat
 import _root_.ucab.sqa.workit.application.participants.CreateParticipantCommand
-import _root_.ucab.sqa.workit.application.participants.UpdateParticipantCommand
 import _root_.ucab.sqa.workit.domain.participants.valueobjects.Preference
-import _root_.ucab.sqa.workit.application.trainers.UpdateTrainerCommand
 import _root_.ucab.sqa.workit.application.participants.ParticipantModel
 import _root_.ucab.sqa.workit.application.trainers.TrainerModel
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
@@ -20,9 +13,6 @@ import ucab.sqa.workit.web.profile.AdminProfile
 import ucab.sqa.workit.web.profile.PublicProfile
 
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
-  // import the default encoders for primitive types (Int, String, Lists etc)
-  import DefaultJsonProtocol._
-
   implicit val participantModelFormat =
     jsonFormat3(ParticipantModel)
 

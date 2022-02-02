@@ -1,10 +1,7 @@
 package ucab.sqa.workit.aggregator.application
 
-import cats.syntax.all._
-import cats.data.EitherT
-import com.google.api.Service
-import _root_.ucab.sqa.workit.aggregator.model.DomainError
-import _root_.ucab.sqa.workit.aggregator.model.ServiceTable
+import ucab.sqa.workit.aggregator.model.DomainError
+import ucab.sqa.workit.aggregator.model.ServiceTable
 import cats.free.FreeT
 import java.util.UUID
 

@@ -1,11 +1,18 @@
 import Path._
 
+
+lazy val Http4sVersion = "0.23.6"
+lazy val CirceVersion = "0.14.1"
+lazy val MunitVersion = "0.7.29"
+lazy val LogbackVersion = "1.2.6"
+lazy val MunitCatsEffectVersion = "1.0.6"
 lazy val akkaHttpVersion = "10.2.7"
 lazy val akkaVersion = "2.6.17"
 lazy val akkaGrpcVersion = "2.1.2"
 lazy val scala213 = "2.13.4"
 ThisBuild / organization := "ucab.sqa.workit"
 ThisBuild / scalaVersion := scala213
+ThisBuild / fork / run := true
 ThisBuild / assemblyMergeStrategy := {
   case PathList(ps @ _*) if ps.last.endsWith(".properties") || ps.last.endsWith(".proto") => MergeStrategy.last
   case x =>
@@ -17,7 +24,7 @@ lazy val root = (project in file("."))
 .settings(
   publish / skip := true,
 )
-.aggregate(fs2Protobuf, social, aggregator)
+.aggregate(fs2Protobuf, akkaProtobuf, social, aggregator, reports)
 
 lazy val fs2Protobuf = (project in file("protobuf"))
 .settings(
@@ -64,6 +71,7 @@ lazy val social = (project in file("social")).settings(
     "ch.megard" %% "akka-http-cors" % "1.1.2",
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
     "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
+    "com.typesafe.akka" %% "akka-stream-typed" % akkaVersion,
     "org.scalatest" %% "scalatest" % "3.1.4" % Test,
   ),
 )
@@ -104,3 +112,39 @@ lazy val aggregator = (project in file("aggregator")).settings(
   )
 )
 .dependsOn(fs2Protobuf)
+
+lazy val reports = (project in file("reports"))
+  .settings(
+    Compile / resourceGenerators += Def.task {
+      val rootDir = baseDirectory.value.getParentFile / "certs" 
+      val catarget = (Compile / resourceManaged).value / "ca"
+      val cafiles = (rootDir / "ca" ** "*.pem").get pair flat(catarget)
+
+      IO.copy(cafiles).toSeq
+    }.taskValue,
+    organization := "ucab.sqa.workit",
+    name := "reports",
+    version := "0.1.0",
+    libraryDependencies ++= Seq(
+      "org.http4s"      %% "http4s-ember-server" % Http4sVersion,
+      "org.http4s"      %% "http4s-ember-client" % Http4sVersion,
+      "org.http4s"      %% "http4s-circe"        % Http4sVersion,
+      "org.http4s"      %% "http4s-dsl"          % Http4sVersion,
+      "io.circe"        %% "circe-generic"       % CirceVersion,
+      "org.scalameta"   %% "munit"               % MunitVersion           % Test,
+      "org.typelevel"   %% "munit-cats-effect-3" % MunitCatsEffectVersion % Test,
+      "ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
+      "org.scalameta"   %% "svm-subs"            % "20.2.0",
+      "org.typelevel"   %% "cats-free"           % "2.3.0",
+      "org.tpolecat"    %% "doobie-core"         % "1.0.0-RC1",
+      "org.tpolecat"    %% "doobie-postgres"     % "1.0.0-RC1",
+      "org.postgresql"  % "postgresql"           % "42.2.16",
+      "com.github.pureconfig" %% "pureconfig" % "0.17.1",
+      "com.github.jwt-scala" %% "jwt-circe" % "9.0.3"
+      // "org.mongodb"     % "mongodb-driver-core"  % "4.3.3"
+    ),
+    addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.13.0" cross CrossVersion.full),
+    addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
+    testFrameworks += new TestFramework("munit.Framework")
+  )
+  .dependsOn(fs2Protobuf)

@@ -3,12 +3,10 @@ package ucab.sqa.workit.application.participants
 import ucab.sqa.workit.domain.participants.Participant
 import ucab.sqa.workit.domain.participants.ParticipantEvent
 import cats.data.EitherT
-import cats.Functor
 import cats._
 import ucab.sqa.workit.application.ApplicationServiceAction
 import ucab.sqa.workit.domain.participants.valueobjects.Preference
 import java.util.UUID
-import ucab.sqa.workit.domain.participants.valueobjects.ParticipantPassword
 
 sealed trait ParticipantAction[A]
 
@@ -48,7 +46,7 @@ object ParticipantActions {
         executor: ParticipantAction ~> G
     )(implicit m: Monad[G]): G[Either[Error, A]] = {
       val fullTransformation = new (ParticipantActionF ~> G) {
-        override def apply[A](fa: ParticipantActionF[A]): G[A] =
+        override def apply[B](fa: ParticipantActionF[B]): G[B] =
           fa foldMap executor
       }
       this.inner.mapK(fullTransformation).value

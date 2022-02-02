@@ -2,7 +2,6 @@ package ucab.sqa.workit.aggregator.model
 
 import cats.syntax.all._
 import java.util.UUID
-import java.net.InetAddress
 import java.net.URI
 
 case class Service private(id: UUID, host: URI, load: Int) {
