@@ -90,6 +90,7 @@ const routes: Routes = [
         },
         resolve: {
           routine: RoutineResolver,
+          summary: SummaryResolver,
         },
       },
       {
