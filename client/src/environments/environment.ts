@@ -1,6 +1,7 @@
 // This file can be replaced during build by using the `fileReplacements` array.
 // `ng build` replaces `environment.ts` with `environment.prod.ts`.
 
+import { AuthInterceptor } from 'src/app/services/auth.interceptor';
 import { FixedIdentityProviderBuilder } from 'src/app/services/fixed-identity-provider.builder';
 import { SynchronizedIdentityProviderService } from 'src/app/services/synchronized-identity-provider.service';
 
@@ -11,14 +12,14 @@ const token =
 
 export const environment = {
   production: false,
-  socialApiUrl: 'http://localhost:5000',
-  reportsApiUrl: 'http://localhost:3500',
+  socialApiUrl: 'http://localhost:3000/api/social',
+  reportsApiUrl: 'http://localhost:3000/api/reports',
   authApiUrl: 'http://localhost:3000',
   reportsStreamingApiUrl: 'ws://localhost:3500',
   socialStreamingApiUrl: 'ws://localhost:5000',
-  fitnessApiUrl: 'http://localhost:8080',
+  fitnessApiUrl: 'http://localhost:3000/api/fitness',
   summaryApiUrl: 'http://localhost:8081',
-  authInterceptor: fixedAuthBuilder.authProvider,
+  authInterceptor: AuthInterceptor,
   identityProviderService: SynchronizedIdentityProviderService,
 };
 
