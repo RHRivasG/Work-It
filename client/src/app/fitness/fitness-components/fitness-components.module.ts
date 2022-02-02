@@ -16,6 +16,8 @@ import { RoutineUpdateModalComponent } from './routine-update-modal/routine-upda
 import { FitnessLayoutComponent } from './fitness-layout/fitness-layout.component';
 import { FitnessRoutingModule } from '../fitness-routing.module';
 import { TrainerTrainingsComponent } from './trainer-trainings/trainer-trainings.component';
+import { RoutinePlayerComponent } from './routine-player/routine-player.component';
+import { SummaryModalComponent } from './summary-modal/summary-modal.component';
 
 
 
@@ -30,6 +32,8 @@ import { TrainerTrainingsComponent } from './trainer-trainings/trainer-trainings
     RoutineUpdateModalComponent,
     FitnessLayoutComponent,
     TrainerTrainingsComponent,
+    RoutinePlayerComponent,
+    SummaryModalComponent,
   ],
   exports: [
     NewTrainingComponent

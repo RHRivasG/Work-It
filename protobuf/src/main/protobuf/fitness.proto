@@ -23,6 +23,11 @@ service routineAPI{
     rpc ChangeParticipant(ParticipantChanged) returns (Response) {}
 }
 
+service summaryAPI{
+    rpc Save(SummaryCreated) returns (Response){}
+    rpc Update(SummaryUpdated) returns (Response){}
+}
+
 message Response{
     string msg = 1;
 }
@@ -102,4 +107,15 @@ message ParticipantDeleted {
 message ParticipantChanged {
     string oldId = 1;
     string newId = 2;
+}
+
+message SummaryCreated {
+    string id = 1;
+    string routineId = 2;
+}
+
+message SummaryUpdated {
+    string routineId = 1;
+    string mintime = 2;
+    string maxtime = 3;
 }
