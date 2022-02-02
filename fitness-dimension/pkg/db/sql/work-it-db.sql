@@ -57,7 +57,6 @@ ALTER TABLE public.routines OWNER TO postgres;
 --
 
 CREATE TABLE public.summaries (
-    id uuid NOT NULL,
     routine character varying,
     mintime int8,
     maxtime int8
@@ -121,7 +120,7 @@ ALTER TABLE ONLY public.routines
 --
 
 ALTER TABLE ONLY public.summaries
-    ADD CONSTRAINT summaries_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT summaries_pkey PRIMARY KEY (routine);
 
 
 --

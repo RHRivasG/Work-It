@@ -9,14 +9,33 @@ import (
 	"github.com/google/uuid"
 )
 
-type UpdateSummary struct {
+type UpsertSummary struct {
 	Routine uuid.UUID
 	Time    time.Duration
 }
 
-func (c *UpdateSummary) Execute(s application.SummaryService) error {
+func (c *UpsertSummary) Execute(s application.SummaryService) error {
 
 	summaryDto := s.Get(c.Routine)
+
+	if summaryDto.Routine == "00000000-0000-0000-0000-000000000000" {
+		routine, err := vo.NewSummaryRoutine(c.Routine)
+		if err != nil {
+			return err
+		}
+
+		summary, err := core.CreateSummary(routine)
+		if err != nil {
+			return err
+		}
+
+		for _, event := range summary.Events() {
+			s.Publish(event)
+		}
+
+	}
+
+	summaryDto = s.Get(c.Routine)
 
 	var errs []error
 

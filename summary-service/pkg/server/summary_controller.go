@@ -75,3 +75,35 @@ func (c *SummaryController) Update(ctx echo.Context) error {
 
 	return ctx.String(http.StatusOK, "Summary updated")
 }
+
+func (c *SummaryController) Upsert(ctx echo.Context) error {
+	id := ctx.Param("id")
+	routineId, err := uuid.Parse(id)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	var partialCommand struct {
+		T string `json:"time"`
+	}
+	ctx.Bind(&partialCommand)
+
+	summaryTime, err := time.ParseDuration(partialCommand.T)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	command := commands.UpsertSummary{
+		Routine: routineId,
+		Time:    summaryTime,
+	}
+
+	if err := command.Execute(c.Service); err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return ctx.String(http.StatusOK, "Summary inserted or updated")
+}

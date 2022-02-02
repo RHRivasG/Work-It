@@ -18,20 +18,12 @@ type SummaryHandler struct {
 func (h *SummaryHandler) Save(ctx context.Context, req *pb.SummaryCreated) (*pb.Response, error) {
 	fmt.Println("Saving summary")
 
-	var errs []error
-	id, err := uuid.Parse(req.Id)
-	errs = append(errs, err)
 	routineId, err := uuid.Parse(req.RoutineId)
-	errs = append(errs, err)
-
-	for _, err := range errs {
-		if err != nil {
-			return nil, err
-		}
+	if err != nil {
+		return nil, err
 	}
 
 	summary := &Summary{
-		ID:      id,
 		Routine: routineId,
 	}
 
@@ -48,8 +40,6 @@ func (h *SummaryHandler) Update(ctx context.Context, req *pb.SummaryUpdated) (*p
 	fmt.Println("Updating summary")
 
 	var errs []error
-	id, err := uuid.Parse(req.Id)
-	errs = append(errs, err)
 	routineId, err := uuid.Parse(req.RoutineId)
 	errs = append(errs, err)
 	maxtime, err := time.ParseDuration(req.Maxtime)
@@ -64,7 +54,6 @@ func (h *SummaryHandler) Update(ctx context.Context, req *pb.SummaryUpdated) (*p
 	}
 
 	summary := &Summary{
-		ID:      id,
 		Routine: routineId,
 		Maxtime: maxtime,
 		Mintime: mintime,
