@@ -1,0 +1,36 @@
+<div class="grid grid-cols-4 gap-4 h-full">
+  <div class="col-span-3">
+    <div class="h95">
+      <!--
+      <iframe
+        width="100%"
+        height="100%"
+        src="https://www.youtube.com/embed/tgbNymZ7vqY?autoplay=1&mute=1"
+      >
+      </iframe>
+		-->
+      <div class="video-container w-full h-full bg-black">
+        <video #video class="w-full h-full" controls></video>
+      </div>
+    </div>
+    <div class="h5">
+      <div class="flex justify-around pt-2">
+        <div>
+          <i class="fas fa-caret-left"></i>
+        </div>
+        <div class="text-xl"><strong>00:00</strong></div>
+        <div>
+          <i class="fas fa-caret-right"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-span-1 overflow-y-auto">
+    <div
+      *ngFor="let training of trainings"
+      class="border-y-2 border-gray-100 p-2"
+    >
+      {{ training.name }}
+    </div>
+  </div>
+</div>

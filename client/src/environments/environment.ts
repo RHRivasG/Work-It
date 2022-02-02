@@ -1,12 +1,13 @@
 // This file can be replaced during build by using the `fileReplacements` array.
 // `ng build` replaces `environment.ts` with `environment.prod.ts`.
 
-import { FixedIdentityProviderBuilder } from "src/app/services/fixed-identity-provider.builder";
-import { SynchronizedIdentityProviderService } from "src/app/services/synchronized-identity-provider.service";
+import { FixedIdentityProviderBuilder } from 'src/app/services/fixed-identity-provider.builder';
+import { SynchronizedIdentityProviderService } from 'src/app/services/synchronized-identity-provider.service';
 
 // The list of file replacements can be found in `angular.json`.
-const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbImFkbWluIl19.AT56BkfIwg4j4Z1mxGC5yExXl9Rh6QVza2up7-B-42e6zpX7e8mWDaTfFplmdQFa5pdkhn2ti7GX6jyomKY5LQ",
-  fixedAuthBuilder = new FixedIdentityProviderBuilder(token)
+const token =
+    'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIwYmQzMGE3NS1kOTlmLTRkMGYtYTY5Ni02MDAxYzExYjc3MmYiLCJyb2xlcyI6WyJwYXJ0aWNpcGFudCIsInRyYWluZXIiXX0.g8YqXQeOinYrl1h9jUp0KSagMsBJkia1ucRq_YHIy9YxzwHsbhPsJTMHOxlaU4jjuM-DTlPJpILnPIvUPmSM5g',
+  fixedAuthBuilder = new FixedIdentityProviderBuilder(token);
 
 export const environment = {
   production: false,
@@ -16,8 +17,9 @@ export const environment = {
   reportsStreamingApiUrl: 'ws://localhost:3500',
   socialStreamingApiUrl: 'ws://localhost:5000',
   fitnessApiUrl: 'http://localhost:8080',
+  summaryApiUrl: 'http://localhost:8081',
   authInterceptor: fixedAuthBuilder.authProvider,
-  identityProviderService: SynchronizedIdentityProviderService
+  identityProviderService: SynchronizedIdentityProviderService,
 };
 
 /*
