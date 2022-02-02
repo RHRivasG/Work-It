@@ -8,8 +8,7 @@ import (
 
 type Summary struct {
 	tableName struct{}      `pg:"summaries,alias:s"`
-	ID        uuid.UUID     `pg:"id,pk"`
-	Routine   uuid.UUID     `pg:"routine"`
+	Routine   uuid.UUID     `pg:"routine,pk"`
 	Mintime   time.Duration `pg:"mintime"`
 	Maxtime   time.Duration `pg:"maxtime"`
 }

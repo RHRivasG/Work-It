@@ -38,7 +38,6 @@ func (p SummaryPublisher) publishSummaryCreated(event events.SummaryCreated) {
 func (p SummaryPublisher) publishSummaryUpdated(event events.SummaryUpdated) {
 
 	res, err := p.Client.Update(context.Background(), &pb.SummaryUpdated{
-		Id:        event.ID.Value().String(),
 		RoutineId: event.Routine.Value().String(),
 		Mintime:   event.MinTime.Value().String(),
 		Maxtime:   event.MaxTime.Value().String(),

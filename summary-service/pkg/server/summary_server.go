@@ -27,4 +27,5 @@ func HtttpSummaryServe(e *echo.Echo, database *pg.DB, conn *grpc.ClientConn) {
 	e.GET("routines/:id/summary", controller.Get)
 	e.POST("routines/:id/summary", controller.Create)
 	e.PUT("routines/:id/summary/:ids", controller.Update)
+	e.PUT("routines/:id/summary", controller.Upsert)
 }

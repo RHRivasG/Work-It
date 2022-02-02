@@ -115,8 +115,7 @@ message SummaryCreated {
 }
 
 message SummaryUpdated {
-    string id = 1;
-    string routineId = 2;
-    string mintime = 3;
-    string maxtime = 4;
+    string routineId = 1;
+    string mintime = 2;
+    string maxtime = 3;
 }
