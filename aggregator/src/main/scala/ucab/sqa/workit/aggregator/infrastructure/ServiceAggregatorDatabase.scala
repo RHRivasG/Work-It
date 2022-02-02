@@ -1,27 +1,17 @@
 package ucab.sqa.workit.aggregator.infrastructure
 
 import io.circe._
-import io.circe.syntax._
-import cats._
 import cats.effect._
 import cats.implicits._
-import cats.syntax._
 import cats.instances.list._
 import mongo4cats.circe._
 import mongo4cats.client._
 import java.util.UUID
 import mongo4cats.client.MongoClient
-import com.mongodb.reactivestreams.client.MongoDatabase
 import mongo4cats.collection.MongoCollection
-import com.mongodb.client.model.Filters
-import mongo4cats.bson.ObjectId
-import mongo4cats.collection.operations.Filter
-import mongo4cats.bson
 import java.net.URI
 import ucab.sqa.workit.aggregator.model
 import ucab.sqa.workit.aggregator.model.ServiceTable
-import ucab.sqa.workit.aggregator.model.Operations._
-import mongo4cats.collection.ReplaceOptions
 import com.typesafe.config.ConfigFactory
 import scala.util.Try
 

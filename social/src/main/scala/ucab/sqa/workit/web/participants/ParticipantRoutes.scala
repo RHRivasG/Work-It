@@ -3,15 +3,12 @@ package ucab.sqa.workit.web.participants
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import cats.data.EitherT
-import cats.data.OptionT
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import akka.http.javadsl.model.HttpResponse
 import ucab.sqa.workit.web.helpers.routes._
 import ucab.sqa.workit.web.Request
 import ucab.sqa.workit.web.Query
@@ -32,28 +29,8 @@ import ucab.sqa.workit.application.participants.ParticipantModel
 import ucab.sqa.workit.application.participants.PreferenceModel
 import ucab.sqa.workit.web.JsonSupport
 import ucab.sqa.workit.application.participants.ChangeParticipantPasswordCommand
-import akka.http.scaladsl.server.directives.Credentials
-import akka.http.scaladsl.server.directives.Credentials.Provided
-import pdi.jwt.JwtSprayJson
-import javax.crypto.SecretKey
-import pdi.jwt.JwtAlgorithm
-import akka.http.scaladsl.server.MethodRejection
-import akka.http.scaladsl.server.Rejection
-import akka.http.scaladsl.server.directives.AuthenticationDirective
 import ucab.sqa.workit.web.helpers
 import ucab.sqa.workit.web.auth
-import akka.stream.scaladsl.Source
-import akka.http.scaladsl.model.ws.Message
-import akka.NotUsed
-import akka.stream.scaladsl.Flow
-import akka.http.scaladsl.model.ws.TextMessage.Strict
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.RunnableGraph
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.GraphDSL
-import akka.stream.ClosedShape
-import akka.http.scaladsl.model.ws.TextMessage
-import akka.stream.FlowShape
 
 class ParticipantRoutes(
     participantService: ActorRef[Request[ParticipantCommand, ParticipantQuery, _]],

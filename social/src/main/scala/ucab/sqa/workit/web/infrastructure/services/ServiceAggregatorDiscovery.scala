@@ -13,7 +13,6 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.pattern.{ pipe }
 import akka.discovery.ServiceDiscovery
 import java.time.Duration
-import java.util.concurrent.CompletionStage
 import akka.discovery.Lookup
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
@@ -23,14 +22,9 @@ import akka.actor.ExtendedActorSystem
 import scala.util.Failure
 import scala.util.Success
 import ucab.sqa.workit.probobuf.UnsubscribeMessage
-import scala.concurrent.Await
-import scala.concurrent.duration
 import akka.util.Timeout
-import akka.actor.TypedActor
 import akka.actor.CoordinatedShutdown
 import akka.Done
-import io.grpc.util.AdvancedTlsX509TrustManager
-import akka.grpc.scaladsl.AkkaGrpcClient
 import akka.grpc.SSLContextUtils
 
 private object ServiceAggregatorDiscovery {
@@ -56,7 +50,7 @@ private object ServiceAggregatorDiscovery {
             case Failure(exception) =>
                 system.log.error("Error occured while registering, {}", exception)
                 system.terminate()
-            case Success(value) => 
+            case Success(_) => 
                 system.log.info("Successfully registered to Service Aggregator")
         }
         Behaviors.receiveMessagePartial {

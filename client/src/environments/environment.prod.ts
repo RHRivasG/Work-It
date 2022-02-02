@@ -3,9 +3,9 @@ import { SynchronizedIdentityProviderService } from "src/app/services/synchroniz
 
 export const environment = {
   production: true,
-  socialApiUrl: '/api/social',
-  fitnessApiUrl: '/api/fitness',
-  authApiUrl: '/api',
+  socialApiUrl: 'http://localhost/api/social',
+  fitnessApiUrl: 'http://localhost/api/fitness',
+  authApiUrl: 'http://localhost/api',
   socialStreamingApiUrl: 'ws://localhost:5000',
   authInterceptor: AuthInterceptor,
   identityProviderService: SynchronizedIdentityProviderService

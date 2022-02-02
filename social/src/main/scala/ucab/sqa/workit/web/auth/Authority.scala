@@ -7,7 +7,6 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.ActorRef
 import pdi.jwt.JwtClaim
 import pdi.jwt.JwtAlgorithm
-import java.time.Instant
 import pdi.jwt.JwtSprayJson
 import ucab.sqa.workit.web.helpers
 import scala.util.Success

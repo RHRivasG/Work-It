@@ -1,8 +1,9 @@
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
-import { CdkPortal } from '@angular/cdk/portal';
+import { CdkPortal, TemplatePortal } from '@angular/cdk/portal';
 import { HttpClient } from '@angular/common/http';
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { faAngleDown, faEllipsisV, faFlag, faPlus, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { faAngleDown, faEllipsisV, faFlag, faPlus, faSpinner, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Trainer } from 'src/app/social/models/trainer';
@@ -16,6 +17,7 @@ import { Training } from '../../models/training';
 })
 export class TrainingCardComponent implements OnInit, OnDestroy, AfterViewInit {
   moreIcon = faEllipsisV
+  closeIcon = faTimes
   addIcon = faPlus
   reportIcon = faFlag
   showMoreIcon = faAngleDown
@@ -23,6 +25,7 @@ export class TrainingCardComponent implements OnInit, OnDestroy, AfterViewInit {
   overlayRef: OverlayRef
   trainerName!: String
   spinner = faSpinner
+  reporting = false
   @Input()
   editing = false
   @Input()
@@ -33,12 +36,21 @@ export class TrainingCardComponent implements OnInit, OnDestroy, AfterViewInit {
   modal!: CdkPortal
   @ViewChild("video")
   video!: ElementRef
+  reportForm: FormGroup
 
-  constructor(overlay: Overlay, private http: HttpClient) {
+  constructor(
+    private ref: ViewContainerRef,
+    private http: HttpClient,
+    overlay: Overlay,
+    builder: FormBuilder
+  ) {
     this.overlayRef = overlay.create({
       positionStrategy: overlay.position().global().centerHorizontally().centerVertically(),
       hasBackdrop: true,
       width: '25%',
+    })
+    this.reportForm = builder.group({
+      reason: ['', Validators.required]
     })
   }
 
@@ -83,5 +95,20 @@ export class TrainingCardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   optionsClicked() {
     this.options.emit()
+  }
+
+  startModal(ref: TemplateRef<unknown>) {
+    this.overlayRef.attach(new TemplatePortal(ref, this.ref, { $implicit: this.training }))
+  }
+
+  reportTraining() {
+    this.reporting = true
+    this.http.post(environment.reportsApiUrl + "/reports", {
+      trainingId: this.training.id,
+      reason: this.reportForm.get('reason')?.value
+    }, { observe: 'response', responseType: 'text' }).subscribe(() => {
+      this.reporting = false
+      this.overlayRef.detach()
+    })
   }
 }

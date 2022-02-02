@@ -1,13 +1,9 @@
 package ucab.sqa.workit.aggregator.infrastructure
 
-import cats._
-import cats.syntax.all._
 import cats.effect.IO
-import cats.data.StateT
 import ucab.sqa.workit.aggregator.model.ServiceTable
 import ucab.sqa.workit.aggregator.application.AddService
 import ucab.sqa.workit.aggregator.application.ServiceAggregatorAction
-import ucab.sqa.workit.aggregator.model.DomainError
 import ucab.sqa.workit.aggregator.model
 import java.util.UUID
 import cats.data.EitherT
@@ -15,9 +11,6 @@ import ucab.sqa.workit.aggregator.application.CurrentState
 import ucab.sqa.workit.aggregator.application.UnsubscribeHost
 import ucab.sqa.workit.aggregator.application.SetCurrentState
 import cats.data.Kleisli
-import cats.syntax.group
-import cats.effect.kernel.Ref
-import ucab.sqa.workit.aggregator.application.ServiceAggregatorOrder
 import ServiceAggregatorExecutor._
 import cats.effect.std.Semaphore
 import cats.effect.kernel.Resource

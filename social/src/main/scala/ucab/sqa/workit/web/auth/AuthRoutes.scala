@@ -1,6 +1,5 @@
 package ucab.sqa.workit.web.auth
 
-import cats.syntax.all._
 import akka.actor.typed.ActorRef
 import ucab.sqa.workit.web.Request
 import ucab.sqa.workit.application.trainers.TrainerQuery
@@ -11,7 +10,6 @@ import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.server.Directives._
 import ucab.sqa.workit.web.JsonSupport
 import scala.concurrent.Future
-import ucab.sqa.workit.application.trainers.TrainerModel
 import ucab.sqa.workit.web.Query
 import akka.http.scaladsl.server.directives.Credentials
 import akka.http.scaladsl.server.directives.Credentials.Provided
@@ -20,13 +18,6 @@ import ucab.sqa.workit.application.trainers.GetTrainerWithUsernameQuery
 import scala.concurrent.ExecutionContext.Implicits.global
 import ucab.sqa.workit.application.participants.GetParticipantWithUsernameQuery
 import ucab.sqa.workit.domain.participants.Participant
-import akka.http.scaladsl.server.RequestContext
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.AttributeKeys
-import ucab.sqa.workit.web.helpers
-import ucab.sqa.workit.web.helpers.auth.Admin
-import ucab.sqa.workit.web.helpers.auth.UserFound
-import akka.http.scaladsl.server.Route
 
 class AuthRoutes[C1, C2](
     participantService: ActorRef[Request[C1, ParticipantQuery, _]],
@@ -43,11 +34,6 @@ class AuthRoutes[C1, C2](
 
   private def issueJWT(subject: String, preferences: Seq[String], roles: Seq[String]): Future[String] = 
     authorityService.ask(IssueToken(subject, preferences, roles, _))
-
-  private def getIdentityFromToken(credentials: Credentials): Future[Option[helpers.auth.AuthResult[String]]] = credentials match {
-    case Provided(token) => authorityService.ask(ValidateToken(token, id => Future.successful(id.asRight), _))
-    case _ => Future.successful(None)
-  }
 
   private def getTrainer(username: String): Future[Either[Error, Trainer]] =
     trainerService.ask(

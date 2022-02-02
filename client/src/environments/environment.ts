@@ -12,7 +12,9 @@ const token =
 export const environment = {
   production: false,
   socialApiUrl: 'http://localhost:5000',
+  reportsApiUrl: 'http://localhost:3500',
   authApiUrl: 'http://localhost:3000',
+  reportsStreamingApiUrl: 'ws://localhost:3500',
   socialStreamingApiUrl: 'ws://localhost:5000',
   fitnessApiUrl: 'http://localhost:8080',
   summaryApiUrl: 'http://localhost:8081',

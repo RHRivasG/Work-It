@@ -1,18 +1,14 @@
 package ucab.sqa.workit.web.infrastructure.participants
 
 import cats._
-import cats.implicits._
 import scala.concurrent.Future
-import scala.util.Try
 import java.util.UUID
 import ucab.sqa.workit.application.participants.GetParticipant
 import ucab.sqa.workit.application.participants.ParticipantAction
 import ucab.sqa.workit.application.participants.GetAllParticipants
 import ucab.sqa.workit.domain.participants.Participant
-import ucab.sqa.workit.domain.participants.ParticipantEvent
 import ucab.sqa.workit.application.participants.Handle
 import ucab.sqa.workit.domain.participants.ParticipantCreatedEvent
-import ucab.sqa.workit.application.participants.CreateParticipantCommand
 import ucab.sqa.workit.domain.participants.ParticipantUpdatedEvent
 import ucab.sqa.workit.domain.participants.ParticipantPasswordChangedEvent
 import ucab.sqa.workit.domain.participants.ParticipantDeletedEvent

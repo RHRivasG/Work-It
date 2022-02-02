@@ -3,16 +3,11 @@ package ucab.sqa.workit.web.infrastructure.trainers
 import java.util.UUID
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Success
-import ucab.sqa.workit.web.InfrastructureError
-import scala.util.Failure
-import akka.event.LoggingAdapter
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.ActorRef
 import akka.util.Timeout
 import akka.actor.typed.scaladsl.AskPattern._
 import ucab.sqa.workit.web.infrastructure.database.Request
-import ucab.sqa.workit.domain.trainers.Trainer
 import ucab.sqa.workit.web.trainers.TrainerStreamMessage
 import ucab.sqa.workit.web.infrastructure.services.FitnessDimensionService
 import cats.data.EitherT

@@ -1,4 +1,30 @@
 <wi-routine-modal [training]="training" (close)="overlayRef.detach()" *cdkPortal class="w-full"></wi-routine-modal>
+<ng-template #modal let-training>
+  <div class="bg-white p-4 rounded-lg shadow-lg w-full">
+    <div class="flex flex-row">
+      <p class="flex-auto font-semibold text-xl">Report</p>
+      <button class="shrink-1 text-gray-400" (click)="overlayRef.detach()">
+        <fa-icon [icon]="closeIcon"></fa-icon>
+      </button>
+    </div>
+    <form (ngSubmit)="reportTraining()" [formGroup]="reportForm" class="flex flex-col gap-2 gap-y-4 pt-4 pb-2">
+        <div class="flex flex-col gap-3 h-48">
+          <label class="font-semibold" for="description">Description</label>
+          <div class="flex flex-col flex-auto">
+            <textarea formControlName="reason" class="flex-auto border-2 h-full border-gray-400 pt-2 px-2 w-full rounded-lg focus:ring-4 focus:ring-primary focus:ring-opacity-50 focus:outline-none transition duration-400" name="description"></textarea>
+            <small *ngIf="reportForm.get('reason')?.errors?.required" class="error mt-0 pt-0">Routine description must not be empty</small>
+          </div>
+        </div>
+        <wi-submit-button
+          submit
+          [disabled]="reporting || reportForm.status == 'INVALID'"
+          [loading]="reporting"
+          type="action">
+          Save
+        </wi-submit-button>
+    </form>
+  </div>
+</ng-template>
 <div class="relative card bg-white w-full border-4 border-gray-400 py-4 rounded-lg shadow-md overflow-y-hidden">
   <div class="flex flex-row px-8 pb-4">
     <h3 class="flex-auto text-2xl">{{ training.name }}</h3>
@@ -19,7 +45,7 @@
       </div>
     </div>
     <div class="row-span-full col-start-2 py-5 flex flex-col lg:flex-row justify-center lg:justify-end gap-4">
-      <button class="button bg-red-500 w-full lg:w-max px-4 py-2 lg:py-0 rounded-lg shadow-lg text-white focus:ring-4 focus:ring-red-500 focus:ring-opacity-50">
+      <button (click)="startModal(modal)" class="button bg-red-500 w-full lg:w-max px-4 py-2 lg:py-0 rounded-lg shadow-lg text-white focus:ring-4 focus:ring-red-500 focus:ring-opacity-50">
         <fa-icon [icon]="reportIcon"></fa-icon>
         Report training
       </button>

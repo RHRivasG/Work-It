@@ -35,7 +35,7 @@ object TrainerActions {
         executor: TrainerAction ~> G
     )(implicit m: Monad[G]): G[Either[Error, A]] = {
       val naturalK = new (TrainerActionF ~> G) {
-        def apply[A](fa: TrainerActionF[A]): G[A] =
+        def apply[B](fa: TrainerActionF[B]): G[B] =
           fa.foldMap(executor)
       }
 

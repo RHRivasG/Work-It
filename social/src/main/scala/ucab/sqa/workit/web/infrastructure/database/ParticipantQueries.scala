@@ -4,9 +4,7 @@ import java.util.UUID
 import slick.jdbc.PostgresProfile.api._
 import ucab.sqa.workit.domain.participants.Participant
 import scala.concurrent.ExecutionContext.Implicits.global
-import cats.syntax._
 import cats.implicits._
-import cats.Applicative
 import ucab.sqa.workit.domain.participants.valueobjects.Preference
 import scala.concurrent.Future
 import slick.lifted.CanBeQueryCondition
