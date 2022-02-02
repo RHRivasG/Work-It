@@ -14,10 +14,8 @@ import ucab.sqa.workit.web.participants.ParticipantStreamMessage
 import ucab.sqa.workit.web.participants.ResendParticipants
 import akka.actor.typed.scaladsl.AskPattern._
 import scala.concurrent.Future
-import ucab.sqa.workit.domain.participants.Participant
 import akka.actor.typed.ActorSystem
 import akka.util.Timeout
-import scala.util.Success
 import cats.data.EitherT
 import ucab.sqa.workit.web.infrastructure.services.AuthDimensionService
 

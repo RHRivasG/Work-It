@@ -1,7 +1,5 @@
 package ucab.sqa.workit.web
 
-import java.util.UUID
-import akka.actor._
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
@@ -12,24 +10,16 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes
 import scala.util.Failure
 import scala.util.Success
-import cats.instances.future.catsStdInstancesForFuture
 import ucab.sqa.workit.web.helpers.routes._
-import ucab.sqa.workit.domain.participants.ParticipantEvent
 import ucab.sqa.workit.web.participants.ParticipantRoutes
 import ucab.sqa.workit.web.participants.ParticipantStreamActor
-import ucab.sqa.workit.domain.participants.ParticipantDeletedEvent
-import ucab.sqa.workit.domain.participants.valueobjects.ParticipantId
 import ucab.sqa.workit.application.participants.ParticipantApplicationService
 import ucab.sqa.workit.application.trainers.TrainerApplicationService
 import ucab.sqa.workit.web.infrastructure
 import ucab.sqa.workit.web.trainers.TrainerRoutes
 import ucab.sqa.workit.web.auth.AuthRoutes
-import akka.http.scaladsl.server.MethodRejection
-import akka.http.scaladsl.server.TransformationRejection
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
-import akka.http.scaladsl.model.HttpMethods
-import akka.http.scaladsl.model.headers._
 import akka.actor.DeadLetter
 import akka.actor.typed.eventstream.EventStream
 import akka.actor.typed.receptionist.ServiceKey
@@ -37,7 +27,6 @@ import ucab.sqa.workit.web.infrastructure.services.FitnessDimensionService
 import ucab.sqa.workit.web.infrastructure.services.AuthDimensionService
 import ucab.sqa.workit.application.participants.ParticipantQuery
 import ucab.sqa.workit.application.participants.ParticipantCommand
-import ucab.sqa.workit.web.participants.ParticipantStreamMessage
 import akka.actor.typed.receptionist.Receptionist
 import ucab.sqa.workit.application.trainers.TrainerCommand
 import ucab.sqa.workit.application.trainers.TrainerQuery
@@ -48,13 +37,6 @@ import akka.discovery.Discovery
 object App {
   implicit val participantServiceKey: ServiceKey[Request[ParticipantCommand, ParticipantQuery, _]] = ServiceKey("Participants")
   implicit val trainerServiceKey: ServiceKey[Request[TrainerCommand, TrainerQuery, _]] = ServiceKey("Trainers")
-
-  private def corsHeaders = Seq(
-    `Access-Control-Allow-Origin`.*,
-    `Access-Control-Allow-Credentials`(true),
-    `Access-Control-Allow-Headers`("Authorization",
-      "Content-Type", "X-Requested-With")
-  )
 
   private def startHttpServer(routes: Route)(implicit
       system: ActorSystem[_]
@@ -84,7 +66,7 @@ object App {
     def infrastructureHandler(implicit system: ActorSystem[_]) = {
       val logger = system.log
       RejectionHandler
-        .newBuilder
+        .newBuilder()
         .handle { case InfrastructureRejection(e) =>
           logger.error("Error occured processing request!", e)
           complete(
@@ -92,7 +74,7 @@ object App {
             "Oops! Something happened! Please try again!"
           )
         }
-        .result
+        .result()
     }
 
     val rootBehavior = Behaviors.setup[Nothing] { context =>
@@ -220,7 +202,7 @@ object App {
 
       Behaviors.empty
     }
-    val system =
+    val _ =
       ActorSystem[Nothing](rootBehavior, "WorkItSocialDimensionAPIServer")
   }
 }

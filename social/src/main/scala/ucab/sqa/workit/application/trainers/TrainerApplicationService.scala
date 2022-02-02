@@ -2,7 +2,6 @@ package ucab.sqa.workit.application.trainers
 
 import ucab.sqa.workit.application.ApplicationService
 import ucab.sqa.workit.application.ApplicationServiceAction
-import ucab.sqa.workit.domain.trainers.valueobjects.TrainerId
 import ucab.sqa.workit.domain.trainers.valueobjects.TrainerPreferences
 import ucab.sqa.workit.domain.trainers.Trainer
 import ucab.sqa.workit.domain.trainers.valueobjects.TrainerPassword
@@ -26,12 +25,6 @@ object TrainerApplicationService
     }.toEither.left.map(_ => new Error("Invalid UUID")))
     trainer <- getTrainer(id)
   } yield trainerModel(trainer)
-
-  private def findTrainerWithCredentials(username: String, password: String) =
-    for {
-      trainer <- getTrainerWithUsername(username)
-      () <- of(trainer.password == password)
-    } yield trainerModel(trainer)
 
   private def allTrainers = for {
     trainers <- getAllTrainers
@@ -82,7 +75,7 @@ object TrainerApplicationService
       UUID.fromString(id)
     }.toEither.left.map(_ => new Error("Invalid UUID")))
     trainer <- getTrainer(id)
-    event <- of(Right(trainer.destroy))
+    event <- of(Right(trainer.destroy()))
     () <- handle(event)
   } yield ()
 

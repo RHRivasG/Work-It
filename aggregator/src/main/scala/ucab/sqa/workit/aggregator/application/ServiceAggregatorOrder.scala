@@ -1,5 +1,4 @@
 package ucab.sqa.workit.aggregator.application
-import cats.syntax.apply
 import ucab.sqa.workit.aggregator.model.Service
 
 sealed trait ServiceAggregatorOrder[A]

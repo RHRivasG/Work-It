@@ -1,7 +1,6 @@
 package ucab.sqa.workit.aggregator.application
 
-import _root_.ucab.sqa.workit.aggregator.model.ServiceTable
-import _root_.ucab.sqa.workit.aggregator.model.DomainError
+import ucab.sqa.workit.aggregator.model.ServiceTable
 import java.util.UUID
 
 sealed trait ServiceAggregatorAction[A]

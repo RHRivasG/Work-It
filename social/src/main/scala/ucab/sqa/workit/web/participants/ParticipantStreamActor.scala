@@ -1,38 +1,29 @@
 package ucab.sqa.workit.web.participants
 
-import akka.actor.typed.scaladsl.adapter._
-import scala.concurrent.ExecutionContext.Implicits.global
 import akka.actor.typed.ActorRef
 import ucab.sqa.workit.web.Request
 import ucab.sqa.workit.application.participants.ParticipantQuery
 import ucab.sqa.workit.application.participants.ParticipantCommand
 import akka.actor.typed.scaladsl.Behaviors
-import akka.stream.scaladsl.Source
 import akka.http.scaladsl.model.ws.Message
-import akka.actor.typed.scaladsl.AskPattern._
 import ucab.sqa.workit.application.participants.GetAllParticipantsQuery
 import ucab.sqa.workit.web.Query
-import scala.concurrent.Future
 import ucab.sqa.workit.application.participants.ParticipantModel
 import akka.util.Timeout
 import scala.util.Failure
 import scala.util.Success
-import spray.json._
 import akka.actor.typed.Behavior
 import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
-import akka.actor.Actor
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.GraphDSL
 import ucab.sqa.workit.web.JsonSupport
 import akka.stream.FlowShape
 import akka.http.scaladsl.model.ws.TextMessage
-import akka.stream.javadsl.Merge
 import akka.actor.typed.receptionist.Receptionist
 import akka.actor.typed.receptionist.ServiceKey
-import akka.parboiled2.Parser
-import cats.data.OptionT
+import akka.stream.typed.scaladsl.ActorSource
+import akka.stream.typed.scaladsl.ActorSink
 
 sealed trait ParticipantStreamMessage
 
@@ -47,12 +38,21 @@ object ParticipantStreamActor extends JsonSupport {
       import GraphDSL.Implicits._
       import spray.json._
 
-      val (actor, source) = Source.actorRef[List[ParticipantModel]](1024, OverflowStrategy.dropNew).preMaterialize
-      val effectiveActor = actor.toTyped
+      val (actor, source) = ActorSource.actorRef[List[ParticipantModel]](
+            completionMatcher = PartialFunction.empty,
+            failureMatcher = PartialFunction.empty, 
+            bufferSize = 1024, 
+            overflowStrategy = OverflowStrategy.dropTail
+        )
+        .preMaterialize()
 
-      streamingActor ! RegisterListener(effectiveActor)
+      streamingActor ! RegisterListener(actor)
 
-      val streamSink = Sink.actorRef[ParticipantStreamMessage](streamingActor.toClassic, UnregisterListener(effectiveActor))
+      val streamSink = ActorSink.actorRef[ParticipantStreamMessage](
+        streamingActor, 
+        UnregisterListener(actor),
+        onFailureMessage = _ => UnregisterListener(actor)
+      )
 
       val wsInput = builder add Flow[Message].collect {
         case _: Message => ResendParticipants()

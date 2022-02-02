@@ -1,8 +1,8 @@
 import { Portal, TemplatePortal } from '@angular/cdk/portal';
 import { HttpClient } from '@angular/common/http';
-import { AfterViewInit, Component, Inject, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin, of, Subscription } from 'rxjs';
+import { forkJoin, from, of, Subscription } from 'rxjs';
 import { catchError, map, mapTo, switchMap, tap } from 'rxjs/operators';
 import { webSocket } from 'rxjs/webSocket';
 import { GlobalSearch, WI_GLOBAL_SEARCH } from 'src/app/services/global-search';
@@ -13,6 +13,11 @@ import { Trainer } from '../../models/trainer';
 
 type TabMap = {
   [key: string]: Portal<unknown>
+}
+type Request = {
+  id: string
+  trainingId: string
+  reason: string
 }
 
 @Component({
@@ -26,13 +31,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private trainersDataSource: Trainer[]
   participants: Participant[] = []
   trainers: Trainer[] = []
+  reports: any[] = []
   @ViewChild("requests") requestsTab!: TemplateRef<unknown>
   @ViewChild("participants") participantsTab!: TemplateRef<unknown>
   @ViewChild("trainers") trainersTab!: TemplateRef<unknown>
+  @ViewChild("reportsTab") reportsTab!: TemplateRef<unknown>
   tabMap: TabMap = {}
   participantsStreamSubscription: Subscription
   trainersStreamSubscription: Subscription
   searchSubscription: Subscription
+  // reportsStreamSubscription: Subscription
 
   get searchedParticipants() {
     return this.participants
@@ -40,6 +48,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   get searchedTrainers() {
     return this.trainers
+  }
+
+  get searchedReports() {
+    return this.reports
   }
 
   get validSourceLength() {
@@ -63,12 +75,13 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
+    private ref: ChangeDetectorRef,
     @Inject(WI_GLOBAL_SEARCH) private searchService: GlobalSearch<Participant | Trainer>
   ) {
     this.participantsDataSource = activatedRoute.snapshot.data.participants
     this.trainersDataSource = activatedRoute.snapshot.data.trainers
     activatedRoute.queryParams.subscribe(param => {
-      if (["requests", "participants", "trainers"].includes(param.tab)) {
+      if (["requests", "participants", "trainers", "reports"].includes(param.tab)) {
         this.tab = param.tab
         if (this.tab == "trainers")
           this.searchService.dataSource = this.trainersDataSource
@@ -78,13 +91,17 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.router.navigate(['.'], { relativeTo: activatedRoute, queryParams: { tab: 'requests', secret: activatedRoute.snapshot.queryParams.secret } })
       }
     })
-    this.searchService.extractor = (p: Participant | Trainer) => p.name
+    this.searchService.extractor = (p: Participant | Trainer | any) => p?.name || p?.training?.name || p?.reason
     this.searchSubscription = this.searchService.result.subscribe(res => {
+      console.log(res)
       if (res.length == 0) {
         this.participants = []
         this.trainers = []
+        this.reports = []
       } else if ("requestStatus" in res[0]) {
         this.participants = res as Participant[]
+      } else if ("reason" in res[0]) {
+        this.reports = res
       } else {
         this.trainers = res as Trainer[]
       }
@@ -101,18 +118,49 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       )
     )
     .subscribe(list => {
-      console.log(list)
       this.participantsDataSource = list
       if (this.tab != "trainers")
         this.searchService.dataSource = this.participantsDataSource
     })
     this.trainersStreamSubscription = webSocket<Trainer[]>(environment.socialStreamingApiUrl + "/trainers/stream").subscribe(list => {
-      console.log(list)
       this.trainersDataSource = list
       if (this.tab == "trainers")
         this.searchService.dataSource = this.trainersDataSource
     })
+
+    const ws = new WebSocket(environment.reportsStreamingApiUrl + "/ws/reports")
+    ws.onmessage = (msg) => {
+      console.log(msg)
+      const reports: any[] = JSON.parse(msg.data)
+      of(reports).pipe(
+        switchMap(r => reports.length == 0 ? of([]) : forkJoin(r.map(report =>
+            this.http.get(environment.fitnessApiUrl + "/trainings/" + report.trainingId, { observe: 'response' })
+            .pipe(
+              map(training => ({ ...report, training: training })),
+              catchError(_ => of({ ...report, training: { name: 'Not found'}})),
+            )
+          )))
+      ).subscribe((reports) => {
+        this.reports = reports
+        if (this.tab == "reports") {
+          console.log(reports)
+          this.searchService.dataSource = reports
+        }
+        this.ref.detectChanges()
+      }, err => console.log(err))
+    }
   }
+
+  acceptReport(report: any) {
+    this.http.post(environment.reportsApiUrl + "/reports/admin/" + report.id + "/accept", {}, { responseType: 'text' })
+    .subscribe(() => console.log("Reporte aceptado"))
+  }
+
+  rejectReport(report: any) {
+    this.http.post(environment.reportsApiUrl + "/reports/admin/" + report.id + "/reject", {}, { responseType: 'text' })
+    .subscribe(() => console.log("Reporte rechazado"))
+  }
+
   ngOnDestroy(): void {
     this.searchSubscription.unsubscribe()
     this.participantsStreamSubscription.unsubscribe()
@@ -123,6 +171,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.tabMap.requests = new TemplatePortal(this.requestsTab, this.viewContainerRef)
     this.tabMap.participants = new TemplatePortal(this.participantsTab, this.viewContainerRef)
     this.tabMap.trainers = new TemplatePortal(this.trainersTab, this.viewContainerRef)
+    this.tabMap.reports = new TemplatePortal(this.reportsTab, this.viewContainerRef)
+    this.ref.detectChanges()
   }
 
   ngOnInit(): void {

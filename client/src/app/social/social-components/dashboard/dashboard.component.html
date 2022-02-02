@@ -18,6 +18,29 @@
   </div>
 </ng-template>
 
+<ng-template #reportsTab>
+  <div class="fade-in grid grid-cols-5 gap-8">
+    <ng-container *ngIf="searchedReports.length > 0">
+      <div *ngFor="let report of searchedReports; trackBy: idOf" class="group px-6 py-4 mx-auto flex flex-col gap-2 shadow-lg border-2 border-gray-100 rounded-lg w-full transition duration-100 hover:border-primary hover:border-opacity-50 hover:shadow-xl hover:scale-105">
+        <p class="participant-name">{{ report.training.name }}</p>
+        <p class="participant-description">{{ report.reason }}</p>
+        <div class="mt-auto flex flex-col gap-2">
+          <button (click)="acceptReport(report)" class="border-2 p-1 mt-4 border-gray-400 bg-white text-black border-gray-400 hover:border-gray-500 hover:bg-action hover:text-white hover:font-semibold rounded-lg text-center transition duration-100">
+            Accept Report
+          </button>
+          <button (click)="rejectReport(report)" class="border-2 p-1 bg-white text-black border-gray-400 hover:border-gray-500 hover:bg-red-500 hover:text-white hover:font-semibold rounded-lg text-center transition duration-100">
+            Reject Report
+          </button>
+        </div>
+      </div>
+    </ng-container>
+    <div class="col-span-full" *ngIf="searchedReports.length <= 0">
+      There are not reports pending
+    </div>
+  </div>
+
+</ng-template>
+
 <ng-template #participants>
   <div class="fade-in grid grid-cols-5 gap-8">
     <ng-container *ngIf="searchedParticipants.length > 0">
@@ -68,6 +91,7 @@
     <span (click)="selectTab('requests')" [ngClass]="tab == 'requests'? 'active' : ''" class="cursor-pointer">Conversion Requests</span>
     <span (click)="selectTab('participants')" [ngClass]="tab == 'participants'? 'active' : ''" class="cursor-pointer">Participants</span>
     <span (click)="selectTab('trainers')" [ngClass]="tab == 'trainers'? 'active' : ''" class="cursor-pointer">Trainers</span>
+    <span (click)="selectTab('reports')" [ngClass]="tab == 'reports'? 'active' : ''" class="cursor-pointer">Training reports</span>
   </div>
   <div class="p-4">
     <ng-template [cdkPortalOutlet]="tabMap[tab]"></ng-template>

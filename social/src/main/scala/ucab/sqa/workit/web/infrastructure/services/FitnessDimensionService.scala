@@ -1,12 +1,8 @@
 package ucab.sqa.workit.web.infrastructure.services
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.scaladsl.ActorContext
-import akka.actor.typed.scaladsl.AskPattern._
 import akka.grpc.GrpcClientSettings
-import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
 import akka.discovery.ServiceDiscovery
 import ucab.sqa.workit.probobuf.routineAPIClient
@@ -14,12 +10,6 @@ import ucab.sqa.workit.probobuf.ParticipantDeleted
 import ucab.sqa.workit.probobuf.trainingAPIClient
 import ucab.sqa.workit.probobuf.TrainerDeleted
 import akka.grpc.SSLContextUtils
-import scala.util.Try
-import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts
-import io.grpc.netty.shaded.io.netty.handler.ssl.JdkSslContext
-import akka.grpc.internal.NettyClientUtils
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslProvider
-import akka.actor.FSM
 import scala.util.Failure
 import scala.util.Success
 import akka.Done

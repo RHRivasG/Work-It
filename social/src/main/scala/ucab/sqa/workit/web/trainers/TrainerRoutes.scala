@@ -11,10 +11,8 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.http.scaladsl.server.Directives._
 import ucab.sqa.workit.web.helpers.routes._
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import ucab.sqa.workit.web.Query
 import ucab.sqa.workit.application.trainers.GetTrainersQuery
-import ucab.sqa.workit.application.trainers.CreateTrainerCommand
 import ucab.sqa.workit.web.Command
 import ucab.sqa.workit.application.trainers.UpdateTrainerCommand
 import ucab.sqa.workit.application.trainers.GetTrainerQuery
@@ -24,8 +22,6 @@ import ucab.sqa.workit.web.JsonSupport
 import ucab.sqa.workit.application.trainers.TrainerModel
 import ucab.sqa.workit.web.helpers
 import ucab.sqa.workit.web.auth
-import cats.data.OptionT
-import akka.http.scaladsl.server.directives.Credentials
 
 class TrainerRoutes(
     trainersService: ActorRef[Request[TrainerCommand, TrainerQuery, _]],

@@ -2,9 +2,6 @@ package ucab.sqa.workit.web.infrastructure.database
 
 import java.util.UUID
 import slick.ast.ColumnOption
-import ucab.sqa.workit.web.InfrastructureError
-import scala.concurrent.ExecutionContext.Implicits.global
-import cats.data.EitherT
 import slick.jdbc.PostgresProfile.api._
 
 private[database] object Definitions {

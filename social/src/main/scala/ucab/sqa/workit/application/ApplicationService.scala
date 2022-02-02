@@ -1,6 +1,5 @@
 package ucab.sqa.workit.application
 
-import cats.data.EitherT
 import cats._
 
 trait ApplicationService[F[_], C, Q[_]] {

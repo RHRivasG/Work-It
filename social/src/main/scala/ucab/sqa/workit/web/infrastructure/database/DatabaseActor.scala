@@ -1,26 +1,17 @@
 package ucab.sqa.workit.web.infrastructure.database
 
-import java.util.UUID
-import cats.syntax._
-import cats.implicits._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Success
 import scala.util.Failure
 import slick.jdbc.PostgresProfile.api._
 import slick.jdbc.PostgresProfile.backend.DatabaseDef
-import slick.jdbc.JdbcBackend
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
-import ucab.sqa.workit.domain.participants.Participant
-import ucab.sqa.workit.domain.participants.valueobjects.Preference
-import ucab.sqa.workit.domain.trainers.Trainer
 import ucab.sqa.workit.web.InfrastructureError
-import Definitions._
 import ParticipantQueries._
 import TrainerQueries._
 import Request._
-import org.slf4j.Logger
 
 object DatabaseActor {
   private sealed trait Response
@@ -74,7 +65,7 @@ object DatabaseActor {
       .run(actions)
       .recover { e => Left(new InfrastructureError(e)) }
 
-  def apply(configSection: String) = Behaviors.setup[DatabaseRequest] { (ctx) =>
+  def apply(configSection: String) = Behaviors.setup[DatabaseRequest] { _ =>
     implicit val db = Database.forConfig(configSection)
 
     Behaviors.receiveMessage[DatabaseRequest] { msg =>

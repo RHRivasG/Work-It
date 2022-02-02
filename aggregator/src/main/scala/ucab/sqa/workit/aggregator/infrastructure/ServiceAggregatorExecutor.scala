@@ -1,22 +1,15 @@
 package ucab.sqa.workit.aggregator.infrastructure
 
 import cats._
-import cats.implicits._
 import cats.data.EitherT
-import cats.data.StateT
 import cats.effect.IO
 import ucab.sqa.workit.aggregator.model.DomainError
 import ucab.sqa.workit.aggregator.model.ServiceTable
 import ucab.sqa.workit.aggregator.application.ServiceAggregatorAction
-import ucab.sqa.workit.aggregator.application.AddService
-import ucab.sqa.workit.aggregator.application.CurrentState
-import ucab.sqa.workit.aggregator.application.SetCurrentState
 import ucab.sqa.workit.aggregator.application.ServiceAggregatorOrder
 import ucab.sqa.workit.aggregator.application.ServiceAggregatorDsl._
-import cats.effect.kernel.Resource
 import cats.effect.kernel.Ref
 import cats.data.Kleisli
-import cats.effect.std.Semaphore
 
 object ServiceAggregatorExecutor {
     private[infrastructure] type InnerState = Ref[IO, ServiceTable]
