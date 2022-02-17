@@ -1,16 +1,16 @@
 package ucab.sqa.workit.aggregator
 
-import cats.implicits._
+import cats.implicits.*
 import cats.effect.IOApp
 import cats.effect.IO
 import cats.effect.kernel.Resource
 import io.grpc.ServerServiceDefinition
 import ucab.sqa.workit.probobuf.aggregator.ServiceAggregatorFs2Grpc
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
-import fs2.grpc.syntax.all._
+import fs2.grpc.syntax.all.*
 import io.grpc.protobuf.services.ProtoReflectionService
 import io.grpc.ServerInterceptors
-import ucab.sqa.workit.aggregator.application.ServiceAggregatorUseCaseBuilder._
+import ucab.sqa.workit.aggregator.application.ServiceAggregatorUseCaseBuilder.*
 import ucab.sqa.workit.aggregator.infrastructure.ServiceAggregatorExecutor
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts
 import java.io.InputStream

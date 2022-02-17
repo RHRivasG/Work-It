@@ -11,7 +11,7 @@ import ucab.sqa.workit.aggregator.application.CurrentState
 import ucab.sqa.workit.aggregator.application.UnsubscribeHost
 import ucab.sqa.workit.aggregator.application.SetCurrentState
 import cats.data.Kleisli
-import ServiceAggregatorExecutor._
+import ServiceAggregatorExecutor.*
 import cats.effect.std.Semaphore
 import cats.effect.kernel.Resource
 import java.net.URI
@@ -30,12 +30,12 @@ private[infrastructure] object ServiceAggregatorInfrastructure {
 
     private def get(semaphore: Semaphore[IO]): ServiceAggregatorState[ServiceTable] = Kleisli(ref => EitherT.right(for {
         table <- ref.get
-        () <- semaphore.acquire
+        _ <- semaphore.acquire
     } yield table))
 
     private def set(semaphore: Semaphore[IO], table: ServiceTable): ServiceAggregatorState[Unit] = Kleisli(ref => EitherT.right(for {
-        () <- ref.set(table)
-        () <- semaphore.release
+        _ <- ref.set(table)
+        _ <- semaphore.release
     } yield ()))
 
     private def semaphore = Resource.eval { Semaphore[IO](1) }

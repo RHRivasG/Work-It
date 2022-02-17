@@ -1,98 +1,105 @@
 package ucab.sqa.workit.reports.infrastructure.http.services
 
-import ucab.sqa.workit.reports.infrastructure.InfrastructureService
-import cats.effect._
-import cats.effect.std.Console
-import cats.implicits._
-import io.circe.syntax._
-import org.http4s._
-import org.http4s.circe._
+import cats.*
+import cats.syntax.all.*
+import cats.effect.*
+import io.circe.*
+import io.circe.syntax.*
+import org.http4s.*
+import org.http4s.circe.*
+import org.http4s.implicits.*
+import io.circe.generic.semiauto
 import org.http4s.dsl.Http4sDsl
-import io.circe.Encoder
+import org.http4s.HttpRoutes
+import org.http4s.EntityEncoder
+import org.http4s.circe.CirceEntityEncoder.*
+import org.http4s.circe.CirceEntityDecoder.*
+import cats.effect.kernel.Sync
+import cats.effect.kernel.Concurrent
+import ucab.sqa.workit.reports.domain.errors.*
+import cats.derived.auto.eq.given_Eq_A
+import ucab.sqa.workit.reports.application.*
 import ucab.sqa.workit.reports.application.models.ReportModel
-import ucab.sqa.workit.reports.domain.errors.ReportNotFoundError
-import ucab.sqa.workit.reports.infrastructure.errors.ReportError
-import ucab.sqa.workit.reports.infrastructure.errors.ReportDomainError
-import ucab.sqa.workit.reports.domain.errors.InvalidUUIDError
-import ucab.sqa.workit.reports.infrastructure.errors.ReportInfrastructureError
-import ucab.sqa.workit.reports.application.requests.IssueReport
-import ucab.sqa.workit.reports.application.requests.GetReportByTrainer
-import ucab.sqa.workit.reports.application.requests.AcceptReport
-import ucab.sqa.workit.reports.application.requests.RejectReport
-// import ucab.sqa.workit.reports.application.requests.GetAllReports
-import io.circe.Decoder
-import cats.data.EitherT
-import org.http4s.websocket.WebSocketFrame
-import org.http4s.server.websocket.WebSocketBuilder2
-import ucab.sqa.workit.reports.infrastructure.notifications.NotificationHandler
-import org.http4s.server.AuthMiddleware
+import ucab.sqa.workit.reports.infrastructure.InfrastructureError
+import ucab.sqa.workit.reports.infrastructure.http.middlewares.authentication.*
+import ucab.sqa.workit.reports.domain.errors.DomainError
+import cats.data.NonEmptyList
+import org.http4s.Response
+import org.http4s.EntityDecoder
+import org.http4s.AuthedRoutes
+import cats.effect.kernel.Async
+import cats.effect.std.Console
 import org.http4s.server.Router
-import ucab.sqa.workit.reports.application.requests.GetAllReports
 
 object ReportService {
-    private case class ReportForm(trainingId: String, reason: String)
+    private case class ReportIssueForm(trainingId: String, reason: String)
+    private case class Error(`type`: String, title: String, status: Int, instance: String, problems: List[Error])
 
-    private implicit val encoder = Encoder
-        .forProduct3[ReportModel, String, String, String]("id", "trainingId", "reason")(report => (report.id, report.id, report.reason))
+    private given Decoder[ReportIssueForm] = semiauto.deriveDecoder
+    private given Encoder[ReportModel] = semiauto.deriveEncoder
+    private given Encoder[Error] = semiauto.deriveEncoder
 
-    private implicit val decoder = Decoder
-        .forProduct2[ReportForm, String, String]("trainingId", "reason"){ case (trainingId, reason) =>  ReportForm(trainingId, reason) }
 
-    private implicit def entityDecoder[F[_]: Concurrent] = jsonOf[F, ReportForm]
+    private given [F[_]: Concurrent]: EntityDecoder[F, ReportIssueForm] = jsonOf[F, ReportIssueForm]
 
-    def service[F[_]](service: InfrastructureService[F], adminAuth: AuthMiddleware[F, Unit], basicAuth: AuthMiddleware[F, Unit])(implicit Concurrent: Concurrent[F], Console: Console[F]) =  {
-        val dsl = new Http4sDsl[F]{}
-        import dsl._
-        def errorHandler(pf: PartialFunction[AuthedRequest[F, Unit], F[Either[ReportError, F[Response[F]]]]]): PartialFunction[AuthedRequest[F, Unit], F[Response[F]]] = 
-        {
-            case request: AuthedRequest[F, Unit] => pf(request).flatMap(response => response match {
-                case Right(r) => r
-                case Left(ReportDomainError(ReportNotFoundError(id))) => NotFound(f"Report not found targeting training with id $id")
-                case Left(ReportDomainError(InvalidUUIDError(_))) => BadRequest(f"The supplied uuid is invalid")
-                case Left(ReportInfrastructureError(e)) => {
-                    Console.errorln(e) >> 
-                    InternalServerError("Oops! Something went wrong try again later")
-                }
-            })
-        }
-        Router[F](
-            "/" -> basicAuth(AuthedRoutes.of { errorHandler {
-                case GET -> Root / id as _ => service(GetReportByTrainer(id)).value.nested.map { s =>
-                    Ok(s.asJson)
-                }.value
-                case authReq @ POST -> Root as _ => (for {
-                    form <- EitherT.right(authReq.req.as[ReportForm])
-                    () <- service(IssueReport(form.trainingId, form.reason))
-                } yield Created("Report Issued")).value
-            }}),
-            "/admin" -> adminAuth(AuthedRoutes.of { errorHandler {
-                case POST -> Root / id / "accept" as _ => (for {
-                    () <- service(AcceptReport(id))
-                } yield Ok("Report accepted")).value
-                case POST -> Root / id / "reject" as _ => (for {
-                    () <- service(RejectReport(id))
-                } yield Ok("Report deleted")).value
-            }})
-        )
-    }
 
-    def websocket[F[_]: Async: Console](service: InfrastructureService[F], notificationHandler: NotificationHandler[F], websocket: WebSocketBuilder2[F]) = {
-        val dsl = new Http4sDsl[F]{}
-        def notify = for {
-            models <- service(GetAllReports).value.rethrow.onError { err =>
-                Console[F].errorln(f"An error occured ${err.getMessage}")
+    def service[F[_]](config: Configuration, execute: ReportAction ~> F)(using C: Console[F], A: Async[F]) = {
+        val dsl = Http4sDsl[F]
+        import dsl.*
+
+        def errorHandling[F[_]](error: Throwable) = error match
+            case InfrastructureError.InternalError(NonEmptyList(DomainError.ReportNotFoundError(id), _@_*)) => NotFound(Error(
+                "Not found",
+                f"Report with id $id not found",
+                404,
+                f"/reports/$id",
+                List()
+            ).asJson)
+            case InfrastructureError.InternalError(NonEmptyList(DomainError.InvalidUUIDError(id), _@_*)) => BadRequest(Error(
+                "Invalid ID",
+                "ID is not an UUID",
+                400,
+                f"/reports",
+                List()
+            ).asJson)
+            case InfrastructureError.InternalError(errors) => BadRequest(Error(
+                "Multiple problems",
+                "Multiple problems found with your request",
+                400,
+                f"/reports",
+                errors.map { error => Error(error.getClass.getName, error.toString, 400, f"/reports", List()) }.toList
+            ).asJson)
+            case _ => InternalServerError("Oops! Something went wrong, try again later!")
+
+        def unprivilegedRoutes =
+            AuthedRoutes.of[AuthModel, F] {
+                case GET -> Root / id as _ => for 
+                    result <- execute(getReportsOfTraining(id)).attempt
+                    response <- result match
+                        case Right(models) => Ok(models.toList)
+                        case Left(error) => errorHandling(error)
+                yield response
+                case ctx @ POST -> Root as user => for
+                    form <- ctx.req.as[ReportIssueForm]
+                    result <- execute(issueReport(user.id, form.trainingId, form.reason)).attempt
+                    response <- result match
+                        case Right(()) => Ok("Report succesfully issued")
+                        case Left(error) => errorHandling(error)
+                yield response
             }
-            () <- notificationHandler.send(models)
-        } yield ()
-        import dsl._
-        import fs2._
-        HttpRoutes.of[F] {
-            case GET -> Root / "reports" => 
-                websocket
-                .build(
-                    notificationHandler.stream.map(m => WebSocketFrame.Text(m.asJson.spaces2)), 
-                    s => Stream.eval(notify) >> s.as(())
-                )
-        }
+
+        def privilegedRoutes = 
+            AuthedRoutes.of[AuthModel, F] {
+                case POST -> Root / id / "accept" as _ => 
+                    execute(acceptReport(id))
+                    .flatMap { Ok(_) }
+                    .recoverWith(errorHandling)
+                case POST -> Root / id / "reject" as _ => 
+                    execute(rejectReport(id))
+                    .flatMap { Ok(_) }
+                    .recoverWith(errorHandling)
+            }
+        
+        Router("/" -> (standardAccess(config))(unprivilegedRoutes), "/admin" -> (adminAccess(config))(privilegedRoutes))
     }
 }

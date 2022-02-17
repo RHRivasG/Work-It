@@ -1,32 +1,48 @@
 package ucab.sqa.workit.reports.domain
 
-import ucab.sqa.workit.reports.domain.values.ReportId
-import ucab.sqa.workit.reports.domain.values.TrainingId
-import ucab.sqa.workit.reports.domain.events.ReportIssuedEvent
-import ucab.sqa.workit.reports.domain.events.ReportRejectedEvent
-import ucab.sqa.workit.reports.domain.events.ReportAcceptedEvent
 import java.util.UUID
 import ucab.sqa.workit.reports.domain.errors.DomainError
 import ucab.sqa.workit.reports.domain.events.ReportEvent
+import cats.syntax.all.*
+import ucab.sqa.workit.reports.domain.values.*
 
-final case class Report private(id: ReportId, trainingId: TrainingId, reason: String) {
-    def accept = ReportAcceptedEvent(id.id, trainingId.id)
-    def reject = ReportRejectedEvent(id.id)
-}
+final case class Report private(id: ReportId, issuerId: ReportIssuer, trainingId: TrainingId, reason: ReportReason)
 
-object Report {
-    def apply(_id: UUID, _trainingId: UUID, reason: String) = {
-        val id = ReportId(_id)
-        val trainingId = TrainingId(_trainingId)
-        new Report(id, trainingId, reason)
+object Report:
+    def complete(id: UUID, trainingId: UUID, issuerId: UUID, reason: String) =
+        ReportReason(reason) map { new Report(ReportId(id),  ReportIssuer(issuerId), TrainingId(trainingId), _) }
+
+    def of(id: String, issuerId: String, trainingId: String, reason: String): ReportResult[(ReportEvent[Unit], Report)] = (
+        ReportId(id), 
+        ReportIssuer(issuerId),
+        TrainingId(trainingId), 
+        ReportReason(reason)
+    ).mapN { (vid, vissuer, vtrainingId, vreason) => (
+        ReportEvent.ReportIssuedEvent(vid.value, vissuer.value, vtrainingId.value, vreason.value), 
+        Report(vid, vissuer, vtrainingId, vreason)
+    )}
+
+    def identified(issuerId: String, trainingId: String, reason: String): ReportResult[(ReportEvent[Unit], Report)] = (
+        ReportIssuer(issuerId),
+        TrainingId(trainingId),
+        ReportReason(reason)
+    ).mapN { (vissuerId, vtrainingId, vreason) => 
+        val vid = ReportId(UUID.randomUUID)
+        (
+            ReportEvent.ReportIssuedEvent(vid.value, vissuerId.value, vtrainingId.value, vreason.value), 
+            Report(vid, vissuerId, vtrainingId, vreason)
+        )
     }
-    def apply(id: String, trainingId: String, reason: String): Either[DomainError, (ReportEvent, Report)] = for {
-        id <- ReportId(id)
-        trainingId <- TrainingId(trainingId)
-    } yield (ReportIssuedEvent(id.id, trainingId.id, reason), new Report(id, trainingId, reason))
 
-    def apply(trainingId: String, reason: String): Either[DomainError, (ReportEvent, Report)] = for {
-        trainingId <- TrainingId(trainingId)
-        id = ReportId(UUID.randomUUID)
-    } yield (ReportIssuedEvent(id.id, trainingId.id, reason), new Report(id, trainingId, reason)) 
-}
+    def unsafe(id: UUID, trainingId: UUID, issuerId: UUID, reason: String) = {
+        val vid = ReportId(id)
+        val vissuer = ReportIssuer(issuerId)
+        val vtrainingID = TrainingId(trainingId)
+        val vreason = ReportReason.unsafe(reason)
+
+        Report(vid, vissuer, vtrainingID, vreason)
+    }
+
+    extension (report: Report)
+        def accept: ReportEvent[Unit] = ReportEvent.ReportAcceptedEvent(report.id.value, report.trainingId.value)
+        def reject: ReportEvent[Unit] = ReportEvent.ReportRejectedEvent(report.id.value)

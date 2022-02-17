@@ -1,90 +1,125 @@
 package ucab.sqa.workit.reports.infrastructure.http.middlewares
 
-import cats.implicits._
+import cats.syntax.all.*
+import cats.implicits.*
 import cats.data.Kleisli
 import org.http4s.Request
 import org.http4s.headers.Authorization
+import org.http4s.headers.`WWW-Authenticate`
+import org.http4s.implicits.*
 import cats.Monad
 import cats.effect.std.Console
-import ucab.sqa.workit.reports.infrastructure.errors.ReportError
-import ucab.sqa.workit.reports.infrastructure.errors.ReportInfrastructureError
 import cats.MonadError
 import org.http4s.AuthScheme
 import pdi.jwt.JwtCirce
 import pdi.jwt.JwtAlgorithm
-import ucab.sqa.workit.reports.infrastructure.FromEval
 import cats.Eval
 import org.http4s.server.AuthMiddleware
 import cats.data.OptionT
 import org.http4s.AuthedRoutes
 import org.http4s.dsl.Http4sDsl
 import cats.Applicative
-import ucab.sqa.workit.reports.infrastructure.errors.ReportDomainError
+import ucab.sqa.workit.reports.infrastructure.InfrastructureError
+import org.http4s.Challenge
 
-package object authentication {
-    def extractRoles[F[_]: FromEval: MonadError[*[*], ReportError]: Console](config: Configuration): Kleisli[F, Request[F], Vector[String]] = 
-        Kleisli(request => { for {
-            header <- request.headers.get[Authorization] match {
-                case Some(value) => Monad[F].pure(value)
-                case None => MonadError[F, ReportError].raiseError(ReportInfrastructureError(new Exception("Missing authorization header")))
-            }
-            creds = header.credentials
-            token = creds.renderString
-            _ <- if (creds.authScheme == AuthScheme.OAuth) 
-                    MonadError[F, ReportError].raiseError(ReportInfrastructureError(new Exception("Wrong authorization scheme")))
-                 else 
-                    Monad[F].pure(())
-            _ <- Console[F].println(f"Received attempt to authentication with credentials: ${token}")
-            token <- MonadError[F, ReportError].rethrow(
-                FromEval[F].fromEval(
-                    Eval.later(
-                        Either.fromTry(
-                            JwtCirce.decodeJson(token.replace("Bearer ", ""), config.secretKey, Seq(JwtAlgorithm.HS512))
-                        ).left.map[ReportError](ReportInfrastructureError(_))
+package object authentication:
+    def extractRoles[F[_]: [F[_]] =>> MonadError[F, Throwable]: Console](config: Configuration): Kleisli[F, Request[F], AuthModel] = 
+        Kleisli((request: Request[F]) => 
+            for
+                header <- request.headers.get[Authorization] match {
+                    case Some(value) => value.pure
+                    case None => 
+                        InfrastructureError.AuthenticationError(Exception("Missing authorization header"))
+                        .raiseError
+                }
+                creds = header.credentials
+                token = creds.renderString.replace("Bearer ", "")
+                _ <- (creds.authScheme == AuthScheme.Bearer).pure.ifM(
+                        ().pure,
+                        InfrastructureError.AuthenticationError(Exception("Wrong authorization scheme")).raiseError
                     )
-                )
-            )
-            roles <- token.findAllByKey("roles").headOption.flatMap(_.asArray.flatMap(_.traverse(_.asString))) match {
-                case Some(roles) if token.findAllByKey("sub").headOption.flatMap(_.asString) == Some("admin") => Monad[F].pure(roles ++ Seq("admin"))
-                case Some(roles) => Monad[F].pure(roles)
-                case _ => MonadError[F, ReportError].raiseError(ReportInfrastructureError(new Exception("Wrong credentials, user is not admin")))
-            }
-            _ <- Console[F].println(f"Roles extracted: ${roles}")
-            } yield roles }
+                extractedPayload <- Either
+                    .fromTry(JwtCirce.decodeJson(token, config.secretKey, Seq(JwtAlgorithm.HS512)))
+                    .leftMap(InfrastructureError.AuthenticationError(_))
+                    .pure[F]
+                    .rethrow
+                payload <- extractedPayload.asObject match
+                    case Some(obj) => obj.pure
+                    case None => InfrastructureError.AuthenticationError(Exception(f"Payload ${extractedPayload.spaces2} is invalid")).raiseError
+                extractedRoles = for 
+                    field <- payload("roles")
+                    arr <- field.asArray
+                    fieldRoles <- arr.traverse(_.asString)
+                yield fieldRoles
+                id = for
+                    field <- payload("sub")
+                    sub <- field.asString
+                yield sub
+                model <- extractedRoles zip id match {
+                    case Some((roles, id)) if id == "admin" && !roles.contains("admin") => AuthModel((roles ++ Vector("admin")), id).pure
+                    case Some((roles, id)) => AuthModel(roles, id).pure
+                    case _ => InfrastructureError.AuthenticationError(Exception("Wrong credentials, user is not authenticated")).raiseError
+                }
+            yield model
         )
+    
+    def checkRoles[F[_]](roles: String*)(config: Configuration)(using M: MonadError[F, Throwable], C: Console[F]) = for 
+        extractedModel <- extractRoles[F](config).attempt
+        model = extractedModel match
+            case Right(model) if model.hasRoles(roles) => Right(model)
+            case Right(_) => Left(InfrastructureError.AuthenticationError(Exception(f"User does not belong to the roles $roles")))
+            case Left(e) => Left(e)
+    yield model
 
-    def errorRoute[F[_]: Applicative]: AuthedRoutes[Throwable, F] = {
+    def errorRoute[F[_]: Monad: Console]: AuthedRoutes[Throwable, F] = {
         val dsl = new Http4sDsl[F]{}
-        import dsl._
-        Kleisli(req => OptionT.liftF(Forbidden(req.context.getMessage())))
-    }
-    
-    def admin[F[_]: FromEval: MonadError[*[*], ReportError]: Console](config: Configuration) = 
-            AuthMiddleware((for {
-                roles <- extractRoles[F](config)
-                _ <- Kleisli.liftF(
-                    if (!roles.contains("admin")) MonadError[F, ReportError].raiseError(ReportInfrastructureError(new Exception("Credentials invalid, user is not admin")))
-                    else MonadError[F, ReportError].pure(roles)
+        import dsl.*
+        Kleisli { req => OptionT.liftF(
+            req.context match
+                case InfrastructureError.AuthenticationError(err) => Unauthorized(
+                    `WWW-Authenticate`(Challenge("OAuth2", "reports", Map())),
+                    err.getMessage
                 )
-            } yield ()).mapF[F, Either[Throwable, Unit]](_.attemptT.leftSemiflatTap(Console[F].println).leftMap { _ match {
-                case ReportDomainError(inner) => new Error(inner.toString())
-                case err @ ReportInfrastructureError(_) => err.inner
-            }}.value), 
-            errorRoute[F]
-            )
+                case _ => InternalServerError("Oops! Something went wrong, try again later!")
+        )}
+    }
+        
+    def adminAccess[F[_]](config: Configuration)(using M: MonadError[F, Throwable], C: Console[F]) = 
+        val dsl = Http4sDsl[F]
+        import dsl.*
+        AuthMiddleware(checkRoles("admin")(config), errorRoute)
+
+    def standardAccess[F[_]](config: Configuration)(using M: MonadError[F, Throwable], C: Console[F]) =
+        val dsl = Http4sDsl[F]
+        import dsl.*
+        AuthMiddleware(checkRoles("admin", "participant", "trainer")(config), errorRoute)
+    
+//     def admin[F[_]: FromEval: [F[_]] =>> MonadError[F, ReportError]: Console](config: Configuration) = 
+//             AuthMiddleware((for {
+//                 roles <- extractRoles[F](config)
+//                 _ <- Kleisli.liftF(
+//                     if (!roles.contains("admin")) MonadError[F, ReportError].raiseError(ReportInfrastructureError(new Exception("Credentials invalid, user is not admin")))
+//                     else MonadError[F, ReportError].pure(roles)
+//                 )
+//             } yield ()).mapF[F, Either[Throwable, Unit]](_.attemptT.leftSemiflatTap(Console[F].println).leftMap { _ match {
+//                 case ReportDomainError(inner) => new Error(inner.toString())
+//                 case err @ ReportInfrastructureError(_) => err.inner
+//             }}.value), 
+//             errorRoute[F]
+//             )
 
     
-    def participantOrTrainer[F[_]: FromEval: MonadError[*[*], ReportError]: Console](config: Configuration) = 
-            AuthMiddleware((for {
-                roles <- extractRoles[F](config)
-                _ <- Kleisli.liftF(
-                    if (!roles.contains("trainer") && !roles.contains("participant")) MonadError[F, ReportError].raiseError(ReportInfrastructureError(new Exception("Credentials invalid, user is not logged in")))
-                    else MonadError[F, ReportError].pure(roles)
-                )
-            } yield ()).mapF[F, Either[Throwable, Unit]](_.attemptT.leftMap { _ match {
-                case ReportDomainError(inner) => new Error(inner.toString())
-                case err @ ReportInfrastructureError(_) => err.inner
-            }}.value), 
-            errorRoute[F]
-            )
-}
+//     def participantOrTrainer[F[_]: FromEval: [F[_]] =>> MonadError[F, ReportError]: Console](config: Configuration) = 
+//             AuthMiddleware((for {
+//                 roles <- extractRoles[F](config)
+//                 _ <- Kleisli.liftF(
+//                     if (!roles.contains("trainer") && !roles.contains("participant")) MonadError[F, ReportError].raiseError(ReportInfrastructureError(new Exception("Credentials invalid, user is not logged in")))
+//                     else MonadError[F, ReportError].pure(roles)
+//                 )
+//             } yield ()).mapF[F, Either[Throwable, Unit]](_.attemptT.leftMap { _ match {
+//                 case ReportDomainError(inner) => new Error(inner.toString())
+//                 case err @ ReportInfrastructureError(_) => err.inner
+//             }}.value), 
+//             errorRoute[F]
+//             )
+// }

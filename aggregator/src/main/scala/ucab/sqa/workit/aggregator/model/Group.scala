@@ -1,6 +1,6 @@
 package ucab.sqa.workit.aggregator.model
 
-case class Group private(name: String)
+case class Group(name: String)
 
 object Group {
     def of(name: String) =

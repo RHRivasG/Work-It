@@ -1,7 +1,7 @@
 import Path._
 
 
-lazy val Http4sVersion = "0.23.6"
+lazy val Http4sVersion = "0.23.9"
 lazy val CirceVersion = "0.14.1"
 lazy val MunitVersion = "0.7.29"
 lazy val LogbackVersion = "1.2.6"
@@ -10,8 +10,9 @@ lazy val akkaHttpVersion = "10.2.7"
 lazy val akkaVersion = "2.6.17"
 lazy val akkaGrpcVersion = "2.1.2"
 lazy val scala213 = "2.13.4"
+lazy val scala310 = "3.1.0"
 ThisBuild / organization := "ucab.sqa.workit"
-ThisBuild / scalaVersion := scala213
+ThisBuild / scalaVersion := scala310
 ThisBuild / fork / run := true
 ThisBuild / assemblyMergeStrategy := {
   case PathList(ps @ _*) if ps.last.endsWith(".properties") || ps.last.endsWith(".proto") => MergeStrategy.last
@@ -29,6 +30,7 @@ lazy val root = (project in file("."))
 lazy val fs2Protobuf = (project in file("protobuf"))
 .settings(
   target := (Compile / baseDirectory).value / "target/fs2" ,
+  scalaVersion := scala310,
   libraryDependencies ++= Seq(
     "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion,
     "io.grpc" % "grpc-services"     % scalapb.compiler.Version.grpcJavaVersion,
@@ -38,14 +40,17 @@ lazy val fs2Protobuf = (project in file("protobuf"))
 
 lazy val akkaProtobuf = (project in file("protobuf"))
 .settings(
+  scalaVersion := scala213,
   target := (Compile / baseDirectory).value / "target/akka",
 )
 .enablePlugins(AkkaGrpcPlugin)
 
 lazy val social = (project in file("social")).settings(
   autoCompilerPlugins := true,
+  scalaVersion := scala213,
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
   assembly / assemblyJarName := "workit.socialMicroservice.jar",
+  scalacOptions += "-Ytasty-reader",
   name := "Work-It Social Dimension",
   Compile / resourceGenerators += Def.task {
     val rootDir = baseDirectory.value.getParentFile / "certs" 
@@ -79,8 +84,7 @@ lazy val social = (project in file("social")).settings(
 
 lazy val aggregator = (project in file("aggregator")).settings(
   assembly / assemblyJarName := "workit.serviceAggregator.jar",
-  autoCompilerPlugins := true,
-  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
+  scalaVersion := scala310,
   Compile / resourceGenerators += Def.task {
     val rootDir = baseDirectory.value.getParentFile / "certs" 
     val aggtarget = (Compile / resourceManaged).value / "aggregator"
@@ -90,12 +94,13 @@ lazy val aggregator = (project in file("aggregator")).settings(
 
     IO.copy(aggfiles ++ cafiles).toSeq
   }.taskValue,
+  scalacOptions += "-source:future",
   name := "Work-It Service Aggregator",
   libraryDependencies ++= Seq(
     // "core" module - IO, IOApp, schedulers
     // This pulls in the kernel and std modules automatically.
     "org.typelevel" %% "cats-effect" % "3.3.3",
-    "org.typelevel" %% "cats-free" % "2.3.0",
+    "org.typelevel" %% "cats-free" % "2.7.0",
     // concurrency abstractions and primitives (Concurrent, Sync, Async etc.)jjj
     "org.typelevel" %% "cats-effect-kernel" % "3.3.3",
     // standard "effect" library (Queues, Console, Random etc.)
@@ -119,32 +124,33 @@ lazy val reports = (project in file("reports"))
       val rootDir = baseDirectory.value.getParentFile / "certs" 
       val catarget = (Compile / resourceManaged).value / "ca"
       val cafiles = (rootDir / "ca" ** "*.pem").get pair flat(catarget)
-
       IO.copy(cafiles).toSeq
     }.taskValue,
+    scalaVersion := scala310,
     organization := "ucab.sqa.workit",
+    scalacOptions += "-source:future",
     name := "reports",
     version := "0.1.0",
     libraryDependencies ++= Seq(
-      "org.http4s"      %% "http4s-ember-server" % Http4sVersion,
-      "org.http4s"      %% "http4s-ember-client" % Http4sVersion,
-      "org.http4s"      %% "http4s-circe"        % Http4sVersion,
-      "org.http4s"      %% "http4s-dsl"          % Http4sVersion,
-      "io.circe"        %% "circe-generic"       % CirceVersion,
-      "org.scalameta"   %% "munit"               % MunitVersion           % Test,
-      "org.typelevel"   %% "munit-cats-effect-3" % MunitCatsEffectVersion % Test,
-      "ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
-      "org.scalameta"   %% "svm-subs"            % "20.2.0",
-      "org.typelevel"   %% "cats-free"           % "2.3.0",
-      "org.tpolecat"    %% "doobie-core"         % "1.0.0-RC1",
-      "org.tpolecat"    %% "doobie-postgres"     % "1.0.0-RC1",
-      "org.postgresql"  % "postgresql"           % "42.2.16",
-      "com.github.pureconfig" %% "pureconfig" % "0.17.1",
-      "com.github.jwt-scala" %% "jwt-circe" % "9.0.3"
+      "org.http4s"                  %% "http4s-ember-server" % Http4sVersion,
+      "org.http4s"                  %% "http4s-ember-client" % Http4sVersion,
+      "org.http4s"                  %% "http4s-circe"        % Http4sVersion,
+      "org.http4s"                  %% "http4s-dsl"          % Http4sVersion,
+      "io.circe"                    %% "circe-generic"       % CirceVersion,
+      "org.scalameta"               %% "munit"               % MunitVersion           % Test,
+      "org.typelevel"               %% "munit-cats-effect-3" % MunitCatsEffectVersion % Test,
+      "org.typelevel"               %% "cats-free"           % "2.7.0",
+      "org.typelevel"               %% "kittens"             % "3.0.0-M2",
+      "org.tpolecat"                %% "doobie-core"         % "1.0.0-RC1",
+      "org.tpolecat"                %% "doobie-postgres"     % "1.0.0-RC1",
+      "org.tpolecat"                %% "doobie-hikari"       % "1.0.0-RC1",          // HikariCP transactor.
+      "org.postgresql"              % "postgresql"           % "42.2.16",
+      "com.github.pureconfig"       %% "pureconfig"          % "0.17.1" cross(CrossVersion.for3Use2_13),
+      "com.github.jwt-scala"        %% "jwt-circe"           % "9.0.3",
+      "ch.qos.logback"              % "logback-classic"      % "1.2.10",
+      "com.typesafe.scala-logging"  %% "scala-logging"       % "3.9.4"
       // "org.mongodb"     % "mongodb-driver-core"  % "4.3.3"
     ),
-    addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.13.0" cross CrossVersion.full),
-    addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
     testFrameworks += new TestFramework("munit.Framework")
   )
   .dependsOn(fs2Protobuf)

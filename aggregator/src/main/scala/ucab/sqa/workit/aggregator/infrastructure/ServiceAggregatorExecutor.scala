@@ -1,13 +1,13 @@
 package ucab.sqa.workit.aggregator.infrastructure
 
-import cats._
+import cats.*
 import cats.data.EitherT
 import cats.effect.IO
 import ucab.sqa.workit.aggregator.model.DomainError
 import ucab.sqa.workit.aggregator.model.ServiceTable
 import ucab.sqa.workit.aggregator.application.ServiceAggregatorAction
 import ucab.sqa.workit.aggregator.application.ServiceAggregatorOrder
-import ucab.sqa.workit.aggregator.application.ServiceAggregatorDsl._
+import ucab.sqa.workit.aggregator.application.ServiceAggregatorDsl.*
 import cats.effect.kernel.Ref
 import cats.data.Kleisli
 

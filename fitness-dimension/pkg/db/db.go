@@ -14,7 +14,7 @@ func ConnectDatabase() (*pg.DB, error) {
 	name := env.GoDotEnvVariable("DB_NAME")
 	port := env.GoDotEnvVariable("DB_PORT")
 	host := env.GoDotEnvVariable("DB_HOST")
-	opt, err := pg.ParseURL("postgres://" + user + ":" + password + "@" + host + ":" + port + "/" + name)
+	opt, err := pg.ParseURL("postgres://" + user + ":" + password + "@" + host + ":" + port + "/" + name + "?sslmode=disable")
 	if err != nil {
 		return nil, err
 	}

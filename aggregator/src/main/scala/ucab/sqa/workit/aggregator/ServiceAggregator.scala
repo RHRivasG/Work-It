@@ -1,7 +1,7 @@
 package ucab.sqa.workit.aggregator
 
 import cats.effect.IO
-import cats.syntax.all._
+import cats.syntax.all.*
 import ucab.sqa.workit.probobuf.aggregator.ServiceAggregatorFs2Grpc
 import ucab.sqa.workit.probobuf.aggregator.{RequestServiceMessage, RequestServiceResponse}
 import ucab.sqa.workit.probobuf.aggregator.{AddServiceMessage, AddServiceResponse}
@@ -10,7 +10,7 @@ import ucab.sqa.workit.aggregator.application.Next
 import ucab.sqa.workit.aggregator.application.AddServiceCommand
 import ucab.sqa.workit.aggregator.application.Unsubscribe
 import io.grpc.Metadata
-import ucab.sqa.workit.aggregator.infrastructure.ServiceAggregatorExecutor._
+import ucab.sqa.workit.aggregator.infrastructure.ServiceAggregatorExecutor.*
 import ucab.sqa.workit.probobuf.aggregator.{UnsubscribeMessage, UnsubscribeResponse}
 
 object ServiceAggregator {
