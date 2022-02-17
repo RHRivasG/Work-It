@@ -1,10 +1,10 @@
 package ucab.sqa.workit.aggregator.model
 
-import cats.syntax.all._
+import cats.syntax.all.*
 import java.util.UUID
 import java.net.URI
 
-case class Service private(id: UUID, host: URI, load: Int) {
+case class Service(id: UUID, host: URI, load: Int) {
     override def toString = 
         host.getPath
 }

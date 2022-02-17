@@ -1,7 +1,7 @@
 package ucab.sqa.workit.aggregator.model
 
 import java.util.UUID
-import cats.syntax.all._
+import cats.syntax.all.*
 import java.net.URI
 
 case class ServiceTable(table: Map[Group, Map[UUID, ServiceDescriptor]]) {

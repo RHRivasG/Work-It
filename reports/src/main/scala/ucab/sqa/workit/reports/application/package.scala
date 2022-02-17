@@ -1,86 +1,92 @@
 package ucab.sqa.workit.reports
 
-import cats._
-import cats.implicits._
+import cats.implicits.*
+import cats.*
 import cats.free.FreeT
-import ucab.sqa.workit.reports.application.actions.ReportApplicationAction
+import ucab.sqa.workit.reports.domain.values.*
+import ucab.sqa.workit.reports.domain.values.ReportResult.*
 import ucab.sqa.workit.reports.domain.Report
 import ucab.sqa.workit.reports.domain.errors.DomainError
 import ucab.sqa.workit.reports.domain.events.ReportEvent
-import ucab.sqa.workit.reports.application.actions.Handle
-import ucab.sqa.workit.reports.application.requests.ReportRequest
-import ucab.sqa.workit.reports.application.requests.AcceptReport
-import ucab.sqa.workit.reports.application.requests.RejectReport
-import ucab.sqa.workit.reports.application.requests.IssueReport
-import ucab.sqa.workit.reports.application.requests.GetReport
-import ucab.sqa.workit.reports.application.requests.GetAllReports
-import ucab.sqa.workit.reports.application.requests.GetReportByTrainer
-import ucab.sqa.workit.reports.application.models.ReportModel
+import ucab.sqa.workit.reports.application.queries.ReportQuery
+import ucab.sqa.workit.reports.application.queries.ReportQueryOpsImpl
+import ucab.sqa.workit.reports.application.commands.ReportCommand
+import ucab.sqa.workit.reports.application.commands.ReportCommandOpsImpl
 import cats.data.EitherT
+import cats.data.EitherK
+import cats.data.NonEmptyList
+import cats.Applicative
+import cats.free.Free
+import cats.InjectK
+import cats.Id
+import cats.data.Nested
+import ucab.sqa.workit.reports.application.models.ReportModel
 
-package object application {
-    type ReportApplicationService = ReportRequest ~> ReportApplicationCompleteAction
-    type ReportApplicationResult[A] = EitherT[Eval, DomainError, A]
-    type ReportApplicationCompleteAction[A] = FreeT[ReportApplicationAction, ReportApplicationResult, A]
+package object application:
+    type ReportInput[A] = EitherK[ReportCommand, ReportQuery, A]
+    type ReportActionF[A] = Free[ReportInput, A]
+    type ReportAction[A] = EitherT[ReportActionF, NonEmptyList[DomainError], A]
 
-    def get(id: String): ReportApplicationCompleteAction[Report] = 
-        FreeT.liftInject(actions.GetReport(id))
+    private val Commands = new ReportCommandOpsImpl[ReportInput]
+    private val Queries = new ReportQueryOpsImpl[ReportInput]
 
-    def getByTrainer(id: String): ReportApplicationCompleteAction[Report] = 
-        FreeT.liftInject(actions.GetReportByTrainer(id))
+    private def pure[A](result: => A): ReportAction[A] =
+        EitherT.pure(result)
 
-    def getAll: ReportApplicationCompleteAction[Vector[Report]] = 
-        FreeT.liftInject(actions.GetAllReports)
+    private def of[A](result: => ReportResult[A]): ReportAction[A] =
+        EitherT.fromEither(result.asEither)
 
-    def handle(evt: ReportEvent): ReportApplicationCompleteAction[Unit] =
-        FreeT.liftInject(Handle(evt))
+    private def raise[A](err: DomainError): ReportAction[A] = 
+        EitherT.leftT(NonEmptyList.one(err))
 
-    def of[A](e: Either[DomainError, A]): ReportApplicationCompleteAction[A] =
-        FreeT.liftT(EitherT.fromEither(e))
+    private def lift[A](free: Free[ReportInput, A]): ReportAction[A] =
+        EitherT.right(free)
 
-    def eval[A](e: Eval[A]): ReportApplicationCompleteAction[A] =
-        FreeT.liftT(EitherT.liftF(e))
+    private def getReportIssuedByUserOnTraining(issuerId: String, trainingId: String): ReportAction[Option[ReportModel]] =
+        lift(Queries.getReportIssuedByUserOnTraining(issuerId, trainingId))
 
-    def pure[A](e: A): ReportApplicationCompleteAction[A] =
-        FreeT.pure(e)
+    private def findReport(id: String): ReportAction[Report] = 
+        getReport(id).map(_.toReport)
 
-    def later[A](e: A): ReportApplicationCompleteAction[A] =
-        FreeT.liftT(EitherT.liftF(Eval.later { e }))
-
-    def now[A](e: A): ReportApplicationCompleteAction[A] =
-        FreeT.liftT(EitherT.liftF(Eval.always { e }))
-
-    def laterT[A](e: Either[DomainError, A]): ReportApplicationCompleteAction[A] =
-        FreeT.liftT(EitherT(Eval.later { e }))
-
-    def nowT[A](e: Either[DomainError, A]): ReportApplicationCompleteAction[A] =
-        FreeT.liftT(EitherT(Eval.always { e }))
-    
-    private def issueReport(trainingId: String, reason: String) = for {
-        (evt, _) <- laterT(Report(trainingId, reason))
-        () <- handle(evt)
-    } yield ()
-
-    private def acceptReport(id: String) = for {
-        report <- get(id)
-        evt = report.accept
-        () <- handle(evt)
-    } yield ()
-
-    private def rejectReport(id: String) = for {
-        report <- get(id)
-        evt = report.reject
-        () <- handle(evt)
-    } yield ()
-
-    implicit val applicationService = λ[ReportRequest ~> ReportApplicationCompleteAction](
-        _ match {
-            case AcceptReport(id) => acceptReport(id)
-            case IssueReport(trainingId, reason) => issueReport(trainingId, reason)
-            case RejectReport(id) => rejectReport(id)
-            case GetReport(id) => get(id).map(r => ReportModel(r.id.id.toString, r.trainingId.id.toString, r.reason))
-            case GetReportByTrainer(id) => getByTrainer(id).map(r => ReportModel(r.id.id.toString, r.trainingId.id.toString, r.reason))
-            case GetAllReports => getAll.nested.map(r => ReportModel(r.id.id.toString, r.trainingId.id.toString, r.reason)).value
+    def getReport(id: String): ReportAction[ReportModel] = for
+        vid <- of(ReportId(id))
+        result <- lift(Queries.getReport(vid.value))
+        model <- result match {
+            case Some(model) => pure(model)
+            case None => raise(DomainError.ReportNotFoundError(id))
         }
-    )
-}
+    yield model
+
+    def getAllReports: ReportAction[Vector[ReportModel]] = 
+        lift(Queries.getAllReports)
+
+    def getReportsOfTraining(id: String): ReportAction[Vector[ReportModel]] = for
+        vid <- of(TrainingId(id))
+        result <- lift(Queries.getReportByTrainer(id))
+    yield result
+
+    def issueReport(issuerId: String, trainingId: String, reason: String): ReportAction[Unit] = for
+        // alreadyIssuedReport <- getReportIssuedByUserOnTraining(issuerId, trainingId)
+        // (reportIssued, report) <- alreadyIssuedReport.fold()(report => raise(DomainError.UserAlreadyReportedTrainingError(
+        //     trainingId = report.trainingid.toString, 
+        //     issuerId = report.issuerId.toString)
+        // ))
+        (reportIssued, report) <- of(Report.identified(
+            issuerId = issuerId, 
+            trainingId = trainingId,
+            reason = reason
+        ))
+        _ <- lift(Commands.done(reportIssued))
+    yield ()
+
+    def acceptReport(id: String): ReportAction[Unit] = for
+        report <- findReport(id)
+        reportAccepted = report.accept
+        _ <- lift(Commands.done(reportAccepted))
+    yield ()
+
+    def rejectReport(id: String): ReportAction[Unit] = for
+        report <- findReport(id)
+        reportRejected = report.reject
+        _ <- lift(Commands.done(reportRejected))
+    yield ()

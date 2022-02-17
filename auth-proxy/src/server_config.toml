@@ -15,3 +15,7 @@ to = "http://localhost:8080"
 [servers.reports]
 from = "/api/reports"
 to = "http://localhost:3500"
+
+[servers.summary]
+from = "/api/summary"
+to = "http://localhost:8081"

@@ -18,7 +18,7 @@ export const environment = {
   reportsStreamingApiUrl: 'ws://localhost:3500',
   socialStreamingApiUrl: 'ws://localhost:5000',
   fitnessApiUrl: 'http://localhost:3000/api/fitness',
-  summaryApiUrl: 'http://localhost:8081',
+  summaryApiUrl: 'http://localhost:3000/api/summary',
   authInterceptor: AuthInterceptor,
   identityProviderService: SynchronizedIdentityProviderService,
 };

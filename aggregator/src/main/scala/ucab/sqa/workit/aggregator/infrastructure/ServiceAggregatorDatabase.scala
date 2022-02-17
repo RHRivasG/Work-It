@@ -1,11 +1,11 @@
 package ucab.sqa.workit.aggregator.infrastructure
 
-import io.circe._
-import cats.effect._
-import cats.implicits._
-import cats.instances.list._
-import mongo4cats.circe._
-import mongo4cats.client._
+import io.circe.*
+import cats.effect.*
+import cats.implicits.*
+import cats.instances.list.*
+import mongo4cats.circe.*
+import mongo4cats.client.*
 import java.util.UUID
 import mongo4cats.client.MongoClient
 import mongo4cats.collection.MongoCollection
