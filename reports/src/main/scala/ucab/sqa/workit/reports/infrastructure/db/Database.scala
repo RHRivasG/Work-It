@@ -16,12 +16,12 @@ final case class ReportStorageInformation(id: UUID, trainingId: UUID, issuerId: 
 type DatabaseAction[A] = EitherK[StoreAction, LookupAction, A]
 
 trait DatabaseOps[F[_]]:
-    def getReport(id: UUID): ParallelInstruction[F, Either[Throwable, Option[ReportModel]]]
-    def getReportsByTraining(id: String): ParallelInstruction[F, Either[Throwable, Vector[ReportModel]]]
-    def getReportIssuedByUserOnTraining(id: String, trainingId: String): ParallelInstruction[F, Either[Throwable, Option[ReportModel]]]
-    def getAllReports: ParallelInstruction[F, Either[Throwable, Vector[ReportModel]]]
-    def storeReport(reportInformation: ReportStorageInformation): ParallelInstruction[F, Either[Throwable, Unit]]
-    def deleteReport(id: UUID): ParallelInstruction[F, Either[Throwable, Unit]]
+    def getReport(id: UUID): Instruction[F, Either[Throwable, Option[ReportModel]]]
+    def getReportsByTraining(id: String): Instruction[F, Either[Throwable, Vector[ReportModel]]]
+    def getReportIssuedByUserOnTraining(id: String, trainingId: String): Instruction[F, Either[Throwable, Option[ReportModel]]]
+    def getAllReports: Instruction[F, Either[Throwable, Vector[ReportModel]]]
+    def storeReport(reportInformation: ReportStorageInformation): Instruction[F, Either[Throwable, Unit]]
+    def deleteReport(id: UUID): Instruction[F, Either[Throwable, Unit]]
 
 class DatabaseLanguage[F[_]](using injector: InjectK[DatabaseAction, F]) extends DatabaseOps[F]:
     private val Lookup = LookupLanguage[DatabaseAction]

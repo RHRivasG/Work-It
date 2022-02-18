@@ -16,14 +16,14 @@ enum LookupAction[A]:
     case GetAllReports extends LookupAction[Either[Throwable ,Vector[ReportModel]]]
 
 trait LookupOps[F[_]]:
-    def getReport(id: UUID): ParallelInstruction[F, Either[Throwable, Option[ReportModel]]]
-    def getReportsByTraining(id: String): ParallelInstruction[F, Either[Throwable, Vector[ReportModel]]]
-    def getReportIssuedByUserOnTraining(id: String, trainingId: String): ParallelInstruction[F, Either[Throwable, Option[ReportModel]]]
-    def getAllReports: ParallelInstruction[F, Either[Throwable, Vector[ReportModel]]]
+    def getReport(id: UUID): Instruction[F, Either[Throwable, Option[ReportModel]]]
+    def getReportsByTraining(id: String): Instruction[F, Either[Throwable, Vector[ReportModel]]]
+    def getReportIssuedByUserOnTraining(id: String, trainingId: String): Instruction[F, Either[Throwable, Option[ReportModel]]]
+    def getAllReports: Instruction[F, Either[Throwable, Vector[ReportModel]]]
 
 class LookupLanguage[F[_]](using injector: InjectK[LookupAction, F]) extends LookupOps[F]:
-    def getReport(id: UUID) = FreeApplicative.lift(LookupAction.GetReport(id)).compile(injector.inj)
-    def getReportsByTraining(id: String) = FreeApplicative.lift(LookupAction.GetReportsByTraining(id)).compile(injector.inj)
-    def getAllReports = FreeApplicative.lift(LookupAction.GetAllReports).compile(injector.inj)
-    def getReportIssuedByUserOnTraining(id: String, trainingId: String) =
-            FreeApplicative.lift(LookupAction.GetReportIssuedByUserOnTraining(id, trainingId)).compile(injector.inj)
+    def getReport(id: UUID) = Free.liftInject(LookupAction.GetReport(id))
+    def getReportsByTraining(id: String) = Free.liftInject(LookupAction.GetReportsByTraining(id))
+    def getAllReports = Free.liftInject(LookupAction.GetAllReports)
+    def getReportIssuedByUserOnTraining(id: String, trainingId: String) = 
+        Free.liftInject(LookupAction.GetReportIssuedByUserOnTraining(id, trainingId))

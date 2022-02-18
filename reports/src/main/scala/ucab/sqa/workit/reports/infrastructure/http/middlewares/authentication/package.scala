@@ -93,33 +93,3 @@ package object authentication:
         val dsl = Http4sDsl[F]
         import dsl.*
         AuthMiddleware(checkRoles("admin", "participant", "trainer")(config), errorRoute)
-    
-//     def admin[F[_]: FromEval: [F[_]] =>> MonadError[F, ReportError]: Console](config: Configuration) = 
-//             AuthMiddleware((for {
-//                 roles <- extractRoles[F](config)
-//                 _ <- Kleisli.liftF(
-//                     if (!roles.contains("admin")) MonadError[F, ReportError].raiseError(ReportInfrastructureError(new Exception("Credentials invalid, user is not admin")))
-//                     else MonadError[F, ReportError].pure(roles)
-//                 )
-//             } yield ()).mapF[F, Either[Throwable, Unit]](_.attemptT.leftSemiflatTap(Console[F].println).leftMap { _ match {
-//                 case ReportDomainError(inner) => new Error(inner.toString())
-//                 case err @ ReportInfrastructureError(_) => err.inner
-//             }}.value), 
-//             errorRoute[F]
-//             )
-
-    
-//     def participantOrTrainer[F[_]: FromEval: [F[_]] =>> MonadError[F, ReportError]: Console](config: Configuration) = 
-//             AuthMiddleware((for {
-//                 roles <- extractRoles[F](config)
-//                 _ <- Kleisli.liftF(
-//                     if (!roles.contains("trainer") && !roles.contains("participant")) MonadError[F, ReportError].raiseError(ReportInfrastructureError(new Exception("Credentials invalid, user is not logged in")))
-//                     else MonadError[F, ReportError].pure(roles)
-//                 )
-//             } yield ()).mapF[F, Either[Throwable, Unit]](_.attemptT.leftMap { _ match {
-//                 case ReportDomainError(inner) => new Error(inner.toString())
-//                 case err @ ReportInfrastructureError(_) => err.inner
-//             }}.value), 
-//             errorRoute[F]
-//             )
-// }

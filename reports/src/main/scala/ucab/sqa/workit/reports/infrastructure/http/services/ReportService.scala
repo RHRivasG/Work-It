@@ -30,6 +30,9 @@ import org.http4s.AuthedRoutes
 import cats.effect.kernel.Async
 import cats.effect.std.Console
 import org.http4s.server.Router
+import org.http4s.server.websocket.WebSocketBuilder
+import org.http4s.server.websocket.WebSocketBuilder2
+import org.http4s.websocket.WebSocketFrame.Text
 
 object ReportService {
     private case class ReportIssueForm(trainingId: String, reason: String)
@@ -102,4 +105,12 @@ object ReportService {
         
         Router("/" -> (standardAccess(config))(unprivilegedRoutes), "/admin" -> (adminAccess(config))(privilegedRoutes))
     }
+
+    def stream[F[_]: Async](stream: fs2.Stream[F, Vector[ReportModel]], builder: WebSocketBuilder2[F]) =
+        val dsl = Http4sDsl[F]
+        import dsl.*
+        
+        HttpRoutes.of[F] {
+            case GET -> Root / "stream" => builder.build(stream.map(s => Text(s.asJson.spaces2)), _.void)
+        }
 }
