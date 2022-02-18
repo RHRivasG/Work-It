@@ -15,7 +15,7 @@ enum LogAction[A]:
     case Log(msg: String) extends LogAction[Unit]
 
 trait LoggerOps[F[_]]:
-    def log(msg: String): ParallelInstruction[F, Unit]
+    def log(msg: String): Instruction[F, Unit]
 
 private class LoggerLanguage[F[_]](using injector: InjectK[LogAction, F]) extends LoggerOps[F]:
-    def log(msg: String) = FreeApplicative.lift(LogAction.Log(msg)).compile(injector.inj)
+    def log(msg: String) = Free.liftInject(LogAction.Log(msg))

@@ -13,12 +13,12 @@ enum StoreAction[A]:
     case DeleteReport(id: UUID) extends StoreAction[Either[Throwable, Unit]]
 
 trait StoreOps[F[_]]:
-    def storeReport(info: ReportStorageInformation): ParallelInstruction[F, Either[Throwable, Unit]]
-    def deleteReport(id: UUID): ParallelInstruction[F, Either[Throwable, Unit]]
+    def storeReport(info: ReportStorageInformation): Instruction[F, Either[Throwable, Unit]]
+    def deleteReport(id: UUID): Instruction[F, Either[Throwable, Unit]]
 
 class StoreLanguage[F[_]](using injector: InjectK[StoreAction, F]) extends StoreOps[F]:
     def storeReport(report: ReportStorageInformation) = report match
         case ReportStorageInformation(id, trainingId, issuerId, reason) =>
-            FreeApplicative.lift(StoreAction.StoreReport(id, trainingId, issuerId, reason)).compile(injector.inj)
+            Free.liftInject(StoreAction.StoreReport(id, trainingId, issuerId, reason))
 
-    def deleteReport(id: UUID) = FreeApplicative.lift(StoreAction.DeleteReport(id)).compile(injector.inj)
+    def deleteReport(id: UUID) = Free.liftInject(StoreAction.DeleteReport(id))

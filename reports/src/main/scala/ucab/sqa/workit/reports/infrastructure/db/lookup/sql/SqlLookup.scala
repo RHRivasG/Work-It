@@ -60,10 +60,14 @@ final class SqlLookup[F[_]: Async: Console](xa: Transactor[F]) extends (LookupAc
             sql"""SELECT * FROM "reports" WHERE "reports"."id" = ${id.toString}::uuid"""
             .toReportModelOption(xa)
             .attempt
-        case LookupAction.GetReportsByTraining(id) =>
+        case LookupAction.GetReportsByTraining(id) => {
+            println(f"Searching reports with training ID: $id")
             sql"""SELECT * FROM "reports" WHERE "reports"."trainingId" = $id::uuid"""
             .toReportModelCollection(xa)
             .attempt
+        }
      
         case LookupAction.GetReportIssuedByUserOnTraining(id, trainingId) =>
-            sql"""SELECT * FROM "reports" WHERE "reports"."trainingId" = $trainingId AND "reports"."issuerId" = $id::uuid""".toReportModelOption(xa).attempt
+            sql"""SELECT * FROM "reports" WHERE "reports"."trainingId" = $trainingId::uuid AND "reports"."issuerId" = $id::uuid"""
+            .toReportModelOption(xa)
+            .attempt

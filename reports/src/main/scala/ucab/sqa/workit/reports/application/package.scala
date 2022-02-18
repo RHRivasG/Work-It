@@ -66,15 +66,14 @@ package object application:
     yield result
 
     def issueReport(issuerId: String, trainingId: String, reason: String): ReportAction[Unit] = for
-        // alreadyIssuedReport <- getReportIssuedByUserOnTraining(issuerId, trainingId)
-        // (reportIssued, report) <- alreadyIssuedReport.fold()(report => raise(DomainError.UserAlreadyReportedTrainingError(
-        //     trainingId = report.trainingid.toString, 
-        //     issuerId = report.issuerId.toString)
-        // ))
-        (reportIssued, report) <- of(Report.identified(
+        alreadyIssuedReport <- getReportIssuedByUserOnTraining(issuerId, trainingId)
+        (reportIssued, report) <- alreadyIssuedReport.fold(of(Report.identified(
             issuerId = issuerId, 
             trainingId = trainingId,
             reason = reason
+        )))(report => raise(DomainError.UserAlreadyReportedTrainingError(
+            trainingId = report.trainingid.toString, 
+            issuerId = report.issuerId.toString)
         ))
         _ <- lift(Commands.done(reportIssued))
     yield ()
