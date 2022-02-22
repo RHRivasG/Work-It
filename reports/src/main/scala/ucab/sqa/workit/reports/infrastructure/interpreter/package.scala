@@ -73,7 +73,7 @@ package object interpreter:
 
     private val queriesInterpreter = new (ReportQuery ~> InterpreterLanguage):
         def apply[A](query: ReportQuery[A]) = query match
-            case ReportQuery.GetReportByTrainer(trainerId) => for {
+            case ReportQuery.GetReportByTraining(trainerId) => for {
                 (result, _) <- logAction(getReportsByTraining(trainerId), f"Searching reports with training id $trainerId")
                 () <- logResult(result, rc => f"Obtained ${rc.length} reports")
                 models <- rethrow(result)
