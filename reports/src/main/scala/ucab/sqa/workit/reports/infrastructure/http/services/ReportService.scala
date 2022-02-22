@@ -77,7 +77,7 @@ object ReportService {
         def unprivilegedRoutes =
             AuthedRoutes.of[AuthModel, F] {
                 case GET -> Root / id as _ => for 
-                    result <- execute(getReportsOfTraining(id)).attempt
+                    result <- execute(reportsOfTraining(id)).attempt
                     response <- result match
                         case Right(models) => Ok(models.toList)
                         case Left(error) => errorHandling(error)

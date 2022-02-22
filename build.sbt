@@ -139,6 +139,7 @@ lazy val reports = (project in file("reports"))
       "io.circe"                    %% "circe-generic"       % CirceVersion,
       "org.scalameta"               %% "munit"               % MunitVersion           % Test,
       "org.typelevel"               %% "munit-cats-effect-3" % MunitCatsEffectVersion % Test,
+      "org.scalameta"               %% "munit-scalacheck"    % "0.7.29"               % Test,
       "org.typelevel"               %% "cats-free"           % "2.7.0",
       "org.typelevel"               %% "kittens"             % "3.0.0-M2",
       "org.tpolecat"                %% "doobie-core"         % "1.0.0-RC1",

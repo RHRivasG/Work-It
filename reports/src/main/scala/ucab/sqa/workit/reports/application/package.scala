@@ -4,8 +4,8 @@ import cats.implicits.*
 import cats.*
 import cats.free.FreeT
 import ucab.sqa.workit.reports.domain.values.*
-import ucab.sqa.workit.reports.domain.values.ReportResult.*
 import ucab.sqa.workit.reports.domain.Report
+import ucab.sqa.workit.reports.domain.errors.ReportResult
 import ucab.sqa.workit.reports.domain.errors.DomainError
 import ucab.sqa.workit.reports.domain.events.ReportEvent
 import ucab.sqa.workit.reports.application.queries.ReportQuery
@@ -30,6 +30,9 @@ package object application:
     private val Commands = new ReportCommandOpsImpl[ReportInput]
     private val Queries = new ReportQueryOpsImpl[ReportInput]
 
+    import Commands.*
+    import Queries.*
+
     private def pure[A](result: => A): ReportAction[A] =
         EitherT.pure(result)
 
@@ -42,38 +45,40 @@ package object application:
     private def lift[A](free: Free[ReportInput, A]): ReportAction[A] =
         EitherT.right(free)
 
-    private def getReportIssuedByUserOnTraining(issuerId: String, trainingId: String): ReportAction[Option[ReportModel]] =
-        lift(Queries.getReportIssuedByUserOnTraining(issuerId, trainingId))
+    private def reportIssued(issuerId: String, trainingId: String): ReportAction[Option[ReportModel]] =
+        lift(getReportIssuedByUserOnTraining(issuerId, trainingId))
 
     private def findReport(id: String): ReportAction[Report] = 
-        getReport(id).map(_.toReport)
+        report(id).map(_.toReport)
 
-    def getReport(id: String): ReportAction[ReportModel] = for
+    def report(id: String): ReportAction[ReportModel] = for
         vid <- of(ReportId(id))
-        result <- lift(Queries.getReport(vid.value))
+        result <- lift(getReport(vid.value))
         model <- result match {
             case Some(model) => pure(model)
             case None => raise(DomainError.ReportNotFoundError(id))
         }
     yield model
 
-    def getAllReports: ReportAction[Vector[ReportModel]] = 
-        lift(Queries.getAllReports)
+    def reports: ReportAction[Vector[ReportModel]] = 
+        lift(getAllReports)
 
-    def getReportsOfTraining(id: String): ReportAction[Vector[ReportModel]] = for
-        vid <- of(TrainingId(id))
-        result <- lift(Queries.getReportByTrainer(id))
+    def reportsOfTraining(id: String): ReportAction[Vector[ReportModel]] = for
+        vid <- of(Training(id))
+        result <- lift(getReportByTraining(id))
     yield result
 
-    def issueReport(issuerId: String, trainingId: String, reason: String): ReportAction[Unit] = for
-        alreadyIssuedReport <- getReportIssuedByUserOnTraining(issuerId, trainingId)
-        (reportIssued, report) <- alreadyIssuedReport.fold(of(Report.identified(
-            issuerId = issuerId, 
-            trainingId = trainingId,
-            reason = reason
-        )))(report => raise(DomainError.UserAlreadyReportedTrainingError(
-            trainingId = report.trainingid.toString, 
-            issuerId = report.issuerId.toString)
+    def issueReport(issuer: String, training: String, reason: String): ReportAction[Unit] = for
+        alreadyIssuedReport <- reportIssued(issuer, training)
+        (reportIssued, report) <- alreadyIssuedReport.fold(
+            of(Report.identified(
+                issuer = issuer, 
+                training = training,
+                reason = reason
+            ))
+        )(report => raise(DomainError.UserAlreadyReportedTrainingError(
+            trainingId = report.training.toString, 
+            issuerId = report.issuer.toString)
         ))
         _ <- lift(Commands.done(reportIssued))
     yield ()
@@ -81,11 +86,11 @@ package object application:
     def acceptReport(id: String): ReportAction[Unit] = for
         report <- findReport(id)
         reportAccepted = report.accept
-        _ <- lift(Commands.done(reportAccepted))
+        _ <- lift(done(reportAccepted))
     yield ()
 
     def rejectReport(id: String): ReportAction[Unit] = for
         report <- findReport(id)
         reportRejected = report.reject
-        _ <- lift(Commands.done(reportRejected))
+        _ <- lift(done(reportRejected))
     yield ()
