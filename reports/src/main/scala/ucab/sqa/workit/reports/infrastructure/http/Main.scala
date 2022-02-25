@@ -20,6 +20,8 @@ import cats.effect.kernel.Async
 import scala.concurrent.duration.Duration
 import cats.effect.ExitCode
 import doobie.util.transactor.Transactor
+import ucab.sqa.workit.reports.application.*
+import ucab.sqa.workit.reports.application.models.ReportModel
 import ucab.sqa.workit.reports.infrastructure.InfrastructureError
 import ucab.sqa.workit.reports.infrastructure.http.services.ReportService
 import ucab.sqa.workit.reports.infrastructure.log.`scala-logging`.ScalaLogging
@@ -30,11 +32,12 @@ import ucab.sqa.workit.reports.infrastructure.publisher.grpc.GrpcPublisher
 import ucab.sqa.workit.reports.infrastructure.log.*
 import ucab.sqa.workit.reports.infrastructure.execution.effect.EffectExecution
 import ucab.sqa.workit.reports.infrastructure.shared.*
-import ucab.sqa.workit.reports.application.models.ReportModel
 import ucab.sqa.workit.reports.infrastructure.db.store.sql.SqlStore
 import ucab.sqa.workit.reports.infrastructure.db.configuration.Configuration as DatabaseConfiguration
 import ucab.sqa.workit.reports.infrastructure.publisher.grpc.Configuration as GrpcConfiguration
 import ucab.sqa.workit.reports.infrastructure.http.middlewares.authentication.Configuration as AuthConfiguration
+import ucab.sqa.workit.reports.infrastructure.InfrastructureCompiler
+import ucab.sqa.workit.probobuf.aggregator.ServiceAggregatorFs2Grpc
 import org.http4s.server.Router
 import pureconfig.ConfigSource
 import pureconfig.ConfigReader
@@ -47,7 +50,6 @@ import cats.effect.std.Queue
 import fs2.concurrent.Topic
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder
 import fs2.grpc.syntax.all.*
-import ucab.sqa.workit.probobuf.aggregator.ServiceAggregatorFs2Grpc
 
 object Main extends IOApp {
   import ucab.sqa.workit.reports.application.*
@@ -90,22 +92,20 @@ object Main extends IOApp {
         logInterpreter          or (
         storeInterpreter        or (
         lookupInterpreter))))
-      //// Executor 
-      composedExecutor = new (InterpreterLanguage ~> F):
-        def apply[A](action: InterpreterLanguage[A]) = 
-          action.value.foldMap(EffectExecution(ece, composedInterpreter)).rethrow
-
-  yield (notificationInterpreter.stream, new (ReportAction ~> F):
-        def apply[A](action: ReportAction[A]) = action
+      //// Compiler
+      compiler = InfrastructureCompiler
+      //// ErrorHandler
+      errorHandler = InfrastructureError.InternalError(_)
+      //// Interpreter
+      interpreter = new (InfrastructureLanguage ~> F):
+        def apply[A](f: InfrastructureLanguage[A]) = f
           .value
-          .compile(applicationInterpreter)
-          .foldMap(composedExecutor)
-          .flatMap {
-            case Right(value) => value.pure
-            case Left(err) => InfrastructureError.InternalError(err).raiseError
-          })
+          .foldMap(EffectExecution(ece, composedInterpreter))
+          .rethrow
 
-  def server[F[_]: Async: Console](service: ReportAction ~> F, stream: Stream[F, Vector[ReportModel]]) = {
+  yield (notificationInterpreter.stream, UseCase.build(errorHandler, compiler, interpreter))
+
+  def server[F[_]: Async: Console: UseCase](stream: Stream[F, Vector[ReportModel]]) = {
     for
       config <- Stream.eval { 
         ConfigSource.default.at("jwt").load[AuthConfiguration] match
@@ -119,7 +119,7 @@ object Main extends IOApp {
           .withPort(port"3500")
           .withHttpWebSocketApp(builder => (
             Router(
-              "/reports" -> (ReportService.stream(stream, builder) <+> ReportService.service(config, service))
+              "/reports" -> (ReportService.stream(stream, builder) <+> ReportService.service(config))
             ).orNotFound
           ))
           .withIdleTimeout(Duration.Inf)
@@ -131,7 +131,9 @@ object Main extends IOApp {
 
   def run(args: List[String]): InfrastructureResult[ExitCode] =
     // Run Program
-    factory[InfrastructureResult].use { service =>
-      server[InfrastructureResult].tupled(service.swap).compile.drain.as(ExitCode.Success)
+    factory[InfrastructureResult].use { case (stream, service) =>
+      given UseCase[InfrastructureResult] = service
+
+      server[InfrastructureResult](stream).compile.drain.as(ExitCode.Success)
     }
 }

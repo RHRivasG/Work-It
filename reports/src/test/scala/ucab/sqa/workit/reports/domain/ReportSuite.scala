@@ -18,8 +18,8 @@ class ReportSuite extends ScalaCheckSuite with ReportGenHelper {
             ("Result is valid"                              |: result.isRight) &&
             ("ID is not null"                               |: result.map(_.id.value) != Right(null)) &&
             ("ID is a valid UUID"                           |: result.map(r => UUID.fromString(r.id.value.toString)) == result.map(_.id.value)) &&
-            ("Training ID is a valid UUID"                  |: result.map(r => UUID.fromString(r.trainingId.value.toString)) == result.map(_.trainingId.value)) &&
-            ("Issuer ID is a valid UUID"                    |: result.map(r => UUID.fromString(r.issuerId.value.toString)) == result.map(_.issuerId.value)) &&
+            ("Training ID is a valid UUID"                  |: result.map(r => UUID.fromString(r.training.value.toString)) == result.map(_.training.value)) &&
+            ("Issuer ID is a valid UUID"                    |: result.map(r => UUID.fromString(r.issuer.value.toString)) == result.map(_.issuer.value)) &&
             ("Reason is not empty"                          |: result.map(_.reason.value).fold(_ => false, !_.isEmpty)) &&
             ("Reason has less than 256 characters"          |: result.map(_.reason.value).fold(_ => false, _.length <= 255))
         }

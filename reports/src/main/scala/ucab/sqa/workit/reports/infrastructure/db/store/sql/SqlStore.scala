@@ -18,8 +18,6 @@ final class SqlStore[F[_]: Async](xa: Transactor[F]) extends (StoreAction ~> F):
         .update
         .run
         .transact(xa)
-        .onError { err => Async[F].delay(println(f"Occured error $err")) }
-        .onSqlException { Async[F].delay(println(f"Occured error sql exception"))}
         .as(())
         .attempt
 
