@@ -12,7 +12,7 @@ import ucab.sqa.workit.reports.infrastructure.notifications.NotificationAction
 class NotificationQueue[F[_]: Async](topic: Topic[F, Vector[ReportModel]], queue: Queue[F, Vector[ReportModel]]) 
     extends (NotificationAction ~> F):
 
-    def stream = topic.subscribe(1).concurrently(
+    def stream: Stream[F, Vector[ReportModel]] = topic.subscribe(1).concurrently(
         Stream.fromQueueUnterminated(queue).through(topic.publish)
     )
 

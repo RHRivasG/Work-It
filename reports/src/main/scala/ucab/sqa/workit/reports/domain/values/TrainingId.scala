@@ -7,11 +7,11 @@ import java.util.UUID
 
 opaque type Training = UUID
 object Training:
-    def apply(id: UUID): Training= id
+    def apply(id: UUID): Training = id
 
     def apply(id: String): ReportResult[Training] = ReportResult {
         Either
-        .catchNonFatal(UUID.fromString(id))
+        .catchNonFatal(UUIDFactory.fromString(id))
         .leftMap(_ => DomainError.InvalidUUIDError(id))
         .toValidatedNel
     }

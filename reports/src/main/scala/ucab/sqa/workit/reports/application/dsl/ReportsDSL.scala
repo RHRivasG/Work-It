@@ -22,7 +22,7 @@ import cats.InjectK
 import cats.Id
 import cats.data.Nested
 
-object ApplicationDSL:
+object ReportsDSL:
     private val Commands = new ReportCommandOpsImpl[ReportInput]
     private val Queries = new ReportQueryOpsImpl[ReportInput]
 
@@ -61,20 +61,22 @@ object ApplicationDSL:
 
     def reportsOfTraining(id: String): ReportAction[Vector[ReportModel]] = for
         vid <- of(Training(id))
+        _ = println(id)
         result <- lift(getReportByTraining(id))
     yield result
 
     def issueReport(issuer: String, training: String, reason: String): ReportAction[Unit] = for
+        report <- of(Report.identified(
+            issuer = issuer, 
+            training = training,
+            reason = reason
+        ))
         alreadyIssuedReport <- reportIssued(issuer, training)
         (reportIssued, report) <- alreadyIssuedReport match 
-            case None => of(Report.identified(
-                issuer = issuer, 
-                training = training,
-                reason = reason
-            ))
+            case None => pure(report)
             case Some(report) => raise(DomainError.UserAlreadyReportedTrainingError(
-                trainingId = report.training.toString, 
-                issuerId = report.issuer.toString)
+                trainingId = training, 
+                issuerId = issuer)
             )
         _ <- lift(done(reportIssued))
     yield ()

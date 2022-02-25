@@ -53,6 +53,7 @@ import fs2.grpc.syntax.all.*
 
 object Main extends IOApp {
   import ucab.sqa.workit.reports.application.*
+  type StreamedUseCase[F[_]] = UseCase[[A] =>> Stream[F, A], F]
 
   given ConfigReader[AuthConfiguration] = ConfigReader.forProduct1("secret-key")(AuthConfiguration.apply)
 
@@ -92,10 +93,6 @@ object Main extends IOApp {
         logInterpreter          or (
         storeInterpreter        or (
         lookupInterpreter))))
-      //// Compiler
-      compiler = InfrastructureCompiler
-      //// ErrorHandler
-      errorHandler = InfrastructureError.InternalError(_)
       //// Interpreter
       interpreter = new (InfrastructureLanguage ~> F):
         def apply[A](f: InfrastructureLanguage[A]) = f
@@ -103,9 +100,9 @@ object Main extends IOApp {
           .foldMap(EffectExecution(ece, composedInterpreter))
           .rethrow
 
-  yield (notificationInterpreter.stream, UseCase.build(errorHandler, compiler, interpreter))
+  yield UseCase.build(notificationInterpreter.stream, InfrastructureError.InternalError(_), InfrastructureCompiler, interpreter)
 
-  def server[F[_]: Async: Console: UseCase](stream: Stream[F, Vector[ReportModel]]) = {
+  def server[F[_]: Async: Console: StreamedUseCase] = {
     for
       config <- Stream.eval { 
         ConfigSource.default.at("jwt").load[AuthConfiguration] match
@@ -119,7 +116,7 @@ object Main extends IOApp {
           .withPort(port"3500")
           .withHttpWebSocketApp(builder => (
             Router(
-              "/reports" -> (ReportService.stream(stream, builder) <+> ReportService.service(config))
+              "/reports" -> (ReportService.stream(builder) <+> ReportService.service(config))
             ).orNotFound
           ))
           .withIdleTimeout(Duration.Inf)
@@ -131,9 +128,9 @@ object Main extends IOApp {
 
   def run(args: List[String]): InfrastructureResult[ExitCode] =
     // Run Program
-    factory[InfrastructureResult].use { case (stream, service) =>
-      given UseCase[InfrastructureResult] = service
+    factory[InfrastructureResult].use { service =>
+      given UseCase[[A] =>> Stream[InfrastructureResult, A], InfrastructureResult] = service
 
-      server[InfrastructureResult](stream).compile.drain.as(ExitCode.Success)
+      server[InfrastructureResult].compile.drain.as(ExitCode.Success)
     }
 }

@@ -1,9 +1,9 @@
 package ucab.sqa.workit.reports.domain.values
 
+import java.util.UUID
 import cats.syntax.all.*
 import ucab.sqa.workit.reports.domain.errors.DomainError
 import ucab.sqa.workit.reports.domain.errors.ReportResult
-import java.util.UUID
 
 opaque type ReportIssuer = UUID
 object ReportIssuer:
@@ -11,7 +11,7 @@ object ReportIssuer:
 
     def apply(id: String): ReportResult[ReportIssuer] = ReportResult {
         Either
-        .catchNonFatal(UUID.fromString(id))
+        .catchNonFatal(UUIDFactory.fromString(id))
         .leftMap(_ => DomainError.InvalidUUIDError(id))
         .toValidatedNel
     }

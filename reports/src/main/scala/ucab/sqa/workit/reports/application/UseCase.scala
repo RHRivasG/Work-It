@@ -2,7 +2,7 @@ package ucab.sqa.workit.reports.application
 
 import cats.~>
 import cats.syntax.all.*
-import ucab.sqa.workit.reports.application.dsl.ApplicationDSL as DSL
+import ucab.sqa.workit.reports.application.dsl.ReportsDSL as DSL
 import ucab.sqa.workit.reports.application.models.ReportModel
 import cats.Monad
 import cats.MonadError
@@ -13,21 +13,23 @@ type ErrorHandler = NonEmptyList[DomainError] => Throwable
 type Compiler[F[_]] = ReportInput ~> F
 type Interpreter[G[_], F[_]] = G ~> F
 
-sealed trait UseCase[F[_]]:
+sealed trait UseCase[G[_], F[_]]:
     def report(id: String): F[ReportModel]
     def reports: F[Vector[ReportModel]]
     def reportsOfTraining(id: String): F[Vector[ReportModel]]
     def issueReport(issuer: String, training: String, reason: String): F[Unit]
     def acceptReport(id: String): F[Unit]
     def rejectReport(id: String): F[Unit]
+    def reportStream: G[Vector[ReportModel]]
 
 object UseCase:
-    def apply[F[_]](using uc: UseCase[F]) = uc
-    def build[G[_], F[_]: [F[_]] =>> MonadError[F, Throwable]](
+    def apply[G[_], F[_]](using uc: UseCase[G, F]) = uc
+    def build[K[_], G[_], F[_]: [F[_]] =>> MonadError[F, Throwable]](
+        stream: K[Vector[ReportModel]],
         errorHandler: ErrorHandler,
         compiler: Compiler[G],
         interpreter: Interpreter[G, F]
-    ) = new UseCase[F]:
+    ) = new UseCase[K, F]:
         def executor = new (ReportAction ~> F):
             def apply[A](action: ReportAction[A]) = action
               .value
@@ -43,3 +45,4 @@ object UseCase:
         def issueReport(issuer: String, training: String, reason: String): F[Unit] = executor(DSL.issueReport(issuer, training, reason))
         def acceptReport(id: String): F[Unit] = executor(DSL.acceptReport(id))
         def rejectReport(id: String): F[Unit] = executor(DSL.rejectReport(id))
+        def reportStream = stream

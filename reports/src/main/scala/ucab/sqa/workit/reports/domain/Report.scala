@@ -1,6 +1,5 @@
 package ucab.sqa.workit.reports.domain
 
-import java.util.UUID
 import cats.syntax.all.*
 import ucab.sqa.workit.reports.domain.errors.DomainError
 import ucab.sqa.workit.reports.domain.events.ReportEvent
@@ -9,6 +8,7 @@ import ucab.sqa.workit.reports.domain.values.ReportId
 import ucab.sqa.workit.reports.domain.values.ReportIssuer
 import ucab.sqa.workit.reports.domain.values.ReportReason
 import ucab.sqa.workit.reports.domain.values.Training
+import java.util.UUID
 
 final case class Report private(id: ReportId, issuer: ReportIssuer, training: Training, reason: ReportReason)
 

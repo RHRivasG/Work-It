@@ -41,7 +41,7 @@ object ReportService {
     private given Encoder[ReportModel] = semiauto.deriveEncoder
     private given [F[_]: Concurrent]: EntityDecoder[F, ReportIssueForm] = jsonOf[F, ReportIssueForm]
 
-    def service[F[_]: UseCase](config: Configuration)(using C: Console[F], A: Async[F]) = {
+    def service[F[_]](config: Configuration)(using C: Console[F], A: Async[F], UseCase: UseCase[?, F]) = {
         val dsl = Http4sDsl[F]
         val errorHandler = HttpErrorHandler[F]
 
@@ -51,7 +51,7 @@ object ReportService {
         def unprivilegedRoutes =
             AuthedRoutes.of[AuthModel, F] {
                 case GET -> Root / id as _ => for 
-                    result <- UseCase[F].reportsOfTraining(id).attempt
+                    result <- UseCase.reportsOfTraining(id).attempt
                     response <- result match
                         case Right(models) => Ok(models.toList)
                         case Left(error) => ErrorHandler(error)
@@ -59,7 +59,7 @@ object ReportService {
                 case ctx @ POST -> Root as user => for
                     parseResult <- ctx.req.as[ReportIssueForm].attempt
                     result <- parseResult.toOption match
-                        case Some(form) => UseCase[F].issueReport(user.id, form.training, form.reason).attempt
+                        case Some(form) => UseCase.issueReport(user.id, form.training, form.reason).attempt
                         case None => InfrastructureError.ParseError(Exception("Could not parse input")).asLeft.pure
                     response <- result match
                         case Right(()) => Ok("Report succesfully issued")
@@ -70,12 +70,12 @@ object ReportService {
         def privilegedRoutes = 
             AuthedRoutes.of[AuthModel, F] {
                 case POST -> Root / id / "accept" as _ => 
-                    UseCase[F]
+                    UseCase
                     .acceptReport(id)
                     .flatMap { Ok(_) }
                     .recoverWith(ErrorHandler)
                 case POST -> Root / id / "reject" as _ => 
-                    UseCase[F]
+                    UseCase
                     .rejectReport(id)
                     .flatMap { Ok(_) }
                     .recoverWith(ErrorHandler)
@@ -84,13 +84,13 @@ object ReportService {
         Router("/" -> (standardAccess(config))(unprivilegedRoutes), "/admin" -> (adminAccess(config))(privilegedRoutes))
     }
 
-    def stream[F[_]: Async](stream: fs2.Stream[F, Vector[ReportModel]], builder: WebSocketBuilder2[F]) =
+    def stream[F[_]: Async](builder: WebSocketBuilder2[F])(using UseCase: UseCase[[A] =>> fs2.Stream[F, A], ?]) =
         val dsl = Http4sDsl[F]
         import dsl.*
         
         HttpRoutes.of[F] {
             case GET -> Root / "stream" => builder.build(
-                stream.map(s => Text(s.asJson.spaces2)), 
+                UseCase.reportStream.map(s => Text(s.asJson.spaces2)), 
                 _.void
             )
         }
