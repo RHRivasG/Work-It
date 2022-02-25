@@ -61,7 +61,6 @@ final class SqlLookup[F[_]: Async: Console](xa: Transactor[F]) extends (LookupAc
             .toReportModelOption(xa)
             .attempt
         case LookupAction.GetReportsByTraining(id) => {
-            println(f"Searching reports with training ID: $id")
             sql"""SELECT * FROM "reports" WHERE "reports"."trainingId" = $id::uuid"""
             .toReportModelCollection(xa)
             .attempt

@@ -8,3 +8,4 @@ enum InfrastructureError extends Throwable:
     case AuthenticationError(error: Throwable)
     case LookupError(error: Throwable)
     case StoreError(error: Throwable)
+    case ParseError(error: Throwable)

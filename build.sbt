@@ -149,7 +149,7 @@ lazy val reports = (project in file("reports"))
       "com.github.pureconfig"       %% "pureconfig"          % "0.17.1" cross(CrossVersion.for3Use2_13),
       "com.github.jwt-scala"        %% "jwt-circe"           % "9.0.3",
       "ch.qos.logback"              % "logback-classic"      % "1.2.10",
-      "com.typesafe.scala-logging"  %% "scala-logging"       % "3.9.4"
+      "com.typesafe.scala-logging"  %% "scala-logging"       % "3.9.4",
       // "org.mongodb"     % "mongodb-driver-core"  % "4.3.3"
     ),
     testFrameworks += new TestFramework("munit.Framework")

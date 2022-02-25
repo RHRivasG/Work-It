@@ -33,74 +33,52 @@ import org.http4s.server.Router
 import org.http4s.server.websocket.WebSocketBuilder
 import org.http4s.server.websocket.WebSocketBuilder2
 import org.http4s.websocket.WebSocketFrame.Text
+import ucab.sqa.workit.reports.infrastructure.http.error.HttpErrorHandler
 
 object ReportService {
-    private case class ReportIssueForm(trainingId: String, reason: String)
-    private case class Error(`type`: String, title: String, status: Int, instance: String, problems: List[Error])
-
+    private case class ReportIssueForm(training: String, reason: String)
     private given Decoder[ReportIssueForm] = semiauto.deriveDecoder
     private given Encoder[ReportModel] = semiauto.deriveEncoder
-    private given Encoder[Error] = semiauto.deriveEncoder
-
-
     private given [F[_]: Concurrent]: EntityDecoder[F, ReportIssueForm] = jsonOf[F, ReportIssueForm]
 
-
-    def service[F[_]](config: Configuration, execute: ReportAction ~> F)(using C: Console[F], A: Async[F]) = {
+    def service[F[_]: UseCase](config: Configuration)(using C: Console[F], A: Async[F]) = {
         val dsl = Http4sDsl[F]
-        import dsl.*
+        val errorHandler = HttpErrorHandler[F]
 
-        def errorHandling[F[_]](error: Throwable) = error match
-            case InfrastructureError.InternalError(NonEmptyList(DomainError.ReportNotFoundError(id), _@_*)) => NotFound(Error(
-                "Not found",
-                f"Report with id $id not found",
-                404,
-                f"/reports/$id",
-                List()
-            ).asJson)
-            case InfrastructureError.InternalError(NonEmptyList(DomainError.InvalidUUIDError(id), _@_*)) => BadRequest(Error(
-                "Invalid ID",
-                "ID is not an UUID",
-                400,
-                f"/reports",
-                List()
-            ).asJson)
-            case InfrastructureError.InternalError(errors) => BadRequest(Error(
-                "Multiple problems",
-                "Multiple problems found with your request",
-                400,
-                f"/reports",
-                errors.map { error => Error(error.getClass.getName, error.toString, 400, f"/reports", List()) }.toList
-            ).asJson)
-            case _ => InternalServerError("Oops! Something went wrong, try again later!")
+        import dsl.*
+        import errorHandler.*
 
         def unprivilegedRoutes =
             AuthedRoutes.of[AuthModel, F] {
                 case GET -> Root / id as _ => for 
-                    result <- execute(reportsOfTraining(id)).attempt
+                    result <- UseCase[F].reportsOfTraining(id).attempt
                     response <- result match
                         case Right(models) => Ok(models.toList)
-                        case Left(error) => errorHandling(error)
+                        case Left(error) => ErrorHandler(error)
                 yield response
                 case ctx @ POST -> Root as user => for
-                    form <- ctx.req.as[ReportIssueForm]
-                    result <- execute(issueReport(user.id, form.trainingId, form.reason)).attempt
+                    parseResult <- ctx.req.as[ReportIssueForm].attempt
+                    result <- parseResult.toOption match
+                        case Some(form) => UseCase[F].issueReport(user.id, form.training, form.reason).attempt
+                        case None => InfrastructureError.ParseError(Exception("Could not parse input")).asLeft.pure
                     response <- result match
                         case Right(()) => Ok("Report succesfully issued")
-                        case Left(error) => errorHandling(error)
+                        case Left(error) => ErrorHandler(error)
                 yield response
             }
 
         def privilegedRoutes = 
             AuthedRoutes.of[AuthModel, F] {
                 case POST -> Root / id / "accept" as _ => 
-                    execute(acceptReport(id))
+                    UseCase[F]
+                    .acceptReport(id)
                     .flatMap { Ok(_) }
-                    .recoverWith(errorHandling)
+                    .recoverWith(ErrorHandler)
                 case POST -> Root / id / "reject" as _ => 
-                    execute(rejectReport(id))
+                    UseCase[F]
+                    .rejectReport(id)
                     .flatMap { Ok(_) }
-                    .recoverWith(errorHandling)
+                    .recoverWith(ErrorHandler)
             }
         
         Router("/" -> (standardAccess(config))(unprivilegedRoutes), "/admin" -> (adminAccess(config))(privilegedRoutes))
@@ -111,6 +89,9 @@ object ReportService {
         import dsl.*
         
         HttpRoutes.of[F] {
-            case GET -> Root / "stream" => builder.build(stream.map(s => Text(s.asJson.spaces2)), _.void)
+            case GET -> Root / "stream" => builder.build(
+                stream.map(s => Text(s.asJson.spaces2)), 
+                _.void
+            )
         }
 }
