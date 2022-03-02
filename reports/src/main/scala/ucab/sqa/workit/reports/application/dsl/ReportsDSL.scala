@@ -61,7 +61,6 @@ object ReportsDSL:
 
     def reportsOfTraining(id: String): ReportAction[Vector[ReportModel]] = for
         vid <- of(Training(id))
-        _ = println(id)
         result <- lift(getReportByTraining(id))
     yield result
 

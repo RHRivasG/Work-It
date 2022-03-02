@@ -15,6 +15,8 @@ import cats.free.Free
 import cats.data.EitherK
 import cats.Monad
 import scala.annotation.nowarn
+import cats.effect.kernel.Resource
+import java.util.concurrent.Executors
 
 type CompleteLang[F[_]] = [A] =>> EitherK[ExecutionSemantic, F, A]
 type Extract[F[_]] = [A] =>> A match
@@ -41,5 +43,6 @@ class EffectExecution[F[_], G[_]: Async: Parallel](ec: ExecutionContext, executo
             .void
 
 object EffectExecution:
-    def apply[F[_], G[_]: Async: Parallel](ec: ExecutionContext, executor: F  ~> G) = 
-        (new EffectExecution(ec, executor)) or executor
+    def apply[F[_], G[_]: Async: Parallel]: Resource[G, (F  ~> G) => (CompleteLang[F] ~> G)] = for
+        ece <- Resource.eval { Async[G].delay { ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(32)) } }
+    yield executor => (new EffectExecution(ece, executor)) or executor

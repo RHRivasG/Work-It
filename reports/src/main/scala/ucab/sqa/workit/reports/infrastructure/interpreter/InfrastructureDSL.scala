@@ -79,6 +79,7 @@ object InfrastructureDSL:
         )
         () <- logResult(result, _ => f"Store operation successfull")
         () <- result.fail
+        _  <- Left(Exception("Planted exception")).fail
         () <- notifyStream.background.dsl
     yield ()
 
@@ -86,8 +87,8 @@ object InfrastructureDSL:
         (result, _) <- logAction(deleteReport(id), f"Accepting report with id $id")
         () <- logResult(result, _ => f"Delete operation successfull")
         () <- result.fail
+        () <- publish(PublisherEvent.ReportAcceptedEvent(training)).dsl
         () <- notifyStream.background.dsl
-        () <- publish(PublisherEvent.ReportAcceptedEvent(training)).background.dsl
     yield ()
 
     def rejectReport(id: UUID) = for

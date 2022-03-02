@@ -4,112 +4,75 @@ import cats.*
 import cats.syntax.all.*
 import cats.effect.std.Console
 import cats.implicits.*
-import doobie.*
-import doobie.hikari.*
-import doobie.implicits.*
-import pureconfig.generic.semiauto
-import fs2.Stream
-import cats.effect.IO
-import org.http4s.ember.server.EmberServerBuilder
 import cats.effect.IOApp
-import com.comcast.ip4s.ipv4
-import com.comcast.ip4s.port
-import com.typesafe.scalalogging.Logger
-import cats.effect.kernel.Resource
+import cats.data.Kleisli
+import pureconfig.ConfigReader
+import cats.effect.IO
+import cats.effect.kernel.Ref
+import cats.mtl.Tell
 import cats.effect.kernel.Async
-import scala.concurrent.duration.Duration
-import cats.effect.ExitCode
-import doobie.util.transactor.Transactor
-import ucab.sqa.workit.reports.application.*
-import ucab.sqa.workit.reports.application.models.ReportModel
-import ucab.sqa.workit.reports.infrastructure.InfrastructureError
-import ucab.sqa.workit.reports.infrastructure.http.services.ReportService
-import ucab.sqa.workit.reports.infrastructure.log.`scala-logging`.ScalaLogging
-import ucab.sqa.workit.reports.infrastructure.db.lookup.sql.SqlLookup
+import ucab.sqa.workit.reports.application.UseCase
+import ucab.sqa.workit.reports.infrastructure.http.middlewares.authentication.Configuration
 import ucab.sqa.workit.reports.infrastructure.interpreter.*
+import ucab.sqa.workit.reports.infrastructure.InfrastructureError 
+import ucab.sqa.workit.reports.infrastructure.InfrastructureCompiler
+import ucab.sqa.workit.reports.infrastructure.db.SqlDatabase
 import ucab.sqa.workit.reports.infrastructure.notifications.queue.NotificationQueue
 import ucab.sqa.workit.reports.infrastructure.publisher.grpc.GrpcPublisher
-import ucab.sqa.workit.reports.infrastructure.log.*
+import ucab.sqa.workit.reports.infrastructure.log.`scala-logging`.ScalaLogging
 import ucab.sqa.workit.reports.infrastructure.execution.effect.EffectExecution
-import ucab.sqa.workit.reports.infrastructure.shared.*
-import ucab.sqa.workit.reports.infrastructure.db.store.sql.SqlStore
-import ucab.sqa.workit.reports.infrastructure.db.configuration.Configuration as DatabaseConfiguration
-import ucab.sqa.workit.reports.infrastructure.publisher.grpc.Configuration as GrpcConfiguration
-import ucab.sqa.workit.reports.infrastructure.http.middlewares.authentication.Configuration as AuthConfiguration
-import ucab.sqa.workit.reports.infrastructure.InfrastructureCompiler
-import ucab.sqa.workit.probobuf.aggregator.ServiceAggregatorFs2Grpc
-import org.http4s.server.Router
+import ucab.sqa.workit.reports.infrastructure.InfrastructureError
+import ucab.sqa.workit.reports.infrastructure.http.services.ReportService
+import ucab.sqa.workit.reports.infrastructure.transaction.*
+import cats.effect.kernel.Sync
+import cats.effect.ExitCode
 import pureconfig.ConfigSource
-import pureconfig.ConfigReader
-import scala.concurrent.ExecutionContextExecutorService
-import doobie.util.ExecutionContexts
-import java.util.concurrent.Executors
-import scala.concurrent.ExecutionContext
-import cats.free.FreeApplicative
-import cats.effect.std.Queue
-import fs2.concurrent.Topic
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder
-import fs2.grpc.syntax.all.*
+import com.comcast.ip4s.*
+import org.http4s.ember.server.EmberServerBuilder
+import org.http4s.server.Router
+import scala.concurrent.duration.Duration
+import cats.effect.kernel.Resource
+
+type StreamedUseCase[F[_]] = UseCase[[A] =>> fs2.Stream[F, A], F]
+type InfrastructureResult[A] = Kleisli[InfrastructureEffect, Ref[InfrastructureEffect, InfrastructureEffect[Unit]], A]
+type InfrastructureEffect[A] = IO[A]
 
 object Main extends IOApp {
-  import ucab.sqa.workit.reports.application.*
-  type StreamedUseCase[F[_]] = UseCase[[A] =>> Stream[F, A], F]
 
-  given ConfigReader[AuthConfiguration] = ConfigReader.forProduct1("secret-key")(AuthConfiguration.apply)
+  given ConfigReader[Configuration] = ConfigReader.forProduct1("secret-key")(Configuration.apply)
 
-  def factory[F[_]: Async: Console: Parallel] = for
-      // Dependencies
-      //// Execution Contexts
-      qce <- Resource.eval { Async[F].delay { ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(32)) } }
-      ece <- Resource.eval { Async[F].delay { ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(32)) } }
-      //// Configurations
-      dbConfig <- DatabaseConfiguration[F]
-      serviceAggConfiguration <- GrpcConfiguration[F]
-      //// Database Related
-      transactor <- HikariTransactor.newHikariTransactor[F](
-        dbConfig.driver,
-        dbConfig.url,
-        dbConfig.username,
-        dbConfig.password,
-        qce
-      )
-      //// Notification Related
-      topic <- Resource.eval { Topic[F, Vector[ReportModel]] }
-      queue <- Resource.eval { Queue.unbounded[F, Vector[ReportModel]] }
-      //// Grpc Related
-      serviceAggChannel <- NettyChannelBuilder.forAddress(serviceAggConfiguration.host, serviceAggConfiguration.port).resource[F]
-      serviceAgg <- ServiceAggregatorFs2Grpc.stubResource(serviceAggChannel)
-
-      // Interpreters
-      lookupInterpreter = SqlLookup[F](transactor)
-      storeInterpreter = SqlStore[F](transactor)
-      notificationInterpreter = NotificationQueue[F](topic, queue)
-      publisherInterpreter = GrpcPublisher[F](serviceAgg)
-      logInterpreter = ScalaLogging[F](Logger("AppLogger"))
-      //// Composed Interpreter
+  def factory[F[_]: Async: Parallel: [F[_]] =>> Tell[F, F[Unit]]] = for
+      // Build Interpreters
+      (lookupInterpreter, storeInterpreter) <- SqlDatabase[F]
+      notificationInterpreter <- NotificationQueue[F]
+      publisherInterpreter <- GrpcPublisher[F]
+      logInterpreter = ScalaLogging[F]
+      // Composed Interpreter
       composedInterpreter = 
         publisherInterpreter    or (
         notificationInterpreter or (
         logInterpreter          or (
         storeInterpreter        or (
         lookupInterpreter))))
-      //// Interpreter
+      // Complete Interpreter
+      finalInterpreter <- EffectExecution.apply <*> composedInterpreter.pure
+      // Interpreter
       interpreter = new (InfrastructureLanguage ~> F):
         def apply[A](f: InfrastructureLanguage[A]) = f
           .value
-          .foldMap(EffectExecution(ece, composedInterpreter))
+          .foldMap(finalInterpreter)
           .rethrow
 
-  yield UseCase.build(notificationInterpreter.stream, InfrastructureError.InternalError(_), InfrastructureCompiler, interpreter)
+  yield (notificationInterpreter.stream, interpreter)
 
   def server[F[_]: Async: Console: StreamedUseCase] = {
     for
-      config <- Stream.eval { 
-        ConfigSource.default.at("jwt").load[AuthConfiguration] match
+      config <- fs2.Stream.eval { 
+        ConfigSource.default.at("jwt").load[Configuration] match
           case Right(config) => config.pure
           case Left(err) => Exception("Bad authentication configuration").raiseError
       }
-      code <- Stream.resource(
+      code <- fs2.Stream.resource(
         EmberServerBuilder
           .default[F]
           .withHost(ipv4"0.0.0.0")
@@ -126,11 +89,14 @@ object Main extends IOApp {
     yield code
   }.drain
 
-  def run(args: List[String]): InfrastructureResult[ExitCode] =
-    // Run Program
-    factory[InfrastructureResult].use { service =>
-      given UseCase[[A] =>> Stream[InfrastructureResult, A], InfrastructureResult] = service
-
-      server[InfrastructureResult].compile.drain.as(ExitCode.Success)
-    }
+  // Run Program
+  def run(args: List[String]): InfrastructureEffect[ExitCode] = factory[InfrastructureResult].mapK(Transaction.executeK).use { case (stream, interpreter) =>
+    given StreamedUseCase[InfrastructureEffect] = UseCase.build(
+      stream.translate(Transaction.executeK), 
+      InfrastructureError.InternalError(_), 
+      InfrastructureCompiler, 
+      interpreter andThen Transaction.executeK
+    )
+    server[InfrastructureEffect].compile.drain.as(ExitCode.Success)
+  }
 }

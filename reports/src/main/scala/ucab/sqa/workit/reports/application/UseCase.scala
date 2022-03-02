@@ -22,6 +22,18 @@ sealed trait UseCase[G[_], F[_]]:
     def rejectReport(id: String): F[Unit]
     def reportStream: G[Vector[ReportModel]]
 
+    def mapK[T[_]](f: F ~> T) = {
+        val last = this
+        new UseCase[G, T]:
+            def report(id: String) = f(last.report(id))
+            def reports = f(last.reports)
+            def reportsOfTraining(id: String) = f(last.reportsOfTraining(id))
+            def issueReport(issuer: String, training: String, reason: String) = f(last.issueReport(issuer, training, reason))
+            def acceptReport(id: String) = f(last.acceptReport(id))
+            def rejectReport(id: String) = f(last.rejectReport(id))
+            def reportStream = last.reportStream
+    }
+
 object UseCase:
     def apply[G[_], F[_]](using uc: UseCase[G, F]) = uc
     def build[K[_], G[_], F[_]: [F[_]] =>> MonadError[F, Throwable]](
