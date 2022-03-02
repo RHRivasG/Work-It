@@ -9,14 +9,13 @@ import java.util.UUID
 import doobie.util.Get
 import scala.util.Try
 import cats.effect.kernel.Async
-import cats.effect.std.Console
 import doobie.util.fragment.Fragment
 import ucab.sqa.workit.reports.infrastructure.db.lookup.LookupAction
 import ucab.sqa.workit.reports.application.models.ReportModel
 import doobie.util.Put
 import ucab.sqa.workit.reports.application.queries.ReportQuery
 
-final class SqlLookup[F[_]: Async: Console](xa: Transactor[F]) extends (LookupAction ~> F):
+final class SqlLookup[F[_]: Async](xa: Transactor[F]) extends (LookupAction ~> F):
     opaque type DbModel = (UUID, UUID, String, UUID)
     object DbModel:
         def apply(model: (UUID, UUID, String, UUID)): DbModel = model
@@ -60,12 +59,10 @@ final class SqlLookup[F[_]: Async: Console](xa: Transactor[F]) extends (LookupAc
             sql"""SELECT * FROM "reports" WHERE "reports"."id" = ${id.toString}::uuid"""
             .toReportModelOption(xa)
             .attempt
-        case LookupAction.GetReportsByTraining(id) => {
+        case LookupAction.GetReportsByTraining(id) =>
             sql"""SELECT * FROM "reports" WHERE "reports"."trainingId" = $id::uuid"""
             .toReportModelCollection(xa)
             .attempt
-        }
-     
         case LookupAction.GetReportIssuedByUserOnTraining(id, trainingId) =>
             sql"""SELECT * FROM "reports" WHERE "reports"."trainingId" = $trainingId::uuid AND "reports"."issuerId" = $id::uuid"""
             .toReportModelOption(xa)

@@ -8,6 +8,7 @@ import cats.effect.kernel.Async
 import ucab.sqa.workit.probobuf.aggregator.ServiceAggregatorFs2Grpc
 import ucab.sqa.workit.reports.infrastructure.publisher.PublisherAction
 import ucab.sqa.workit.reports.infrastructure.publisher.PublisherEvent
+import ucab.sqa.workit.reports.infrastructure.publisher.grpc.Configuration
 import io.grpc.Metadata
 import ucab.sqa.workit.probobuf.aggregator.RequestServiceMessage
 import ucab.sqa.workit.probobuf.fitness.trainingAPIFs2Grpc
@@ -26,3 +27,11 @@ class GrpcPublisher[F[_]: Async](serviceAgg: ServiceAggregatorFs2Grpc[F, Metadat
                 client <- trainingAPIFs2Grpc.stubResource(channel)
             yield client).use { client => client.delete(TrainingDeleted(trainingId.toString), Metadata()) }
         } yield ()
+    
+object GrpcPublisher:
+    def apply[F[_]: Async] = for
+      serviceAggConfiguration <- Configuration[F]
+      serviceAggChannel <- NettyChannelBuilder.forAddress(serviceAggConfiguration.host, serviceAggConfiguration.port).resource[F]
+      serviceAgg <- ServiceAggregatorFs2Grpc.stubResource(serviceAggChannel)
+      publisherInterpreter = new GrpcPublisher[F](serviceAgg)
+    yield publisherInterpreter

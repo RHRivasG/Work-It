@@ -36,7 +36,7 @@ object InfrastructureCompiler extends (ReportInput ~> InfrastructureLanguage):
                 InfrastructureDSL.findReport(id)
             case ReportQuery.GetAllReports => 
                 InfrastructureDSL.reports
-            case ReportQuery.GetReportIssuedByUserOnTraining(trainingId, userId) => 
+            case ReportQuery.GetReportIssuedByUserOnTraining(userId, trainingId) => 
                 InfrastructureDSL.reportIssuedByUserOnTraining(userId, trainingId)
     
     private def commandsInterpreter = new (ReportEvent ~> InfrastructureLanguage):

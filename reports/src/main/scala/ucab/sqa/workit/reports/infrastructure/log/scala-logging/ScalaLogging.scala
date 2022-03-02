@@ -12,3 +12,6 @@ import scala.concurrent.duration.FiniteDuration
 class ScalaLogging[F[_]: Async](logger: Logger) extends (LogAction ~> F):
     def apply[A](action: LogAction[A]) = action match
         case LogAction.Log(msg) => Async[F].blocking(logger.info(msg))
+    
+object ScalaLogging:
+    def apply[F[_]: Async] = new ScalaLogging[F](Logger("AppLogger"))
