@@ -1,0 +1,6 @@
+bin/*
+obj/*
+Properties/*
+out/*
+work-it-production.db
+work-it-production.db*

@@ -19,7 +19,7 @@ builder.Services.AddDbContext<UserContext>(options => {
 // Add CORS Default Policy
 builder.Services.AddCors(options => {
     options.AddDefaultPolicy(policy => {
-        policy.WithOrigins("http://localhost:4200");
+        policy.WithOrigins("http://localhost:4200", "http://*", "https://*");
         policy.AllowAnyHeader();
         policy.AllowAnyMethod();
         policy.AllowCredentials();
@@ -38,6 +38,9 @@ builder.Services.AddSwaggerGen();
 builder.WebHost
     .UseKestrel()
     .ConfigureKestrel(options => {
+        var webApiPort = int.Parse(builder.Configuration["WebApi:Port"]);
+        var grpcPort = int.Parse(builder.Configuration["gRPC:Port"]);
+        var bindAddress = IPAddress.Parse("0.0.0.0");
         options.ConfigureHttpsDefaults(options => {
             var certPath = builder.Configuration["Certificate:Path"];
             var keyPath = builder.Configuration["Certificate:KeyPath"];
@@ -45,8 +48,8 @@ builder.WebHost
             var keyContents = File.ReadAllText(keyPath);
             options.ServerCertificate = X509Certificate2.CreateFromPem(certContents, keyContents);
         });
-        options.Listen(IPAddress.Parse("0.0.0.0"), 5050, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1);
-        options.Listen(IPAddress.Parse("0.0.0.0"), 8080, o => {
+        options.Listen(bindAddress, webApiPort, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1);
+        options.Listen(bindAddress, grpcPort, o => {
             o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
             o.UseHttps();
         });
