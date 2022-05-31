@@ -26,6 +26,10 @@ docker-compose up -f  aggregator.yml
 ```
 
 ```shell
+docker-compose up -f  auth.yml
+```
+
+```shell
 docker-compose up -f  fitness-dimension.yml
 ```
 
@@ -41,7 +45,7 @@ docker-compose up -f  social-dimension.yml
 
 ### Containers
 
-![Diagramas-Contenedores drawio](https://user-images.githubusercontent.com/51801113/170878342-31a1f23e-815b-41fd-bec1-c3ddb7842320.png)
+![Diagramas-Contenedores drawio(1)](https://user-images.githubusercontent.com/51801113/171081980-127c91e7-bea4-4889-b0f0-c13c4363d00c.png)
 
 ### Components
 
@@ -60,3 +64,7 @@ docker-compose up -f  social-dimension.yml
 #### Fitness API
 
 ![Diagramas-Componentes Fitness API drawio](https://user-images.githubusercontent.com/51801113/170885725-637a31ce-5db2-4709-b896-474e2ca38ac8.png)
+
+#### Authetication
+
+![Diagramas-Componentes Autentication drawio](https://user-images.githubusercontent.com/51801113/171080405-8470b7a3-7be8-43b9-89e5-94d61a968d9a.png)
