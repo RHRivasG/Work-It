@@ -1,4 +1,8 @@
-authority = "social"
+authority = "auth"
+
+[servers.auth]
+from = "/api/auth"
+to = "http://localhost:5050"
 
 [servers.social]
 from = "/api/social"

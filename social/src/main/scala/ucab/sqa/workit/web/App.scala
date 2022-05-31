@@ -34,6 +34,7 @@ import akka.actor.DeadLetter
 import akka.actor.typed.eventstream.EventStream
 import akka.actor.typed.receptionist.ServiceKey
 import ucab.sqa.workit.web.infrastructure.services.FitnessDimensionService
+import ucab.sqa.workit.web.infrastructure.services.AuthDimensionService
 import ucab.sqa.workit.application.participants.ParticipantQuery
 import ucab.sqa.workit.application.participants.ParticipantCommand
 import ucab.sqa.workit.web.participants.ParticipantStreamMessage
@@ -107,6 +108,11 @@ object App {
       )
 
       val discovery = Discovery(system).discovery
+
+      implicit val authActor = context.spawn(
+        AuthDimensionService(discovery),
+        "AuthDimensionService"
+      )
 
       implicit val fitnessActor = context.spawn(
         FitnessDimensionService(discovery),

@@ -17,6 +17,7 @@ import ucab.sqa.workit.web.trainers.TrainerStreamMessage
 import ucab.sqa.workit.web.infrastructure.services.FitnessDimensionService
 import cats.data.EitherT
 import ucab.sqa.workit.web.trainers.ResendTrainers
+import ucab.sqa.workit.web.infrastructure.services.AuthDimensionService
 
 object Infrastructure {
   private type DatabaseRequest = Request.TrainerDatabaseRequest
@@ -47,12 +48,14 @@ object Infrastructure {
   )(implicit
       ref: ActorRef[DatabaseRequest],
       fitness: ActorRef[FitnessDimensionService.Command],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       stream: ActorRef[TrainerStreamMessage],
       system: ActorSystem[_],
       to: Timeout
   ) = (for {
     _ <- EitherT(ref.ask(Request.CreateTrainer(id, name, password, preferences, _)))
     _ <- EitherT.pure[Future, Error](fitness ! FitnessDimensionService.ReassignRoutinesTo(id.toString))
+    _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.CommitMoveToTrainer(id))
     _ <- EitherT.pure[Future, Error](stream ! ResendTrainers())
   } yield ()).value
 
@@ -63,9 +66,17 @@ object Infrastructure {
       ref: ActorRef[DatabaseRequest],
       stream: ActorRef[TrainerStreamMessage],
       system: ActorSystem[_],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       to: Timeout
   ) = (for {
     _ <- EitherT(ref.ask(Request.UpdateTrainer(id, name, _)))
+    user <- EitherT(ref.ask(Request.GetTrainer(id, _)))
+    _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.UpdateParticipant(
+        user.id.id, 
+        user.name.name, 
+        user.password.password, 
+        user.preferences.preferences.map(_.tag).toArray
+    ))
     _ <- EitherT.pure[Future, Error](stream ! ResendTrainers())
   } yield ()).value
 
@@ -75,19 +86,33 @@ object Infrastructure {
   )(implicit
       ref: ActorRef[DatabaseRequest],
       system: ActorSystem[_],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       to: Timeout
-  ) = ref.ask(Request.ChangeTrainerPassword(id, password, _))
+  ) = (
+      for {
+        _ <- EitherT(ref.ask(Request.ChangeTrainerPassword(id, password, _)))
+        user <- EitherT(ref.ask(Request.GetTrainer(id, _)))
+        _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.UpdateParticipant(
+            user.id.id, 
+            user.name.name, 
+            user.password.password, 
+            user.preferences.preferences.map(_.tag).toArray
+        ))
+      } yield ()
+    ).value
 
   def deleteTrainerHandler(id: UUID)(implicit
       ref: ActorRef[DatabaseRequest],
       system: ActorSystem[_],
       fitness: ActorRef[FitnessDimensionService.Command],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       stream: ActorRef[TrainerStreamMessage],
       to: Timeout
   ) = (for {
     _ <- EitherT(ref.ask(Request.DeleteTrainer(id, _)))
     _ <- EitherT.pure[Future, Error](fitness ! FitnessDimensionService.DeleteRoutinesOf(id.toString))
     _ <- EitherT.pure[Future, Error](fitness ! FitnessDimensionService.DeleteTrainingsOf(id.toString))
+    _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.Unregister(id))
     _ <- EitherT.pure[Future, Error](stream ! ResendTrainers())
   } yield ()).value
 
@@ -97,10 +122,18 @@ object Infrastructure {
   )(implicit
       ref: ActorRef[DatabaseRequest],
       stream: ActorRef[TrainerStreamMessage],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       system: ActorSystem[_],
       to: Timeout
   ) = (for {
     _ <- EitherT(ref.ask(Request.AddTrainerPreferences(id, preferences, _)))
+    user <- EitherT(ref.ask(Request.GetTrainer(id, _)))
+    _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.UpdateParticipant(
+        user.id.id, 
+        user.name.name, 
+        user.password.password, 
+        user.preferences.preferences.map(_.tag).toArray
+    ))
     _ <- EitherT.pure[Future, Error](stream ! ResendTrainers())
   } yield ()).value
 
@@ -110,10 +143,18 @@ object Infrastructure {
   )(implicit
       ref: ActorRef[DatabaseRequest],
       stream: ActorRef[TrainerStreamMessage],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       system: ActorSystem[_],
       to: Timeout
   ) = (for {
     _ <- EitherT(ref.ask(Request.RemoveTrainerPreferences(id, preferences, _)))
+    user <- EitherT(ref.ask(Request.GetTrainer(id, _)))
+    _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.UpdateParticipant(
+        user.id.id, 
+        user.name.name, 
+        user.password.password, 
+        user.preferences.preferences.map(_.tag).toArray
+    ))
     _ <- EitherT.pure[Future, Error](stream ! ResendTrainers())
   } yield ()).value
 }
