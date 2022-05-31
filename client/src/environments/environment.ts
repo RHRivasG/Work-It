@@ -11,7 +11,8 @@ const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjZTE3NGE4Ni03MWY4
 export const environment = {
   production: false,
   socialApiUrl: 'http://localhost:5000',
-  authApiUrl: 'http://localhost:3000',
+  authApiUrl: 'http://localhost:5050',
+  logoutApiUrl: 'http://localhost:3000',
   socialStreamingApiUrl: 'ws://localhost:5000',
   fitnessApiUrl: 'http://localhost:8080',
   authInterceptor: fixedAuthBuilder.authProvider,

@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "ucab.sqa.workit.protobuf";
+option csharp_namespace = "AuthenticationService.Grpc";
+
+package ucab.sqa.workit.protobuf;
+
+message UserId {
+    string id = 1;
+}
+
+message ChangeRole {
+    UserId previousId = 1;
+    UserId currentId = 2;
+}
+
+message UserInformation { 
+    string id = 1;
+    string username = 2;
+    string password = 3;
+    repeated string preferences = 4;
+}
+
+message UserRole {
+    string value = 1;
+}
+
+message CompleteUserInformation {
+    UserInformation information = 1;
+    UserRole role = 2;
+}
+
+message AuthenticationResult {
+    int32 resultType = 1;
+    string errorMessage = 2;
+    string authenticationToken = 3;
+}
+
+message Void {}
+
+service Authenticator {
+    rpc RegisterParticipant(UserInformation) returns (Void);
+    rpc SetRoleToTrainer(ChangeRole) returns (Void);
+    rpc UpdateUser(CompleteUserInformation) returns (Void);
+    rpc UnregisterUser(UserId) returns (Void);
+}

@@ -24,7 +24,7 @@ export class AdminLoginComponent implements OnInit {
 
   login() {
     this.inLogin = true
-    this.http.post(environment.socialApiUrl + "/login/admin/" + this.loginForm.get('token')?.value, {}, { responseType: 'text' })
+    this.http.post(environment.authApiUrl + "/login/admin/" + this.loginForm.get('token')?.value, {}, { responseType: 'text' })
     .subscribe(
       () => {
         this.inLogin = false

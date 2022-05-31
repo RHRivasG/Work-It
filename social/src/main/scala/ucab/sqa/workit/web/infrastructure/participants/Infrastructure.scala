@@ -19,6 +19,7 @@ import akka.actor.typed.ActorSystem
 import akka.util.Timeout
 import scala.util.Success
 import cats.data.EitherT
+import ucab.sqa.workit.web.infrastructure.services.AuthDimensionService
 
 object Infrastructure {
   private type DatabaseRequest = ParticipantDatabaseRequest
@@ -55,11 +56,13 @@ object Infrastructure {
   )(implicit
       ref: ActorRef[DatabaseRequest],
       stream: ActorRef[ParticipantStreamMessage],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       system: ActorSystem[_],
       to: Timeout
   ) = (
     for {
       _ <- EitherT(ref.ask(database.Request.CreateParticipant(id, name, password, preferences, _)))
+      _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.RegisterParticipant(id, name, password, preferences.toArray))
       _ <- EitherT.pure[Future, Error](stream ! ResendParticipants()) 
     } yield ()
   ).value
@@ -68,32 +71,50 @@ object Infrastructure {
   def updateHandler(id: UUID, name: String)(implicit
       ref: ActorRef[DatabaseRequest],
       stream: ActorRef[ParticipantStreamMessage],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       system: ActorSystem[_],
       to: Timeout
   ) = (
     for {
       _ <- EitherT(ref.ask(database.Request.UpdateParticipant(id, name, _)))
+      user <- EitherT(ref.ask(database.Request.GetParticipant(id, _)))
+      _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.UpdateParticipant(
+              user.id.id, 
+              user.name.name, 
+              user.password.password, 
+              user.preferences.preferences.map(_.tag).toArray
+      ))
       _ <- EitherT.pure[Future, Error](stream ! ResendParticipants()) 
     } yield ()
   ).value
 
   def passwordChangedHandler(id: UUID, password: String)(implicit
       ref: ActorRef[DatabaseRequest],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       system: ActorSystem[_],
       to: Timeout
-  ) = ref.ask(
-    database.Request.ChangeParticipantPassword(id, password, _)
-  )
+  ) = (for {
+    _ <- EitherT(ref.ask(database.Request.ChangeParticipantPassword(id, password, _)))
+    user <- EitherT(ref.ask(database.Request.GetParticipant(id, _)))
+    _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.UpdateParticipant(
+          user.id.id, 
+          user.name.name, 
+          user.password.password, 
+          user.preferences.preferences.map(_.tag).toArray
+      ))
+  } yield ()).value
 
   def deleteHandler(id: UUID)(implicit
       ref: ActorRef[DatabaseRequest],
       stream: ActorRef[ParticipantStreamMessage],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       fitness: ActorRef[FitnessDimensionService.Command],
       system: ActorSystem[_],
       to: Timeout
   ) = (
     for {
       _ <- EitherT(ref.ask(database.Request.DeleteParticipant(id, _)))
+      _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.Unregister(id))
       _ <- EitherT.pure[Future, Error](fitness ! FitnessDimensionService.DeleteRoutinesOf(id.toString))
       _ <- EitherT.pure[Future, Error](stream ! ResendParticipants())
     } yield ()
@@ -101,12 +122,20 @@ object Infrastructure {
 
   def preferencesAddedHandler(id: UUID, prefs: List[String])(implicit
       ref: ActorRef[DatabaseRequest],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       stream: ActorRef[ParticipantStreamMessage],
       system: ActorSystem[_],
       to: Timeout
   ) = (
     for {
       _ <- EitherT(ref.ask(database.Request.AddParticipantPreferences(id, prefs, _)))
+      user <- EitherT(ref.ask(database.Request.GetParticipant(id, _)))
+      _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.UpdateParticipant(
+            user.id.id, 
+            user.name.name, 
+            user.password.password, 
+            user.preferences.preferences.map(_.tag).toArray
+        ))
       _ <- EitherT.pure[Future, Error](stream ! ResendParticipants())
     } yield ()
   ).value
@@ -114,12 +143,20 @@ object Infrastructure {
   def preferencesRemovedHandler(id: UUID, prefs: List[String])(implicit
       ref: ActorRef[DatabaseRequest],
       stream: ActorRef[ParticipantStreamMessage],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       system: ActorSystem[_],
       to: Timeout
   ) = (
     for {
       _ <- EitherT(ref.ask(database.Request.RemoveParticipantPreferences(id, prefs, _)))
       _ <- EitherT.pure[Future, Error](stream ! ResendParticipants())
+      user <- EitherT(ref.ask(database.Request.GetParticipant(id, _)))
+      _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.UpdateParticipant(
+            user.id.id, 
+            user.name.name, 
+            user.password.password, 
+            user.preferences.preferences.map(_.tag).toArray
+        ))
     } yield ()
   ).value
 
@@ -149,6 +186,7 @@ object Infrastructure {
       stream: ActorRef[ParticipantStreamMessage],
       ref: ActorRef[DatabaseRequest],
       system: ActorSystem[_],
+      auth: ActorRef[AuthDimensionService.AuthDimensionMessage],
       to: Timeout
   ) = {
     (
@@ -157,6 +195,7 @@ object Infrastructure {
         _ <- EitherT(ref.ask(database.Request.DeleteParticipant(participantId, _)))
         _ <- EitherT.pure[Future, Error](fitness ! FitnessDimensionService.ReassignRoutinesOf(participantId.toString))
         _ <- EitherT.pure[Future, Error](actorRef ! Notification(CreateTrainerCommand(name, password, preferences)))
+        _ <- EitherT.pure[Future, Error](auth ! AuthDimensionService.PrepareMoveToTrainer(participantId))
         _ <- EitherT.pure[Future, Error](stream ! ResendParticipants())
       } yield ()
     ).value

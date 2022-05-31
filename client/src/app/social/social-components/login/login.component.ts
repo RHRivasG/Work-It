@@ -1,19 +1,12 @@
-import { CDK_CONNECTED_OVERLAY_SCROLL_STRATEGY_PROVIDER_FACTORY } from '@angular/cdk/overlay/overlay-directives';
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { ThisReceiver } from '@angular/compiler';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { of } from 'rxjs';
-import { catchError, filter, map, mapTo, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { IdentityProvider, WI_IDENTITY_PROVIDER } from 'src/app/services/identity-provider';
 import { environment } from 'src/environments/environment';
-
-type LoginResponse = {
-  id: string | null
-  status: number
-}
 
 @Component({
   selector: 'wi-login',
@@ -55,19 +48,19 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams
-    .subscribe(({ as }) => {
-      if (as != 'participant' && as != 'trainer') {
-        this.router.navigate(
-          [],
-          {
-            relativeTo: this.route,
-            queryParams: { as: 'participant' },
-            replaceUrl: true
-          })
-      } else {
-        this.as = as
-      }
-    })
+      .subscribe(({ as }) => {
+        if (as != 'participant' && as != 'trainer') {
+          this.router.navigate(
+            [],
+            {
+              relativeTo: this.route,
+              queryParams: { as: 'participant' },
+              replaceUrl: true
+            })
+        } else {
+          this.as = as
+        }
+      })
   }
 
   errorsOf(control: string) {
@@ -79,27 +72,27 @@ export class LoginComponent implements OnInit {
     let credentials = `${this.loginForm.get('username')?.value || ''}:${this.loginForm.get('password')?.value || ''}`
     this.loading = true
     this.status = 0
-    this.http.post(environment.socialApiUrl + "/login/" + this.as, 'Login', {
+    this.http.post(environment.authApiUrl + "/login/" + this.as, 'Login', {
       headers: {
         'Authorization': 'Basic ' + btoa(credentials)
       },
       responseType: 'text',
       observe: 'response',
     })
-    .pipe(
-      map(r => ({ status: r.status })),
-      switchMap(({ status }) => {
-        return this.identityProvider.identity.pipe(map(id => ({ id, status })))
-      }),
-      catchError((e: HttpErrorResponse) => {
-        return of({ id: null, status: e.status || 500 })
-      })
-    )
-    .subscribe(({ status, id }) => {
-      this.loading = false
-      this.status = status
+      .pipe(
+        map(r => ({ status: r.status })),
+        switchMap(({ status }) => {
+          return this.identityProvider.identity.pipe(map(id => ({ id, status })))
+        }),
+        catchError((e: HttpErrorResponse) => {
+          return of({ id: null, status: e.status || 500 })
+        })
+      )
+      .subscribe(({ status, id }) => {
+        this.loading = false
+        this.status = status
 
-      if (id) this.router.navigate(['/social/profile/', id], { queryParams: { as: this.as } })
-    })
+        if (id) this.router.navigate(['/social/profile/', id], { queryParams: { as: this.as } })
+      })
   }
 }

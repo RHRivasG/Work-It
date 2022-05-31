@@ -5,7 +5,8 @@ export const environment = {
   production: true,
   socialApiUrl: '/api/social',
   fitnessApiUrl: '/api/fitness',
-  authApiUrl: '/api',
+  authApiUrl: '/api/auth',
+  logoutApiUrl: '/api',
   socialStreamingApiUrl: 'ws://localhost:5000',
   authInterceptor: AuthInterceptor,
   identityProviderService: SynchronizedIdentityProviderService

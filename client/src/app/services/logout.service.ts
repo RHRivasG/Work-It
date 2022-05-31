@@ -14,7 +14,7 @@ export class LogoutService {
   logout() {
     if (environment.production)
       this.client
-      .delete(environment.authApiUrl + "/logout", { responseType: 'text' })
+      .delete(environment.logoutApiUrl + "/logout", { responseType: 'text' })
       .subscribe(() => {
         localStorage.setItem("identity", "")
         this.router.navigate(['/social', 'auth', 'login'])
