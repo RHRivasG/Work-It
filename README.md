@@ -41,7 +41,7 @@ docker-compose up -f  social-dimension.yml
 
 ### Containers
 
-![Diagramas-Contenedores drawio](https://user-images.githubusercontent.com/51801113/170878342-31a1f23e-815b-41fd-bec1-c3ddb7842320.png)
+![Diagramas-Contenedores drawio(1)](https://user-images.githubusercontent.com/51801113/171081980-127c91e7-bea4-4889-b0f0-c13c4363d00c.png)
 
 ### Components
 
