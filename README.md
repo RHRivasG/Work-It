@@ -60,3 +60,7 @@ docker-compose up -f  social-dimension.yml
 #### Fitness API
 
 ![Diagramas-Componentes Fitness API drawio](https://user-images.githubusercontent.com/51801113/170885725-637a31ce-5db2-4709-b896-474e2ca38ac8.png)
+
+#### Authetication
+
+![Diagramas-Componentes Autentication drawio](https://user-images.githubusercontent.com/51801113/171080405-8470b7a3-7be8-43b9-89e5-94d61a968d9a.png)
