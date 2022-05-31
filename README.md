@@ -26,6 +26,10 @@ docker-compose up -f  aggregator.yml
 ```
 
 ```shell
+docker-compose up -f  auth.yml
+```
+
+```shell
 docker-compose up -f  fitness-dimension.yml
 ```
 
