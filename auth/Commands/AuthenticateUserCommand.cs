@@ -13,7 +13,7 @@ public class AuthenticateUserCommand : ICommand<string?> {
     public async Task Rollback() {}
     public async Task<string?> Run()
     {
-        var user = await UserContext.Users.Where(user => user.Name == Name && user.Password == Password && user.Role == Role).SingleAsync();
+        var user = await UserContext.Users.Where(user => user.Name == Name && user.Password == Password && user.Role == Role).SingleOrDefaultAsync();
 
         if (user == null) return null;
 

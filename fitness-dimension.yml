@@ -6,7 +6,7 @@ services:
       context: ./
       dockerfile: ./fitness-dimension/Dockerfile
     ports:
-      - "8080:8080"
+      - "8082:8080"
     depends_on:
       - postgres_fitness_dimension
     networks:

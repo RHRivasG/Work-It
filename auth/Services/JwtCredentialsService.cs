@@ -17,9 +17,9 @@ public class JwtCredentialsService : ICredentialsService {
         var credentials = new SigningCredentials(symmetricKey, SecurityAlgorithms.HmacSha512);
         
         var claims = new List<Claim> {
-            new Claim(ClaimTypes.Sid, name == "admin" ? "admin" : id),
-            new Claim("roles", JsonSerializer.Serialize(roles)),
-            new Claim("preferences", JsonSerializer.Serialize(preferences))
+            new Claim("sub", name == "admin" ? "admin" : id),
+            new Claim("roles", JsonSerializer.Serialize(roles), JsonClaimValueTypes.JsonArray),
+            new Claim("preferences", JsonSerializer.Serialize(preferences), JsonClaimValueTypes.JsonArray)
         };
         
         var token = new JwtSecurityToken(signingCredentials: credentials, claims: claims);

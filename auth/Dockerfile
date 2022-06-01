@@ -16,19 +16,20 @@ COPY auth/Commands /app/server/
 COPY auth/Contexts /app/server/
 COPY auth/Controllers /app/server/
 COPY auth/Grpc /app/server/
-COPY auth/Migrations /app/server/
 COPY auth/Models /app/server/
 COPY auth/Services /app/server/
 COPY auth/Program.cs /app/server/
 COPY auth/WeatherForecast.cs /app/server/
 COPY auth/appsettings.Production.json /app/server/appsettings.json
 WORKDIR /app/server
-RUN dotnet publish -c Release -o out ./AuthenticationService.csproj
+RUN dotnet ef migrations add InitialMigration
 RUN dotnet ef database update
+RUN dotnet publish -c Release -o out ./AuthenticationService.csproj
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app
 COPY --from=build-env /app/server/out .
+COPY --from=build-env /app/server/work-it.db .
 COPY certs/ /app/certs
 ENTRYPOINT ["dotnet", "AuthenticationService.dll"]
