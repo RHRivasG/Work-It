@@ -1,0 +1,126 @@
+version: '3.9'
+services:
+  authentication-microservice:
+    container_name: auth 
+    build: 
+      context: ./
+      dockerfile: ./auth/Dockerfile
+    ports:
+      - 5050:5050
+      - 8080:8080
+    networks:
+      - services
+      - default
+  training-service-microservice:
+    container_name: training_service_microservice
+    build: 
+      context: ./
+      dockerfile: ./fitness/training-service/Dockerfile
+    ports:
+      - "8082:8080"
+    depends_on:
+      - postgres_training_service
+    networks:
+      - services
+      - default
+  postgres_training_service:
+    container_name: db.fitness.dimension
+    build: './fitness/training-service/pkg/db'
+    command: -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key
+    volumes:
+      - ./fitness/training-service/pkg/db/sql/work-it-db.sql:/docker-entrypoint-initdb.d/work-it-db.sql
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=WorkItDB
+  service-aggregator-microservice:
+    container_name: aggregator 
+    build: 
+      context: ./
+      dockerfile: ./aggregator/Dockerfile
+    ports:
+      - 4500:4500
+    depends_on:
+      - mongodb
+    networks:
+      - services
+      - default
+  mongodb:
+    container_name: db.aggregator
+    image: mongo
+  authentication-proxy:
+    container_name: proxy
+    build: ./auth-proxy
+    ports:
+      - 3000:3000
+    depends_on:
+      - redis_proxy
+    volumes:
+      - ./auth-proxy/server_config.production.toml:/auth-proxy/src/server_config.toml
+    networks:
+      - services
+      - default
+    environment:
+      - DB_HOST=db.auth.proxy
+  redis_proxy:
+    container_name: db.auth.proxy
+    image: redis:6.2.6-alpine
+  social-dimension-microservice:
+    container_name: social_dimension_microservice
+    build: 
+      context: ./
+      dockerfile: ./social/Dockerfile
+    ports:
+      - 5000:5000
+    depends_on:
+      - postgres_social_dimension
+    volumes:
+      - ./social/src/main/resources/application.prod.conf:/workit-social-dimension-microservice/social/src/main/resources/application.conf
+    networks:
+      - services
+      - default
+  postgres_social_dimension:
+    container_name: db.social.dimension
+    build: './social/db'
+    command: -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key
+    volumes:
+      - ./social/db/sql/work-it-db.sql:/docker-entrypoint-initdb.d/work-it-db.sql
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=work-it
+  fitness-dimension-microservice:
+    container_name: fitness_dimension_microservice
+    build: 
+      context: ./
+      dockerfile: ./fitness/training-service/Dockerfile
+    ports:
+      - "8082:8080"
+    depends_on:
+      - postgres_fitness_dimension
+    networks:
+      - services
+      - default
+  postgres_fitness_dimension:
+    container_name: db.fitness.dimension
+    build: './fitness/training-service/pkg/db'
+    command: -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key
+    volumes:
+      - ./fitness/training-service/pkg/db/sql/work-it-db.sql:/docker-entrypoint-initdb.d/work-it-db.sql
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=WorkItDB
+  work-it-server:
+    container_name: server
+    build: ./client
+    ports:
+      - 443:443
+      - 80:80
+    networks:
+      - services
+      - default
+
+networks:
+  services:
+    name: 'services_network'
