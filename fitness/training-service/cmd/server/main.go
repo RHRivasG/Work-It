@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net"
 	"net/http"
@@ -12,9 +11,6 @@ import (
 	"training-service/pkg/auth"
 	"training-service/pkg/db"
 	server "training-service/pkg/server"
-	"training-service/pkg/server/aggregator"
-
-	pb "training-service/pkg/api/proto"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/labstack/echo/v4"
@@ -27,12 +23,12 @@ import (
 func main() {
 
 	//Service Aggregator
-	conn, client, err := aggregator.SetServiceAggregator()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
-	defer client.Unsubscribe(context.Background(), &pb.UnsubscribeMessage{})
+	// conn, client, err := aggregator.SetServiceAggregator()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer conn.Close()
+	// defer client.Unsubscribe(context.Background(), &pb.UnsubscribeMessage{})
 
 	//Database
 	database, err := db.ConnectDatabase()
@@ -43,7 +39,7 @@ func main() {
 
 	sigChannel := make(chan os.Signal, 1)
 	signal.Notify(sigChannel, os.Interrupt, syscall.SIGTERM)
-	go aggregator.CleanUp(client, conn, sigChannel)
+	//go aggregator.CleanUp(client, conn, sigChannel)
 	go db.CleanUp(database, sigChannel)
 
 	//Server
@@ -63,7 +59,7 @@ func serve(db *pg.DB) error {
 	httpListener := m.Match(cmux.HTTP1())
 	otherwiseL := m.Match(cmux.Any())
 
-	tlsl := tls.GimmeTLS(otherwiseL, "../certs/fitness/cert.pem", "../certs/fitness/key.pem")
+	tlsl := tls.GimmeTLS(otherwiseL, "../../certs/fitness/cert.pem", "../../certs/fitness/key.pem")
 	tlsm := cmux.New(tlsl)
 
 	grpcListener := tlsm.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
@@ -81,13 +77,6 @@ func serve(db *pg.DB) error {
 }
 
 func grpcServe(l net.Listener, db *pg.DB) error {
-
-	//TLS
-	// tlsCredentials, err := loadTLSCredentials()
-	// if err != nil {
-	// 	return err
-	// }
-
 	maxMsgSize := 220 * 1024 * 1024
 	s := grpc.NewServer(
 		grpc.MaxMsgSize(maxMsgSize),
@@ -138,10 +127,14 @@ func httpServe(l net.Listener, db *pg.DB) error {
 	e.HTTPErrorHandler = auth.AuthErrorHandler
 	t.Use(auth.AuthMiddleware())
 
-	trainingClient := pb.NewTrainingAPIClient(conn)
+	//Observer events
+	eventBus := server.NewTrainingEventBus()
+	eventBus.AddEventHandler(server.TrainingEventHandler{DB: db})
+
+	//trainingClient := pb.NewTrainingAPIClient(conn)
+	//trainingPublisher := server.TrainingPublisher{Client: trainingClient}
 	trainingRepository := server.PgTrainingRepository{DB: db}
-	trainingPublisher := server.TrainingPublisher{Client: trainingClient}
-	server.HttpTrainingServe(t, trainingRepository, &trainingPublisher)
+	server.HttpTrainingServe(t, trainingRepository, eventBus)
 
 	s := &http.Server{Handler: e}
 	return s.Serve(l)

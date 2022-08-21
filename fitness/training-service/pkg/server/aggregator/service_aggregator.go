@@ -54,7 +54,7 @@ func CleanUp(client pb.ServiceAggregatorClient, conn *grpc.ClientConn, sigChanne
 
 func loadTLSCredentials() (credentials.TransportCredentials, error) {
 	// Load certificate of the CA who signed server's certificate
-	pemServerCA, err := ioutil.ReadFile("../certs/ca/cert.pem")
+	pemServerCA, err := ioutil.ReadFile("../../certs/ca/cert.pem")
 	if err != nil {
 		return nil, err
 	}

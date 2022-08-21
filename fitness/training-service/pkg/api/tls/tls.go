@@ -33,7 +33,7 @@ func GimmeTLS(tcpl net.Listener, cert, key string) (tlsl net.Listener) {
 
 func LoadTLSCredentials() (credentials.TransportCredentials, error) {
 	// Load certificate of the CA who signed server's certificate
-	pemServerCA, err := ioutil.ReadFile("../certs/ca/cert.pem")
+	pemServerCA, err := ioutil.ReadFile("../../certs/ca/cert.pem")
 	if err != nil {
 		return nil, err
 	}
