@@ -3,17 +3,17 @@ package core
 import (
 	"training-service/internal/core/entities"
 	"training-service/internal/core/events"
-	"training-service/internal/core/values"
+	"training-service/internal/core/vo"
 
 	"github.com/google/uuid"
 )
 
 type Training struct {
-	ID            values.TrainingID
-	Categories    values.TrainingTaxonomies
-	TrainerID     values.TrainerID
-	Name          values.TrainingName
-	Description   values.TrainingDescription
+	ID            vo.TrainingID
+	Categories    vo.TrainingTaxonomies
+	TrainerID     vo.TrainerID
+	Name          vo.TrainingName
+	Description   vo.TrainingDescription
 	Video         *entities.TrainingVideo
 	eventRecorder []interface{}
 }
@@ -27,13 +27,13 @@ func (t *Training) AddEvent(event interface{}) {
 }
 
 func CreateTraining(
-	categories values.TrainingTaxonomies,
-	trainerID values.TrainerID,
-	name values.TrainingName,
-	description values.TrainingDescription,
+	categories vo.TrainingTaxonomies,
+	trainerID vo.TrainerID,
+	name vo.TrainingName,
+	description vo.TrainingDescription,
 ) (Training, error) {
 
-	id := values.TrainingID{Value: uuid.New()}
+	id := vo.TrainingID{Value: uuid.New()}
 
 	t := Training{
 		ID:          id,
@@ -55,9 +55,9 @@ func CreateTraining(
 }
 
 func (t *Training) SetVideo(
-	filename values.TrainingVideoName,
-	video values.TrainingVideoBuffer,
-	ext values.TrainingVideoExt,
+	filename vo.TrainingVideoName,
+	video vo.TrainingVideoBuffer,
+	ext vo.TrainingVideoExt,
 ) {
 
 	v := entities.CreateVideo(filename, ext, video)
@@ -72,9 +72,9 @@ func (t *Training) SetVideo(
 }
 
 func (t *Training) UpdateVideo(
-	filename values.TrainingVideoName,
-	video values.TrainingVideoBuffer,
-	ext values.TrainingVideoExt,
+	filename vo.TrainingVideoName,
+	video vo.TrainingVideoBuffer,
+	ext vo.TrainingVideoExt,
 ) {
 	t.Video.Update(filename, ext, video)
 	t.AddEvent(events.TrainingVideoUpdated{
@@ -93,10 +93,10 @@ func (t *Training) DestroyVideo() {
 }
 
 func (t *Training) Update(
-	categories values.TrainingTaxonomies,
-	trainerID values.TrainerID,
-	name values.TrainingName,
-	description values.TrainingDescription,
+	categories vo.TrainingTaxonomies,
+	trainerID vo.TrainerID,
+	name vo.TrainingName,
+	description vo.TrainingDescription,
 ) {
 
 	t.Categories = categories

@@ -5,7 +5,7 @@ import (
 	"training-service/internal/application"
 	"training-service/internal/core"
 	"training-service/internal/core/entities"
-	"training-service/internal/core/values"
+	"training-service/internal/core/vo"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/google/uuid"
@@ -36,11 +36,11 @@ func (r PgTrainingRepository) Get(id string) (*core.Training, error) {
 	}
 
 	return &core.Training{
-		ID:          values.TrainingID{Value: trainingId},
-		Name:        values.TrainingName{Value: trainingModel.Name},
-		Description: values.TrainingDescription{Value: trainingModel.Description},
-		TrainerID:   values.TrainerID{Value: trainingModel.TrainerID},
-		Categories:  values.TrainingTaxonomies{Values: trainingModel.Categories},
+		ID:          vo.TrainingID{Value: trainingId},
+		Name:        vo.TrainingName{Value: trainingModel.Name},
+		Description: vo.TrainingDescription{Value: trainingModel.Description},
+		TrainerID:   vo.TrainerID{Value: trainingModel.TrainerID},
+		Categories:  vo.TrainingTaxonomies{Values: trainingModel.Categories},
 		Video:       nil,
 	}, nil
 }
@@ -66,11 +66,11 @@ func (r PgTrainingRepository) GetByTrainer(id string) ([]core.Training, error) {
 		}
 
 		trainings = append(trainings, core.Training{
-			ID:          values.TrainingID{Value: trainingId},
-			TrainerID:   values.TrainerID{Value: trainingItem.TrainerID},
-			Name:        values.TrainingName{Value: trainingItem.Name},
-			Description: values.TrainingDescription{Value: trainingItem.Description},
-			Categories:  values.TrainingTaxonomies{Values: trainingItem.Categories},
+			ID:          vo.TrainingID{Value: trainingId},
+			TrainerID:   vo.TrainerID{Value: trainingItem.TrainerID},
+			Name:        vo.TrainingName{Value: trainingItem.Name},
+			Description: vo.TrainingDescription{Value: trainingItem.Description},
+			Categories:  vo.TrainingTaxonomies{Values: trainingItem.Categories},
 			Video:       nil,
 		})
 	}
@@ -100,11 +100,11 @@ func (r PgTrainingRepository) GetAll() ([]core.Training, error) {
 		}
 
 		trainings = append(trainings, core.Training{
-			ID:          values.TrainingID{Value: id},
-			TrainerID:   values.TrainerID{Value: trainingItem.TrainerID},
-			Name:        values.TrainingName{Value: trainingItem.Name},
-			Description: values.TrainingDescription{Value: trainingItem.Description},
-			Categories:  values.TrainingTaxonomies{Values: trainingItem.Categories},
+			ID:          vo.TrainingID{Value: id},
+			TrainerID:   vo.TrainerID{Value: trainingItem.TrainerID},
+			Name:        vo.TrainingName{Value: trainingItem.Name},
+			Description: vo.TrainingDescription{Value: trainingItem.Description},
+			Categories:  vo.TrainingTaxonomies{Values: trainingItem.Categories},
 			Video:       nil,
 		})
 	}
@@ -127,10 +127,10 @@ func (r PgTrainingRepository) GetVideo(id string) *entities.TrainingVideo {
 	}
 
 	return &entities.TrainingVideo{
-		ID:   values.TrainingVideoID{Value: videoID},
-		Name: values.TrainingVideoName{Value: video.Name},
-		Ext:  values.TrainingVideoExt{Value: video.Ext},
-		Buff: values.TrainingVideoBuffer{Value: video.Buff},
+		ID:   vo.TrainingVideoID{Value: videoID},
+		Name: vo.TrainingVideoName{Value: video.Name},
+		Ext:  vo.TrainingVideoExt{Value: video.Ext},
+		Buff: vo.TrainingVideoBuffer{Value: video.Buff},
 	}
 }
 
@@ -152,9 +152,9 @@ func (r PgTrainingRepository) GetVideoMetadata(id string) *entities.TrainingVide
 	}
 
 	return &entities.TrainingVideo{
-		ID:     values.TrainingVideoID{Value: videoID},
-		Name:   values.TrainingVideoName{Value: video.Name},
-		Ext:    values.TrainingVideoExt{Value: video.Ext},
-		Length: values.TrainingVideoLength{Value: video.Length},
+		ID:     vo.TrainingVideoID{Value: videoID},
+		Name:   vo.TrainingVideoName{Value: video.Name},
+		Ext:    vo.TrainingVideoExt{Value: video.Ext},
+		Length: vo.TrainingVideoLength{Value: video.Length},
 	}
 }

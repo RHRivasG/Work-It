@@ -1,11 +1,11 @@
 package events
 
-import "training-service/internal/core/values"
+import "training-service/internal/core/vo"
 
 type TrainingVideoCreated struct {
-	ID         values.TrainingVideoID
-	Name       values.TrainingVideoName
-	Ext        values.TrainingVideoExt
-	Buff       values.TrainingVideoBuffer
-	TrainingID values.TrainingID
+	ID         vo.TrainingVideoID
+	Name       vo.TrainingVideoName
+	Ext        vo.TrainingVideoExt
+	Buff       vo.TrainingVideoBuffer
+	TrainingID vo.TrainingID
 }

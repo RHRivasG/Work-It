@@ -3,7 +3,7 @@ package commands
 import (
 	"training-service/internal/application"
 	core "training-service/internal/core"
-	"training-service/internal/core/values"
+	"training-service/internal/core/vo"
 )
 
 type CreateTraining struct {
@@ -16,10 +16,10 @@ type CreateTraining struct {
 
 func (c *CreateTraining) Execute(s *application.TrainingService) (interface{}, error) {
 
-	trainerID := values.TrainerID{Value: c.TrainerID}
-	name := values.TrainingName{Value: c.Name}
-	description := values.TrainingDescription{Value: c.Description}
-	categories := values.TrainingTaxonomies{Values: c.Categories}
+	trainerID := vo.TrainerID{Value: c.TrainerID}
+	name := vo.TrainingName{Value: c.Name}
+	description := vo.TrainingDescription{Value: c.Description}
+	categories := vo.TrainingTaxonomies{Values: c.Categories}
 
 	t, _ := core.CreateTraining(categories, trainerID, name, description)
 	for _, i := range t.GetEvents() {

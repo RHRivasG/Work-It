@@ -1,7 +1,7 @@
-package values
+package vo
 
 import "github.com/google/uuid"
 
-type TrainingVideoID struct {
+type TrainingID struct {
 	Value uuid.UUID
 }

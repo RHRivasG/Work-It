@@ -1,42 +1,42 @@
 package entities
 
 import (
-	"training-service/internal/core/values"
+	"training-service/internal/core/vo"
 
 	"github.com/google/uuid"
 )
 
 type TrainingVideo struct {
-	ID     values.TrainingVideoID
-	Name   values.TrainingVideoName
-	Ext    values.TrainingVideoExt
-	Length values.TrainingVideoLength
-	Buff   values.TrainingVideoBuffer
+	ID     vo.TrainingVideoID
+	Name   vo.TrainingVideoName
+	Ext    vo.TrainingVideoExt
+	Length vo.TrainingVideoLength
+	Buff   vo.TrainingVideoBuffer
 }
 
 func CreateVideo(
-	name values.TrainingVideoName,
-	ext values.TrainingVideoExt,
-	buff values.TrainingVideoBuffer,
+	name vo.TrainingVideoName,
+	ext vo.TrainingVideoExt,
+	buff vo.TrainingVideoBuffer,
 ) TrainingVideo {
 
-	id := values.TrainingVideoID{Value: uuid.New()}
+	id := vo.TrainingVideoID{Value: uuid.New()}
 
 	v := TrainingVideo{
 		ID:     id,
 		Name:   name,
 		Ext:    ext,
 		Buff:   buff,
-		Length: values.TrainingVideoLength{Value: len(buff.Value)},
+		Length: vo.TrainingVideoLength{Value: len(buff.Value)},
 	}
 
 	return v
 }
 
 func (v *TrainingVideo) Update(
-	name values.TrainingVideoName,
-	ext values.TrainingVideoExt,
-	buff values.TrainingVideoBuffer,
+	name vo.TrainingVideoName,
+	ext vo.TrainingVideoExt,
+	buff vo.TrainingVideoBuffer,
 ) {
 	v.Name = name
 	v.Ext = ext

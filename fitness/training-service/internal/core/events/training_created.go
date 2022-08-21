@@ -1,11 +1,11 @@
 package events
 
-import "training-service/internal/core/values"
+import "training-service/internal/core/vo"
 
 type TrainingCreated struct {
-	ID          values.TrainingID
-	Categories  values.TrainingTaxonomies
-	TrainerID   values.TrainerID
-	Name        values.TrainingName
-	Description values.TrainingDescription
+	ID          vo.TrainingID
+	Categories  vo.TrainingTaxonomies
+	TrainerID   vo.TrainerID
+	Name        vo.TrainingName
+	Description vo.TrainingDescription
 }

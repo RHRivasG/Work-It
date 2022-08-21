@@ -1,7 +1,7 @@
 package events
 
-import "training-service/internal/core/values"
+import "training-service/internal/core/vo"
 
 type TrainingDeleted struct {
-	ID values.TrainingID
+	ID vo.TrainingID
 }

@@ -1,4 +1,4 @@
-package values
+package vo
 
 type TrainingTaxonomies struct {
 	Values []string

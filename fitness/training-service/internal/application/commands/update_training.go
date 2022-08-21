@@ -2,7 +2,7 @@ package commands
 
 import (
 	"training-service/internal/application"
-	"training-service/internal/core/values"
+	"training-service/internal/core/vo"
 
 	"github.com/google/uuid"
 )
@@ -17,10 +17,10 @@ type UpdateTraining struct {
 }
 
 func (c *UpdateTraining) Execute(s *application.TrainingService) (interface{}, error) {
-	trainerID := values.TrainerID{Value: c.TrainerID}
-	name := values.TrainingName{Value: c.Name}
-	description := values.TrainingDescription{Value: c.Description}
-	categories := values.TrainingTaxonomies{Values: c.Categories}
+	trainerID := vo.TrainerID{Value: c.TrainerID}
+	name := vo.TrainingName{Value: c.Name}
+	description := vo.TrainingDescription{Value: c.Description}
+	categories := vo.TrainingTaxonomies{Values: c.Categories}
 
 	t, err := s.Repository.Get(c.ID.String())
 	if err != nil {

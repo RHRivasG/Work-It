@@ -2,7 +2,7 @@ package commands
 
 import (
 	"training-service/internal/application"
-	"training-service/internal/core/values"
+	"training-service/internal/core/vo"
 
 	"github.com/google/uuid"
 )
@@ -16,9 +16,9 @@ type CreateTrainingVideo struct {
 }
 
 func (c *CreateTrainingVideo) Execute(s *application.TrainingService) (interface{}, error) {
-	filename := values.TrainingVideoName{Value: c.Name}
-	video := values.TrainingVideoBuffer{Value: c.Video}
-	ext := values.TrainingVideoExt{Value: c.Ext}
+	filename := vo.TrainingVideoName{Value: c.Name}
+	video := vo.TrainingVideoBuffer{Value: c.Video}
+	ext := vo.TrainingVideoExt{Value: c.Ext}
 
 	t, err := s.Repository.Get(c.TrainingID.String())
 	if err != nil {
