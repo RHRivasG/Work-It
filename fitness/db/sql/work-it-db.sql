@@ -28,8 +28,8 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.routine_training (
-    id_routine character varying NOT NULL,
-    id_training character varying NOT NULL,
+    id_routine uuid NOT NULL,
+    id_training uuid NOT NULL,
     "order" integer
 );
 
@@ -42,7 +42,7 @@ ALTER TABLE public.routine_training OWNER TO postgres;
 --
 
 CREATE TABLE public.routines (
-    id character varying NOT NULL,
+    id uuid NOT NULL,
     name character varying,
     description character varying,
     user_id character varying
@@ -57,7 +57,7 @@ ALTER TABLE public.routines OWNER TO postgres;
 --
 
 CREATE TABLE public.summaries (
-    routine character varying,
+    routine uuid,
     mintime int8,
     maxtime int8
 );
@@ -71,7 +71,7 @@ ALTER TABLE public.summaries OWNER TO postgres;
 --
 
 CREATE TABLE public.trainings (
-    id character varying NOT NULL,
+    id uuid NOT NULL,
     name character varying,
     description character varying,
     trainer_id character varying,
@@ -87,7 +87,7 @@ ALTER TABLE public.trainings OWNER TO postgres;
 --
 
 CREATE TABLE public.videos (
-    id character varying NOT NULL,
+    id uuid NOT NULL,
     name character varying,
     ext character varying,
     buff bytea,
