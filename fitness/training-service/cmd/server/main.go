@@ -127,10 +127,8 @@ func httpServe(l net.Listener, db *pg.DB) error {
 	e.HTTPErrorHandler = auth.AuthErrorHandler
 	t.Use(auth.AuthMiddleware())
 
-	//Observer events
 	eventBus := server.NewTrainingEventBus()
 	eventBus.AddEventHandler(server.TrainingEventHandler{DB: db})
-
 	//trainingClient := pb.NewTrainingAPIClient(conn)
 	//trainingPublisher := server.TrainingPublisher{Client: trainingClient}
 	trainingRepository := server.PgTrainingRepository{DB: db}
