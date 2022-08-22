@@ -1,5 +1,4 @@
-import { Routine } from "../../core/routine.aggregate";
-import { RoutineTrainingId } from "../../core/values_objects/routine-training-id.value";
+import { Routine, RoutineTrainingId } from "core";
 import { RoutineCommand } from "../routine.command";
 import { RoutineService } from "../routine.service";
 

@@ -1,4 +1,4 @@
-import { Routine } from "../../core/routine.aggregate";
+import { Routine } from "core";
 import { RoutineCommand } from "../routine.command";
 import { RoutineService } from "../routine.service";
 

@@ -1,8 +1,10 @@
-import { Routine } from "../../core/routine.aggregate";
-import { RoutineDescription } from "../../core/values_objects/routine-description.value";
-import { RoutineName } from "../../core/values_objects/routine-name.value";
-import { RoutineTrainings } from "../../core/values_objects/routine-trainings.value";
-import { RoutineUserId } from "../../core/values_objects/routine-user-id.value";
+import {
+  Routine,
+  RoutineDescription,
+  RoutineName,
+  RoutineTrainings,
+  RoutineUserId,
+} from "core";
 import { RoutineCommand } from "../routine.command";
 import { RoutineService } from "../routine.service";
 

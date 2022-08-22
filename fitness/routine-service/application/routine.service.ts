@@ -1,4 +1,4 @@
-import { Routine, RoutineEvent } from "../core/routine.aggregate";
+import { Routine, RoutineEvent } from "core";
 import { RoutineDto } from "./routine.dto";
 import { RoutinePublisher } from "./routine.publisher";
 import { RoutineRepository } from "./routine.repository";
@@ -14,7 +14,7 @@ export class RoutineService {
   }
 
   async getAll(userId: Uint8Array): Promise<RoutineDto[]> {
-    return await this.getAll(userId);
+    return await this.repository.getAll(userId);
   }
 
   async getRoutine(uuid: Uint8Array): Promise<Routine> {

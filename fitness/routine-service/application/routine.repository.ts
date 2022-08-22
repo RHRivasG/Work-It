@@ -1,4 +1,4 @@
-import { Routine } from "../core/routine.aggregate";
+import { Routine } from "core";
 import { RoutineDto } from "./routine.dto";
 
 export interface RoutineRepository {
