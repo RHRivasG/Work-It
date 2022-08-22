@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { randomBytes, randomUUID } from "crypto";
 import { RoutineCreated } from "./events/routine-created.event";
 import { RoutineDeleted } from "./events/routine-deleted.event";
 import { RoutineUpdated } from "./events/routine-updated.event";
@@ -26,9 +26,10 @@ export class Routine {
     public name: RoutineName,
     public userId: RoutineUserId,
     public description: RoutineDescription,
-    public trainings: RoutineTrainings
+    public trainings: RoutineTrainings,
+    id?: RoutineId
   ) {
-    this.id = new RoutineId(new TextEncoder().encode(randomUUID()));
+    this.id = id || new RoutineId(randomBytes(8));
   }
 
   getEvents(): RoutineEvent[] {

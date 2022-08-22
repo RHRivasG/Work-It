@@ -13,8 +13,8 @@ export class RoutineService {
     return await this.repository.get(uuid);
   }
 
-  async getAll(): Promise<RoutineDto[]> {
-    return await this.getAll();
+  async getAll(userId: Uint8Array): Promise<RoutineDto[]> {
+    return await this.getAll(userId);
   }
 
   async getRoutine(uuid: Uint8Array): Promise<Routine> {
