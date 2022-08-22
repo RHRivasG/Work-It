@@ -1,5 +1,5 @@
 import { IEventHandler } from '@nestjs/cqrs';
-import { RoutineDeleted } from '../../../../core/events/routine-deleted.event';
+import { RoutineDeleted } from 'core';
 import { RoutineDao } from '../routine.dao';
 
 export class RoutineDeletedHandler implements IEventHandler<RoutineDeleted> {

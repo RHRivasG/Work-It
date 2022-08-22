@@ -1,22 +1,27 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { RoutineEntity } from './routine.entity';
-import { RoutineRepository as IRoutineRepository } from '../../../application/routine.repository';
-import { RoutineDto } from '../../../application/routine.dto';
-import { Routine } from '../../../core/routine.aggregate';
+import {
+  RoutineRepository as IRoutineRepository,
+  RoutineDto,
+} from 'application';
+import {
+  Routine,
+  RoutineId,
+  RoutineName,
+  RoutineDescription,
+  RoutineUserId,
+  RoutineTrainings,
+} from 'core';
 import { RoutineTrainingEntity } from './routine-training.entity';
-import { RoutineId } from '../../../core/values_objects/routine-id.value';
-import { RoutineName } from '../../../core/values_objects/routine-name.value';
-import { RoutineDescription } from '../../../core/values_objects/routine-description.value';
-import { RoutineUserId } from '../../../core/values_objects/routine-user-id.value';
-import { RoutineTrainings } from '../../../core/values_objects/routine-trainings.value';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class RoutineRepository implements IRoutineRepository {
   constructor(
-    @Inject('ROUTINE_REPOSITORY')
+    @InjectRepository(RoutineEntity)
     private routineRepository: Repository<RoutineEntity>,
-    @Inject('ROUTINE_TRAINING_REPOSITORY')
+    @InjectRepository(RoutineTrainingEntity)
     private routineTrainingRepository: Repository<RoutineTrainingEntity>,
   ) {}
 

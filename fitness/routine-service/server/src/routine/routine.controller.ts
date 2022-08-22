@@ -11,11 +11,13 @@ import {
   Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { RoutineDto } from '../../../application/routine.dto';
-import { RoutineService } from '../../../application/routine.service';
-import { CreateRoutine } from '../../../application/commands/create-routine.command';
-import { UpdateRoutine } from '../../../application/commands/update-routine.command';
-import { DeleteRoutine } from '../../../application/commands/delete-routine.command';
+import {
+  RoutineDto,
+  RoutineService,
+  CreateRoutine,
+  UpdateRoutine,
+  DeleteRoutine,
+} from 'application';
 
 class RoutineCreationForm {
   name: string;

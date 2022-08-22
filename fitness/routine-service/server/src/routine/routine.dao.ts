@@ -1,19 +1,22 @@
-import { RoutineCreated } from '../../../core/events/routine-created.event';
-import { RoutineUpdated } from '../../../core/events/routine-updated.event';
-import { RoutineDeleted } from '../../../core/events/routine-deleted.event';
-import { TrainingAdded } from '../../../core/events/training-added.event';
-import { TrainingRemoved } from '../../../core/events/training-removed.event';
-import { RoutineEntity as Routine, RoutineEntity } from './routine.entity';
+import {
+  RoutineCreated,
+  RoutineUpdated,
+  RoutineDeleted,
+  TrainingAdded,
+  TrainingRemoved,
+} from 'core';
+import { RoutineEntity } from './routine.entity';
 import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { RoutineTrainingEntity } from './routine-training.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class RoutineDao {
   constructor(
-    @Inject('ROUTINE_REPOSITORY')
+    @InjectRepository(RoutineEntity)
     private routineRepository: Repository<RoutineEntity>,
-    @Inject('ROUTINE_TRAINING_REPOSITORY')
+    @InjectRepository(RoutineTrainingEntity)
     private routineTrainingRepository: Repository<RoutineTrainingEntity>,
   ) {}
   async insert(event: RoutineCreated) {

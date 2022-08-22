@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { RoutineModule } from './routine/routine.module';
-import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -13,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
+        autoLoadEntities: true,
         type: 'postgres',
         host: configService.get('DB_HOST'),
         port: configService.get('DB_PORT'),
@@ -22,9 +20,8 @@ import { AuthModule } from './auth/auth.module';
       }),
     }),
     RoutineModule,
-    AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
