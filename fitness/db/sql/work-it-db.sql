@@ -45,7 +45,7 @@ CREATE TABLE public.routines (
     id uuid NOT NULL,
     name character varying,
     description character varying,
-    user_id character varying
+    user_id uuid 
 );
 
 
@@ -74,7 +74,7 @@ CREATE TABLE public.trainings (
     id uuid NOT NULL,
     name character varying,
     description character varying,
-    trainer_id character varying,
+    trainer_id uuid,
     categories character varying[]
 );
 
@@ -91,7 +91,7 @@ CREATE TABLE public.videos (
     name character varying,
     ext character varying,
     buff bytea,
-    training_id character varying
+    training_id uuid 
 );
 
 
