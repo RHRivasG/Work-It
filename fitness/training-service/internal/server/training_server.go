@@ -1,7 +1,7 @@
 package server
 
 import (
-	pb "training-service/pkg/api/proto"
+	pb "training-service/internal/api/proto"
 	"training-service/pkg/application"
 
 	"github.com/go-pg/pg/v10"

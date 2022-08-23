@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	pb "training-service/pkg/api/proto"
+	pb "training-service/internal/api/proto"
 	"training-service/pkg/application"
 	"training-service/pkg/core/events"
 )

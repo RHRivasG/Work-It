@@ -2,7 +2,7 @@ package db
 
 import (
 	"os"
-	"training-service/internal//env"
+	"training-service/internal/env"
 
 	"github.com/go-pg/pg/v10"
 )

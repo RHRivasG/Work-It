@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"training-service/internal/application"
+	"training-service/pkg/application"
 
 	"github.com/google/uuid"
 )
