@@ -26,20 +26,19 @@ export class RoutineRepository implements IRoutineRepository {
   ) {}
 
   async get(uuid: string): Promise<RoutineDto> {
-    const routine = await this.routineRepository.findOneBy({
-        id: uuid,
-        trainings: true,
+    const routine = await this.routineRepository.findOne({
+        where: { id: uuid },
+        relations: {
+          trainings: true,
+        },
       }),
-      // trainings = await this.routineTrainingRepository.find({
-      //   where: { idRoutine: uuid },
-      //   order: { order: 'ASC' },
-      // }),
       dto: RoutineDto = {
         id: routine.id,
         name: routine.name,
         description: routine.description,
         userId: routine.userId,
-        trainings: routine.trainings.map((training) => training.idTraining),
+        trainings:
+          routine.trainings?.map((training) => training.idTraining) || [],
       };
 
     return dto;
@@ -82,6 +81,8 @@ export class RoutineRepository implements IRoutineRepository {
         new RoutineTrainings(trainings.map((training) => training.idTraining)),
         new RoutineId(routineEntity.id),
       );
+
+    console.log(routine.id, uuid);
 
     return routine;
   }

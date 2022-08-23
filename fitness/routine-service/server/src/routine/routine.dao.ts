@@ -36,12 +36,14 @@ export class RoutineDao {
     });
   }
   async update(event: RoutineUpdated) {
-    await this.routineRepository.save({
-      id: Buffer.from(event.id.value).toString('hex'),
-      name: event.name.value,
-      description: event.description.value,
-      userId: Buffer.from(event.userId.value).toString('hex'),
-    });
+    await this.routineRepository.update(
+      Buffer.from(event.id.value).toString('hex'),
+      {
+        name: event.name.value,
+        description: event.description.value,
+        userId: Buffer.from(event.userId.value).toString('hex'),
+      },
+    );
 
     event.trainings.value.forEach(async (training, index) => {
       await this.routineTrainingRepository.save({

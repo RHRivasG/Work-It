@@ -17,6 +17,8 @@ import {
   CreateRoutine,
   UpdateRoutine,
   DeleteRoutine,
+  AddTraining,
+  RemoveTraining,
 } from 'application';
 
 class RoutineCreationForm {
@@ -77,6 +79,7 @@ export class RoutineController {
     command.execute(this._routineService);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -96,6 +99,8 @@ export class RoutineController {
     );
     command.execute(this._routineService);
   }
+
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async delete(@Param('id') id: string, @Request() req: any): Promise<void> {
     const user = req.user;
@@ -103,6 +108,26 @@ export class RoutineController {
       throw new UnauthorizedException();
     }
     const command: DeleteRoutine = new DeleteRoutine(id);
+    command.execute(this._routineService);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/training/:idt')
+  async addTraining(
+    @Param('id') id: string,
+    @Param('idt') idt: string,
+  ): Promise<void> {
+    const command: AddTraining = new AddTraining(id, idt);
+    command.execute(this._routineService);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/training/:idt')
+  async removeTraining(
+    @Param('id') id: string,
+    @Param('idt') idt: string,
+  ): Promise<void> {
+    const command: RemoveTraining = new RemoveTraining(id, idt);
     command.execute(this._routineService);
   }
 }

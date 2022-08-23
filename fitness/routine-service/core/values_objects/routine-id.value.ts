@@ -9,7 +9,7 @@ export class RoutineId {
       return;
     }
 
-    value = value.replace("-", "").trim();
+    value = value.replaceAll("-", "").trim();
     if (value.length == 0) throw new RoutineIdEmpty();
 
     this.value = new Uint8Array(Buffer.from(value, "hex"));
