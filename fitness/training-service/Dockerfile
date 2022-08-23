@@ -5,7 +5,7 @@ EXPOSE 8080
 
 # copy source code into the $GOPATH and switch to that directory
 COPY fitness/training-service /work-it/training-service/
-COPY certs /work-it/certs/
+COPY certs /certs/
 COPY fitness/training-service/.env.production /work-it/training-service/.env
 WORKDIR /work-it/training-service/
 

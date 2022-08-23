@@ -7,8 +7,8 @@ WORKDIR /app/server
 RUN dotnet restore
 
 # Copy .config and restore the dotnet tools
-COPY auth/.config /app/server/.config
-RUN dotnet tool restore
+RUN dotnet new tool-manifest
+RUN dotnet tool install dotnet-ef
 
 # Copy everything else and build
 COPY protobuf/ /app/protobuf

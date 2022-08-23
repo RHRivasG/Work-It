@@ -3,6 +3,7 @@ services:
   work-it-server:
     container_name: server
     build: ./client
+    network_mode: "host"
     ports:
       - 443:443
       - 80:80
@@ -18,10 +19,6 @@ services:
       - ./auth-proxy/server_config.production.toml:/auth-proxy/src/server_config.toml
     environment:
       - DB_HOST=db.auth.proxy
-    links:
-      - social-dimension-microservice
-      - training-service-microservice
-      - routine-service-microservice
   redis_proxy:
     container_name: db.auth.proxy
     image: redis:6.2.6-alpine
@@ -94,6 +91,8 @@ services:
     container_name: db.social.dimension
     build: './social/db'
     command: -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key
+    ports:
+      - "5433:5432"
     volumes:
       - ./social/db/sql/work-it-db.sql:/docker-entrypoint-initdb.d/work-it-db.sql
     environment:

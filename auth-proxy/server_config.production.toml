@@ -2,16 +2,16 @@ authority = "auth"
 
 [servers.auth]
 from = "/api/auth"
-to = "http://auth:5050"
+to = "http://172.17.0.1:5050"
 
 [servers.social]
 from = "/api/social"
-to = "http://social_dimension_microservice:5000"
+to = "http://172.17.0.1:5000"
 
 [servers.trainings]
 from = "/api/trainings"
-to = "http://training_service_microservice:8080"
+to = "http://172.17.0.1:8082"
 
 [servers.routines]
 from = "/api/routines"
-to = "http://routine_service_microservice:3550"
+to = "http://172.17.0.1:3550"

@@ -1,16 +1,20 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	pb "training-service/internal/api/proto"
 	"training-service/internal/api/tls"
+
 	"training-service/internal/auth"
 	"training-service/internal/db"
 	server "training-service/internal/server"
+	"training-service/internal/server/aggregator"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/labstack/echo/v4"
@@ -23,12 +27,12 @@ import (
 func main() {
 
 	//Service Aggregator
-	// conn, client, err := aggregator.SetServiceAggregator()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer conn.Close()
-	// defer client.Unsubscribe(context.Background(), &pb.UnsubscribeMessage{})
+	conn, client, err := aggregator.SetServiceAggregator()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+	defer client.Unsubscribe(context.Background(), &pb.UnsubscribeMessage{})
 
 	//Database
 	database, err := db.ConnectDatabase()
@@ -39,7 +43,7 @@ func main() {
 
 	sigChannel := make(chan os.Signal, 1)
 	signal.Notify(sigChannel, os.Interrupt, syscall.SIGTERM)
-	//go aggregator.CleanUp(client, conn, sigChannel)
+	go aggregator.CleanUp(client, conn, sigChannel)
 	go db.CleanUp(database, sigChannel)
 
 	//Server

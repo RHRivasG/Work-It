@@ -4,8 +4,8 @@ import { SynchronizedIdentityProviderService } from 'src/app/services/synchroniz
 export const environment = {
   production: true,
   socialApiUrl: 'http://localhost/api/social',
-  trainingApiUrl: 'http://localhost/api/trainings',
-  routineApiUrl: 'http://localhost/api/routines',
+  trainingApiUrl: 'http://localhost/api/trainings/trainings',
+  routineApiUrl: 'http://localhost/api/routines/routines',
   summaryApiUrl: 'http://localhost/api/summary',
   authApiUrl: 'http://localhost/api/auth',
   logoutApiUrl: 'http://localhost/api/logout',
