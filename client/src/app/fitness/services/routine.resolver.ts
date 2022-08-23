@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
-  Router, Resolve,
+  Router,
+  Resolve,
   RouterStateSnapshot,
-  ActivatedRouteSnapshot
+  ActivatedRouteSnapshot,
 } from '@angular/router';
 import { forkJoin, Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -12,26 +13,28 @@ import { FullRoutine, Routine } from '../models/routine';
 import { Training } from '../models/training';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RoutineResolver implements Resolve<FullRoutine> {
-  constructor (private client: HttpClient){}
+  constructor(private client: HttpClient) {}
   // bind|flatMap:: M[A], A => M[B] : M[B]
-  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<FullRoutine> {
-    const id = route.params.id
-    return this.client.get<Routine>(environment.fitnessApiUrl + '/routines/'+ id).pipe(
+  resolve(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<FullRoutine> {
+    const id = route.params.id;
+    return this.client.get<Routine>(environment.routineApiUrl + '/' + id).pipe(
       switchMap((routine: Routine) => {
         if (routine.trainings) {
           return forkJoin(
-            routine.trainings.map(id =>
-              this.client.get<Training>(environment.fitnessApiUrl + '/trainings/' + id)
+            routine.trainings.map((id) =>
+              this.client.get<Training>(environment.trainingApiUrl + '/' + id)
             )
-          )
-          .pipe(map(trainings => ({ ...routine, trainings })))
+          ).pipe(map((trainings) => ({ ...routine, trainings })));
         } else {
-          return of({ ...routine, trainings: [] })
+          return of({ ...routine, trainings: [] });
         }
-      }),
-    )
+      })
+    );
   }
 }

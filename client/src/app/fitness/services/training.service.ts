@@ -6,59 +6,60 @@ import { environment } from 'src/environments/environment';
 import { Training, TrainingVideo } from '../models/training';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TrainingService {
+  constructor(private client: HttpClient) {}
 
-  constructor(private client: HttpClient) { }
-
-  create(name: string, description: string, categories: string[], video: TrainingVideo) {
+  create(
+    name: string,
+    description: string,
+    categories: string[],
+    video: TrainingVideo
+  ) {
     const trainingDto = {
       name,
       description,
-      categories
-    }
+      categories,
+    };
     const training = {
       video,
-      ...trainingDto
-    }
-    return this.client.post(
-      environment.fitnessApiUrl + "/trainings",
-      trainingDto,
-      { responseType: "text" }
-    ).pipe(
-      switchMap(id => {
-        return this.client.post(
-          environment.fitnessApiUrl + "/trainings/" + id + "/video",
-          training.video,
-          { responseType: 'text' }
-        )
-      })
-    )
+      ...trainingDto,
+    };
+    return this.client
+      .post(environment.trainingApiUrl, trainingDto, { responseType: 'text' })
+      .pipe(
+        switchMap((id) => {
+          return this.client.post(
+            environment.trainingApiUrl + '/' + id + '/video',
+            training.video,
+            { responseType: 'text' }
+          );
+        })
+      );
   }
 
-  update(training: Training){
-    const { video, trainerId, ...trainingDto } = training
-    return this.client.put(
-      environment.fitnessApiUrl + "/trainings/" + training.id,
-      trainingDto,
-      { responseType: "text" }
-    ).pipe(
-      switchMap(txt => {
-        if (!training.video.video) return of(txt)
-        return this.client.post(
-          environment.fitnessApiUrl + "/trainings/" + training.id + "/video",
-          video,
-          { responseType: 'text' }
-        )
+  update(training: Training) {
+    const { video, trainerId, ...trainingDto } = training;
+    return this.client
+      .put(environment.trainingApiUrl + '/' + training.id, trainingDto, {
+        responseType: 'text',
       })
-    )
+      .pipe(
+        switchMap((txt) => {
+          if (!training.video.video) return of(txt);
+          return this.client.post(
+            environment.trainingApiUrl + '/' + training.id + '/video',
+            video,
+            { responseType: 'text' }
+          );
+        })
+      );
   }
 
-  delete(training: Training){
-    return this.client.delete(
-      environment.fitnessApiUrl + "/trainings/" + training.id,
-      { responseType: "text" }
-    )
+  delete(training: Training) {
+    return this.client.delete(environment.trainingApiUrl + '/' + training.id, {
+      responseType: 'text',
+    });
   }
 }

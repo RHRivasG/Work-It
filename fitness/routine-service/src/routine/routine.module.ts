@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RoutineService } from 'application';
+import { RoutineService } from '../application';
 import { RoutineCreatedHandler } from './handlers/routine-created.handler';
 import { RoutineDeletedHandler } from './handlers/routine-deleted.handler';
 import { RoutineUpdatedHandler } from './handlers/routine-updated.handler';

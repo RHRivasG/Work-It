@@ -7,56 +7,53 @@ import { Training } from '../models/training';
 function fullToPartial(routine: FullRoutine) {
   return {
     ...routine,
-    trainings: routine.trainings.map(t => t.id)
-  }
+    trainings: routine.trainings.map((t) => t.id),
+  };
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RoutineService {
-  constructor(private client: HttpClient) { }
+  constructor(private client: HttpClient) {}
 
-  create(routineName: string, training: Training){
+  create(routineName: string, training: Training) {
     const routine = {
-      name:  routineName,
+      name: routineName,
       description: null,
-      trainings: [training.id]
-    }
-    return this.client.post(
-      environment.fitnessApiUrl + "/routines",
-      routine,
-      { responseType: 'text' }
-    )
+      trainings: [training.id],
+    };
+    return this.client.post(environment.routineApiUrl, routine, {
+      responseType: 'text',
+    });
   }
 
   update(routine: FullRoutine) {
     return this.client.put(
-      environment.fitnessApiUrl + "/routines/" + routine.id,
+      environment.routineApiUrl + '/' + routine.id,
       fullToPartial(routine),
       { responseType: 'text' }
-    )
+    );
   }
 
   delete(routine: FullRoutine) {
-    return this.client.delete(
-      environment.fitnessApiUrl + "/routines/" + routine.id,
-      { responseType: 'text' }
-    )
+    return this.client.delete(environment.routineApiUrl + routine.id, {
+      responseType: 'text',
+    });
   }
 
-  addTraining(routine: FullRoutine, training: Training){
+  addTraining(routine: FullRoutine, training: Training) {
     return this.client.post(
-      environment.fitnessApiUrl + "/routines/" + routine.id + "/training/" + training.id,
+      environment.routineApiUrl + '/' + routine.id + '/training/' + training.id,
       {},
       { responseType: 'text' }
-    )
+    );
   }
 
-  removeTraining(routine: FullRoutine, training: Training){
+  removeTraining(routine: FullRoutine, training: Training) {
     return this.client.delete(
-      environment.fitnessApiUrl + "/routines/" + routine.id + "/training/" + training.id,
+      environment.routineApiUrl + '/' + routine.id + '/training/' + training.id,
       { responseType: 'text' }
-    )
+    );
   }
 }

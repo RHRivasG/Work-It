@@ -1,12 +1,10 @@
 package ucab.sqa.workit.web.infrastructure.services
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import ucab.sqa.workit.web.helpers
 import akka.discovery.ServiceDiscovery
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import java.util.UUID
-import ucab.sqa.workit.protobuf.Authenticator
 import akka.grpc.SSLContextUtils
 import akka.grpc.GrpcClientSettings
 import ucab.sqa.workit.protobuf.AuthenticatorClient
@@ -47,7 +45,7 @@ object AuthDimensionService {
                 (for {
                     service <- Future { connect(discovery) }
                     _ <- Future { println(s"Registering participant with $id, $name, $password, $preferences") }
-                    _ <- service.registerParticipant(UserInformation(id.toString, name, password, preferences))
+                    _ <- service.registerParticipant(UserInformation(id.toString, name, password, preferences.toSeq))
                     _ <- Future { println(s"Registered participant with $id, $name, $password, $preferences") }
                     res <- service.close()
                 } yield res).andThen {

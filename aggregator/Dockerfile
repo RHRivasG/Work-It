@@ -18,4 +18,4 @@ COPY protobuf/ /workit-service-aggregator-microservice/protobuf
 
 RUN /ops/sbt/bin/sbt aggregator/assembly
 EXPOSE 5000
-CMD [ "java", "-jar", "aggregator/target/scala-2.13/workit.serviceAggregator.jar" ]
+CMD [ "java", "-jar", "aggregator/target/scala-3.1.0/workit.serviceAggregator.jar" ]

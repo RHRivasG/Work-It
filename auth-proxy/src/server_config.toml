@@ -8,9 +8,13 @@ to = "http://localhost:5050"
 from = "/api/social"
 to = "http://localhost:5000"
 
-[servers.fitness]
-from = "/api/fitness"
+[servers.trainings]
+from = "/api/trainings"
 to = "http://localhost:8080"
+
+[servers.routines]
+from = "/api/routines"
+to = "http://localhost:3550"
 
 [servers.reports]
 from = "/api/reports"

@@ -4,7 +4,7 @@ import { RoutineEntity } from './routine.entity';
 import {
   RoutineRepository as IRoutineRepository,
   RoutineDto,
-} from 'application';
+} from '../application';
 import {
   Routine,
   RoutineId,
@@ -12,7 +12,7 @@ import {
   RoutineDescription,
   RoutineUserId,
   RoutineTrainings,
-} from 'core';
+} from '../core';
 import { RoutineTrainingEntity } from './routine-training.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 

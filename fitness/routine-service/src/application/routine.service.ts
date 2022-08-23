@@ -1,12 +1,12 @@
-import { Routine, RoutineEvent } from "core";
-import { RoutineDto } from "./routine.dto";
-import { RoutinePublisher } from "./routine.publisher";
-import { RoutineRepository } from "./routine.repository";
+import { Routine, RoutineEvent } from '../core';
+import { RoutineDto } from './routine.dto';
+import { RoutinePublisher } from './routine.publisher';
+import { RoutineRepository } from './routine.repository';
 
 export class RoutineService {
   constructor(
     private repository: RoutineRepository,
-    private publisher: RoutinePublisher
+    private publisher: RoutinePublisher,
   ) {}
 
   async get(uuid: string): Promise<RoutineDto> {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
-import { RoutinePublisher as Publisher } from 'application';
-import { RoutineEvent } from 'core';
+import { RoutinePublisher as Publisher } from '../application';
+import { RoutineEvent } from '../core';
 
 @Injectable()
 export class RoutinePublisher implements Publisher {

@@ -110,8 +110,8 @@ export class RoutinePlayerComponent implements OnInit {
 
     this.http
       .get(
-        environment.fitnessApiUrl +
-          '/trainings/' +
+        environment.trainingApiUrl +
+          '/' +
           this.trainings[this.indexActualTraining].id +
           '/video',
         { responseType: 'text' }

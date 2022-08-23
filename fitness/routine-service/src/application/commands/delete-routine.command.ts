@@ -1,6 +1,6 @@
-import { Routine } from "core";
-import { RoutineCommand } from "../routine.command";
-import { RoutineService } from "../routine.service";
+import { Routine } from '../../core';
+import { RoutineCommand } from '../routine.command';
+import { RoutineService } from '../routine.service';
 
 export class DeleteRoutine implements RoutineCommand {
   constructor(private readonly id: string) {}

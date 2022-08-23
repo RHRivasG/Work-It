@@ -8,6 +8,10 @@ to = "http://auth:5050"
 from = "/api/social"
 to = "http://social_dimension_microservice:5000"
 
-[servers.fitness]
-from = "/api/fitness"
-to = "http://fitness_dimension_microservice:8080"
+[servers.trainings]
+from = "/api/trainings"
+to = "http://training_service_microservice:8080"
+
+[servers.routines]
+from = "/api/routines"
+to = "http://routine_service_microservice:3550"

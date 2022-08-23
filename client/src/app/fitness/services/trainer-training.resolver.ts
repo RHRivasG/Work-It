@@ -1,20 +1,24 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
-  Router, Resolve,
+  Router,
+  Resolve,
   RouterStateSnapshot,
-  ActivatedRouteSnapshot
+  ActivatedRouteSnapshot,
 } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Training } from '../models/training';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TrainerTrainingsResolver implements Resolve<Training[]> {
-  constructor(private client: HttpClient){}
-  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Training[]> {
-    return this.client.get<Training[]>(environment.fitnessApiUrl + '/trainings/trainer')
+  constructor(private client: HttpClient) {}
+  resolve(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<Training[]> {
+    return this.client.get<Training[]>(environment.trainingApiUrl + '/trainer');
   }
 }

@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { RoutineUpdated } from 'core';
+import { RoutineUpdated } from '../../core';
 import { RoutineDao } from '../routine.dao';
 
 @EventsHandler(RoutineUpdated)

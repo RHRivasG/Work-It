@@ -4,7 +4,7 @@ import {
   RoutineDeleted,
   TrainingAdded,
   TrainingRemoved,
-} from 'core';
+} from '../core';
 import { RoutineEntity } from './routine.entity';
 import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';

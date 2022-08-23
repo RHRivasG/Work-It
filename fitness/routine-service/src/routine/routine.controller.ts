@@ -19,7 +19,7 @@ import {
   DeleteRoutine,
   AddTraining,
   RemoveTraining,
-} from 'application';
+} from '../application';
 
 class RoutineCreationForm {
   name: string;
