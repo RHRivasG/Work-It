@@ -12,8 +12,8 @@ export class CreateRoutine implements RoutineCommand {
   constructor(
     private readonly name: string,
     private readonly description: string,
-    private readonly userId: Uint8Array,
-    private readonly trainings: Uint8Array[]
+    private readonly userId: string,
+    private readonly trainings: string[]
   ) {}
   execute(service: RoutineService): void {
     const routine = Routine.create(

@@ -1,4 +1,3 @@
-import { randomBytes, randomUUID } from "crypto";
 import { RoutineCreated } from "./events/routine-created.event";
 import { RoutineDeleted } from "./events/routine-deleted.event";
 import { RoutineUpdated } from "./events/routine-updated.event";
@@ -29,7 +28,7 @@ export class Routine {
     public trainings: RoutineTrainings,
     id?: RoutineId
   ) {
-    this.id = id || new RoutineId(randomBytes(8));
+    this.id = id || new RoutineId();
   }
 
   getEvents(): RoutineEvent[] {
@@ -69,8 +68,11 @@ export class Routine {
   }
 
   removeTraining(trainingId: RoutineTrainingId) {
+    const trainingsFiltered = this.trainings.value.filter(
+      (training) => training != trainingId.value
+    );
     this.trainings = new RoutineTrainings(
-      this.trainings.value.filter((training) => training != trainingId.value)
+      trainingsFiltered.map((training) => Buffer.from(training).toString("hex"))
     );
     this.eventRecorder.push(new TrainingRemoved(this.id, trainingId));
   }

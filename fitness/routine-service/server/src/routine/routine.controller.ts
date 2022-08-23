@@ -55,9 +55,7 @@ export class RoutineController {
     if (!user.roles.includes('participant')) {
       throw new UnauthorizedException();
     }
-    return await this._routineService.get(
-      new Uint8Array(Buffer.from(id, 'hex')),
-    );
+    return await this._routineService.get(id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -74,9 +72,7 @@ export class RoutineController {
       routine.name,
       routine.description,
       user.userId,
-      routine.trainings.map(
-        (training) => new Uint8Array(Buffer.from(training, 'hex')),
-      ),
+      routine.trainings,
     );
     command.execute(this._routineService);
   }
@@ -92,13 +88,11 @@ export class RoutineController {
       throw new UnauthorizedException();
     }
     const command: UpdateRoutine = new UpdateRoutine(
-      new Uint8Array(Buffer.from(id, 'hex')),
+      id,
       routine.name,
       routine.description,
       user.userId,
-      routine.trainings.map(
-        (training) => new Uint8Array(Buffer.from(training, 'hex')),
-      ),
+      routine.trainings,
     );
     command.execute(this._routineService);
   }
@@ -108,9 +102,7 @@ export class RoutineController {
     if (!user.roles.includes('participant')) {
       throw new UnauthorizedException();
     }
-    const command: DeleteRoutine = new DeleteRoutine(
-      new Uint8Array(Buffer.from(id, 'hex')),
-    );
+    const command: DeleteRoutine = new DeleteRoutine(id);
     command.execute(this._routineService);
   }
 }

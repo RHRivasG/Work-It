@@ -4,8 +4,8 @@ import { RoutineService } from "../routine.service";
 
 export class AddTraining implements RoutineCommand {
   constructor(
-    private readonly id: Uint8Array,
-    private readonly trainingId: Uint8Array
+    private readonly id: string,
+    private readonly trainingId: string
   ) {}
   async execute(service: RoutineService) {
     const routine: Routine = await service.getRoutine(this.id),

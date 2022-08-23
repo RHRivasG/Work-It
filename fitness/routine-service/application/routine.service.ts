@@ -9,15 +9,15 @@ export class RoutineService {
     private publisher: RoutinePublisher
   ) {}
 
-  async get(uuid: Uint8Array): Promise<RoutineDto> {
+  async get(uuid: string): Promise<RoutineDto> {
     return await this.repository.get(uuid);
   }
 
-  async getAll(userId: Uint8Array): Promise<RoutineDto[]> {
+  async getAll(userId: string): Promise<RoutineDto[]> {
     return await this.repository.getAll(userId);
   }
 
-  async getRoutine(uuid: Uint8Array): Promise<Routine> {
+  async getRoutine(uuid: string): Promise<Routine> {
     return await this.repository.getRoutine(uuid);
   }
 

@@ -1,7 +1,7 @@
 export interface RoutineDto {
-  id: Uint8Array;
+  id: string;
   name: string;
   description: string;
-  userId: Uint8Array;
-  trainings: Uint8Array[];
+  userId: string;
+  trainings: string[];
 }

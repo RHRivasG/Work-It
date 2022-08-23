@@ -10,11 +10,11 @@ import { RoutineService } from "../routine.service";
 
 export class UpdateRoutine implements RoutineCommand {
   constructor(
-    private readonly id: Uint8Array,
+    private readonly id: string,
     private readonly name: string,
     private readonly description: string,
-    private readonly userId: Uint8Array,
-    private readonly trainings: Uint8Array[]
+    private readonly userId: string,
+    private readonly trainings: string[]
   ) {}
   async execute(service: RoutineService) {
     const routine: Routine = await service.getRoutine(this.id);

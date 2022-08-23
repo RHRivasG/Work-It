@@ -1,6 +1,8 @@
 export class RoutineTrainings {
   public readonly value: Uint8Array[];
-  constructor(value: Uint8Array[]) {
-    this.value = value;
+  constructor(value: string[]) {
+    this.value = value.map(
+      (training) => new Uint8Array(Buffer.from(training, "hex"))
+    );
   }
 }

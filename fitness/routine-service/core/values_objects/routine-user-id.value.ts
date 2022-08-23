@@ -1,6 +1,8 @@
 export class RoutineUserId {
   public readonly value: Uint8Array;
-  constructor(value: Uint8Array) {
-    this.value = value;
+  constructor(value: string) {
+    this.value = new Uint8Array(
+      Buffer.from(value.replaceAll("-", "").trim(), "hex")
+    );
   }
 }

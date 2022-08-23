@@ -13,6 +13,7 @@ import { RoutineRepository } from './routine.repository';
 import { AuthModule } from '../auth/auth.module';
 import { RoutineEntity } from './routine.entity';
 import { RoutineTrainingEntity } from './routine-training.entity';
+import { RoutineDao } from './routine.dao';
 
 @Module({
   imports: [
@@ -21,13 +22,14 @@ import { RoutineTrainingEntity } from './routine-training.entity';
     TypeOrmModule.forFeature([RoutineEntity, RoutineTrainingEntity]),
   ],
   providers: [
-    RoutinePublisher,
-    RoutineRepository,
     RoutineCreatedHandler,
     RoutineUpdatedHandler,
     RoutineDeletedHandler,
     TrainingAddedHandler,
     TrainingRemovedHandler,
+    RoutinePublisher,
+    RoutineRepository,
+    RoutineDao,
     {
       provide: RoutineService,
       useFactory: (

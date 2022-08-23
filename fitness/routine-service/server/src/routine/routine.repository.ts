@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { RoutineEntity } from './routine.entity';
 import {
@@ -25,73 +25,62 @@ export class RoutineRepository implements IRoutineRepository {
     private routineTrainingRepository: Repository<RoutineTrainingEntity>,
   ) {}
 
-  async get(uuid: Uint8Array): Promise<RoutineDto> {
+  async get(uuid: string): Promise<RoutineDto> {
     const routine = await this.routineRepository.findOneBy({
-        id: Buffer.from(uuid).toString('hex'),
+        id: uuid,
+        trainings: true,
       }),
-      trainings = await this.routineTrainingRepository.find({
-        where: { idRoutine: Buffer.from(uuid).toString('hex') },
-        order: { order: 'ASC' },
-      }),
+      // trainings = await this.routineTrainingRepository.find({
+      //   where: { idRoutine: uuid },
+      //   order: { order: 'ASC' },
+      // }),
       dto: RoutineDto = {
-        id: new Uint8Array(Buffer.from(routine.id, 'hex')),
+        id: routine.id,
         name: routine.name,
         description: routine.description,
-        userId: new Uint8Array(Buffer.from(routine.userId, 'hex')),
-        trainings: trainings.map(
-          (training) => new Uint8Array(Buffer.from(training.idTraining, 'hex')),
-        ),
+        userId: routine.userId,
+        trainings: routine.trainings.map((training) => training.idTraining),
       };
 
     return dto;
   }
 
-  async getAll(userId: Uint8Array): Promise<RoutineDto[]> {
+  async getAll(userId: string): Promise<RoutineDto[]> {
     const routines = await this.routineRepository.find({
-        where: { userId: Buffer.from(userId).toString('hex') },
+        where: { userId: userId },
+        relations: {
+          trainings: true,
+        },
       }),
-      dtos: RoutineDto[] = [];
-    routines.forEach(async (routine) => {
-      const trainings = await this.routineTrainingRepository.find({
-          where: { idRoutine: Buffer.from(routine.id).toString('hex') },
-          order: { order: 'ASC' },
-        }),
-        dto: RoutineDto = {
-          id: new Uint8Array(Buffer.from(routine.id, 'hex')),
+      dtos: RoutineDto[] = routines.map((routine) => {
+        const dto: RoutineDto = {
+          id: routine.id,
           name: routine.name,
           description: routine.description,
-          userId: new Uint8Array(Buffer.from(routine.userId, 'hex')),
-          trainings: trainings.map(
-            (training) =>
-              new Uint8Array(Buffer.from(training.idTraining, 'hex')),
-          ),
+          userId: routine.userId,
+          trainings: routine.trainings.map((training) => {
+            return training.idTraining;
+          }),
         };
-      dtos.push(dto);
-    });
+        return dto;
+      });
     return dtos;
   }
 
-  async getRoutine(uuid: Uint8Array): Promise<Routine> {
+  async getRoutine(uuid: string): Promise<Routine> {
     const routineEntity = await this.routineRepository.findOneBy({
-        id: Buffer.from(uuid).toString('hex'),
+        id: uuid,
       }),
       trainings = await this.routineTrainingRepository.find({
-        where: { idRoutine: Buffer.from(uuid).toString('hex') },
+        where: { idRoutine: uuid },
         order: { order: 'ASC' },
       }),
       routine = new Routine(
         new RoutineName(routineEntity.name),
-        new RoutineUserId(
-          new Uint8Array(Buffer.from(routineEntity.userId, 'hex')),
-        ),
+        new RoutineUserId(routineEntity.userId),
         new RoutineDescription(routineEntity.description),
-        new RoutineTrainings(
-          trainings.map(
-            (training) =>
-              new Uint8Array(Buffer.from(training.idTraining, 'hex')),
-          ),
-        ),
-        new RoutineId(new Uint8Array(Buffer.from(routineEntity.id, 'hex'))),
+        new RoutineTrainings(trainings.map((training) => training.idTraining)),
+        new RoutineId(routineEntity.id),
       );
 
     return routine;

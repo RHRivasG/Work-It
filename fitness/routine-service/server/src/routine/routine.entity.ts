@@ -1,4 +1,12 @@
-import { BaseEntity, Entity, PrimaryColumn, Column } from 'typeorm';
+import {
+  BaseEntity,
+  Entity,
+  PrimaryColumn,
+  Column,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
+import { RoutineTrainingEntity } from './routine-training.entity';
 
 @Entity('routines')
 export class RoutineEntity extends BaseEntity {
@@ -10,4 +18,8 @@ export class RoutineEntity extends BaseEntity {
   userId: string;
   @Column()
   description: string;
+
+  @OneToMany(() => RoutineTrainingEntity, (rte) => rte.routine)
+  @JoinColumn({ name: 'id', referencedColumnName: 'id_routine' })
+  trainings: RoutineTrainingEntity[];
 }
