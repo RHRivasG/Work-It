@@ -3,7 +3,7 @@ package vo_test
 import (
 	"errors"
 	"testing"
-	"training-service/internal/core/vo"
+	"training-service/pkg/core/vo"
 
 	"github.com/google/uuid"
 )
@@ -16,8 +16,8 @@ func TestNewTrainingId(t *testing.T) {
 		t.Errorf("got %q, wanted %q", err, newId)
 	}
 
-	if id.Value() != newId {
-		t.Errorf("got %q, wanted %q", id.Value(), newId)
+	if id.Value != newId {
+		t.Errorf("got %q, wanted %q", id.Value, newId)
 	}
 }
 

@@ -1,13 +1,9 @@
 package vo
 
 type TrainingDescription struct {
-	value string
+	Value string
 }
 
 func NewTrainingDescription(value string) (*TrainingDescription, error) {
-	return &TrainingDescription{value: value}, nil
-}
-
-func (t *TrainingDescription) Value() string {
-	return t.value
+	return &TrainingDescription{Value: value}, nil
 }

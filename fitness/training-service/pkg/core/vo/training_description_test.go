@@ -2,7 +2,7 @@ package vo_test
 
 import (
 	"testing"
-	"training-service/internal/core/vo"
+	"training-service/pkg/core/vo"
 )
 
 func TestNewTrainingDescription(t *testing.T) {
@@ -13,8 +13,8 @@ func TestNewTrainingDescription(t *testing.T) {
 		t.Errorf("got %q, wanted %q", err, newDescription)
 	}
 
-	if description.Value() != newDescription {
-		t.Errorf("got %q, wanted %q", description.Value(), newDescription)
+	if description.Value != newDescription {
+		t.Errorf("got %q, wanted %q", description.Value, newDescription)
 	}
 
 }
