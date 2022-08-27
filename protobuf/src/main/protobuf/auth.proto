@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option java_multiple_files = true;
 option java_package = "ucab.sqa.workit.protobuf";
-option csharp_namespace = "AuthenticationService.Grpc";
+option csharp_namespace = "AuthenticationService.Web.Grpc";
 
 package ucab.sqa.workit.protobuf;
 
