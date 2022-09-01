@@ -1,0 +1,15 @@
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\bin\Debug\net6.0\AuthenticationService.Application.deps.json
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\bin\Debug\net6.0\AuthenticationService.Application.dll
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\bin\Debug\net6.0\AuthenticationService.Application.pdb
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\bin\Debug\net6.0\AuthenticationService.Domain.dll
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\bin\Debug\net6.0\AuthenticationService.Domain.pdb
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\obj\Debug\net6.0\AuthenticationService.Application.csproj.AssemblyReference.cache
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\obj\Debug\net6.0\AuthenticationService.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\obj\Debug\net6.0\AuthenticationService.Application.AssemblyInfoInputs.cache
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\obj\Debug\net6.0\AuthenticationService.Application.AssemblyInfo.cs
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\obj\Debug\net6.0\AuthenticationService.Application.csproj.CoreCompileInputs.cache
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\obj\Debug\net6.0\AuthenticationService.Application.csproj.CopyComplete
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\obj\Debug\net6.0\AuthenticationService.Application.dll
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\obj\Debug\net6.0\refint\AuthenticationService.Application.dll
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\obj\Debug\net6.0\AuthenticationService.Application.pdb
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Application\obj\Debug\net6.0\ref\AuthenticationService.Application.dll

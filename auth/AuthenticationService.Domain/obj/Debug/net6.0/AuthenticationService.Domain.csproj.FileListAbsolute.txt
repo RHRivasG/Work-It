@@ -1,0 +1,12 @@
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Domain\bin\Debug\net6.0\AuthenticationService.Domain.deps.json
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Domain\bin\Debug\net6.0\AuthenticationService.Domain.dll
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Domain\bin\Debug\net6.0\AuthenticationService.Domain.pdb
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Domain\obj\Debug\net6.0\AuthenticationService.Domain.csproj.AssemblyReference.cache
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Domain\obj\Debug\net6.0\AuthenticationService.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Domain\obj\Debug\net6.0\AuthenticationService.Domain.AssemblyInfoInputs.cache
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Domain\obj\Debug\net6.0\AuthenticationService.Domain.AssemblyInfo.cs
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Domain\obj\Debug\net6.0\AuthenticationService.Domain.csproj.CoreCompileInputs.cache
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Domain\obj\Debug\net6.0\AuthenticationService.Domain.dll
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Domain\obj\Debug\net6.0\refint\AuthenticationService.Domain.dll
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Domain\obj\Debug\net6.0\AuthenticationService.Domain.pdb
+C:\Users\micha\Codes\Personal\Work-It\auth\AuthenticationService.Domain\obj\Debug\net6.0\ref\AuthenticationService.Domain.dll

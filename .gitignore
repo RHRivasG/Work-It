@@ -9,3 +9,5 @@ null/
 .bsp/
 .sbt/
 fitness/routine-service/core/node_modules/
+*.log
+jmeter-results/

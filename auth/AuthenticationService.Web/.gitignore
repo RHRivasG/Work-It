@@ -1,0 +1,6 @@
+.config/
+bin/
+obj/
+Properties/
+*.db
+*.db-*

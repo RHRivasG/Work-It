@@ -1,10 +1,11 @@
-using AuthenticationService.Contexts;
-using AuthenticationService.Services;
 using Microsoft.EntityFrameworkCore;
 using AspNetCore.RouteAnalyzer;
-using AuthenticationService.Grpc;
+using AuthenticationService.Web.Grpc;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using AuthenticationService.Web.Extensions;
+using Microsoft.OpenApi.Models;
+using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,10 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Enable GRPC
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
-// Add DbContext
-builder.Services.AddDbContext<UserContext>(options => {
-    options.UseSqlite(builder.Configuration.GetConnectionString("Sqlite"));
-});
 // Add CORS Default Policy
 builder.Services.AddCors(options => {
     options.AddDefaultPolicy(policy => {
@@ -25,15 +22,47 @@ builder.Services.AddCors(options => {
         policy.AllowCredentials();
     });
 });
-// Add Services
-builder.Services.AddSingleton<ICredentialsService, JwtCredentialsService>();
-builder.Services.AddTransient<IUseCases, UseCases>();
+// Add WorkIt Services
+builder.Services.AddWorkItServices(options => {
+    options.ConnectionString = builder.Configuration.GetConnectionString("Sqlite");
+    options.Admin.AdminSecret = "admin-secret";
+    options.Admin.AdminUsername = "admin";
+    options.Authentication.ExpiresIn = TimeSpan.FromMinutes(5);
+});
 builder.Services.AddRouteAnalyzer();
+// Add Auhtentication/Authorization Handlers
+builder.Services.AddWorkItAuth();
 // Add WebAPI Controllers
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options => {
+            options.EnableAnnotations();
+            options.AddSecurityDefinition(
+                    "login",
+                    new OpenApiSecurityScheme {
+                            Type = SecuritySchemeType.Http,
+                            Scheme = "Basic",
+                            In = ParameterLocation.Header,
+                            Name = HeaderNames.Authorization
+                        }
+                    );
+            options.AddSecurityRequirement(
+                    new OpenApiSecurityRequirement 
+                    {
+                        {
+                            new OpenApiSecurityScheme 
+                            {
+                                Reference = new OpenApiReference 
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "login"
+                                }
+                            },
+                            Array.Empty<string>()
+                        }
+                    });
+        });
 // Enable Multiple URLS
 builder.WebHost
     .UseKestrel()
@@ -57,6 +86,7 @@ builder.WebHost
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
+app.UseWorkItExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -66,13 +96,19 @@ if (app.Environment.IsDevelopment())
 
 // Enable the use of CORS
 app.UseCors();
-// Enable routing and HTTPS Redirection
+// Enable Routing
+app.UseRouting();
+// Enable Authentication and Authroization
+app.UseAuthentication();
 app.UseAuthorization();
-// Add Grpc Event Handler
-app.MapGrpcService<GrpcEventHandler>();
-// Add WebAPI Controllers
-app.MapControllers();
+// Enable endpoints for gRPC and HTTP
+app.UseEndpoints(endpoints => {
+    // Add WebAPI Controllers
+    endpoints.MapControllers();
+    // Add Grpc Event Handler
+    endpoints.MapGrpcService<GrpcEventHandler>();
+});
 // Register and unregister to service aggregator
-app.UseServiceAggregator();
+// app.UseServiceAggregator();
 
 app.Run();

@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "JT6HSxdcmIV6SRngxA22lXzBj1Wnkc9SlZxAorhcWcg+iDnDdbUbp3gOVqdltRwCpocG4hKPIcKjzMgswKCVSQ==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\micha\\Codes\\Personal\\Work-It\\auth\\AuthenticationService.Application\\AuthenticationService.Application.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\micha\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.7\\microsoft.netcore.app.ref.6.0.7.nupkg.sha512",
+    "C:\\Users\\micha\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.7\\microsoft.windowsdesktop.app.ref.6.0.7.nupkg.sha512",
+    "C:\\Users\\micha\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.7\\microsoft.aspnetcore.app.ref.6.0.7.nupkg.sha512"
+  ],
+  "logs": []
+}
