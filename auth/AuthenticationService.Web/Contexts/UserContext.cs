@@ -1,3 +1,4 @@
+using Mapster;
 using AuthenticationService.Application.Interfaces;
 using AuthenticationService.Application.Models;
 using AuthenticationService.Domain.Token;
@@ -56,20 +57,14 @@ public partial class UserContext : DbContext, IUserRepository, IUserRetrievalBui
     }
     #endregion
     #region IUserRepository part
-    public IUserRetrievalBuilder FindAsync(Guid id)
+    IUserRetrievalBuilder IUserRepository.FindAsync(Guid id)
     {
         ValueFactory = async (withToken) =>
         {
-            var entity = withToken ?
-                await Users
+            var userQuery = Users
                     .Where(entity => entity.Id == id && !entity.Deleted)
-                    .AsNoTracking()
-                    .Include(user => user.Token)
-                    .FirstOrDefaultAsync() :
-                await Users
-                    .Where(entity => entity.Id == id && !entity.Deleted)
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync();
+                    .AsNoTracking();
+            var entity = await (withToken ? userQuery.Include(user => user.Token) : userQuery).FirstOrDefaultAsync();
 
             if (entity is null)
 #warning TODO: Implement user not found exception
@@ -79,8 +74,8 @@ public partial class UserContext : DbContext, IUserRepository, IUserRetrievalBui
         };
 
         return this;
-    }
-    public IUserRetrievalBuilder FindAsync(in UserCredentials credentials)
+        }
+    IUserRetrievalBuilder IUserRepository.FindAsync(UserCredentials credentials)
     {
         var username = credentials.Username;
         var password = credentials.Password;
@@ -96,7 +91,7 @@ public partial class UserContext : DbContext, IUserRepository, IUserRetrievalBui
                 .Where(entity => entity.Name == username.ToString() && entity.Password == password.ToString() && entity.Role == roles && !entity.Deleted)
                 .AsNoTracking();
 
-        var entity = (withToken ? userQuery.Include(user => user.Token) : userQuery).FirstOrDefault();
+        var entity = await (withToken ? userQuery.Include(user => user.Token) : userQuery).FirstOrDefaultAsync();
 
         if (entity is null)
             throw new InvalidUsernameException(username);
@@ -106,37 +101,17 @@ public partial class UserContext : DbContext, IUserRepository, IUserRetrievalBui
 
         return entity;
     }
-    public async Task SaveAsync(User user)
+    Task IUserRepository.SaveAsync(User user)
     {
-        var entity = new UserEntity
-        {
-            Name = user.Username.ToString(),
-            Password = user.Password.ToString(),
-            Preferences = user.Preferences,
-            Role = user.Role.ToArray(),
-            Id = user.Id
-        };
+        Users.Update(user.Adapt<UserEntity>());
 
-        Users.Update(entity);
-
-        await SaveChangesAsync();
+        return SaveChangesAsync();
     }
-    public async Task CreateAsync(User user)
+    Task IUserRepository.CreateAsync(User user)
     {
-        var entity = new UserEntity
-        {
-            Name = user.Username.ToString(),
-            Password = user.Password.ToString(),
-            Preferences = user.Preferences,
-            Role = user.Role.ToArray(),
-            Id = user.Id
-        };
-
-        await Users.AddAsync(entity);
-
-        await SaveChangesAsync();
+        return StoreAsync(user.Adapt<UserEntity>());
     }
-    public async Task DeleteAsync(Guid id)
+    async Task IUserRepository.DeleteAsync(Guid id)
     {
         var entity = await Users
                     .Where(entity => entity.Id == id && !entity.Deleted)
@@ -148,11 +123,9 @@ public partial class UserContext : DbContext, IUserRepository, IUserRetrievalBui
 
         await SaveChangesAsync();
     }
-    public async Task UndoDeleteAsync(Guid id)
+    async Task IUserRepository.UndoDeleteAsync(Guid id)
     {
-        var entity = await Users
-                    .Where(entity => entity.Id == id && entity.Deleted)
-                    .FirstOrDefaultAsync();
+        var entity = await Users.Where(entity => entity.Id == id && entity.Deleted).FirstOrDefaultAsync();
 
         if (entity is null) return;
 
@@ -160,23 +133,20 @@ public partial class UserContext : DbContext, IUserRepository, IUserRetrievalBui
 
         await SaveChangesAsync();
     }
+    private async Task StoreAsync(UserEntity entity)
+    {
+        await Users.AddAsync(entity);
+
+        await SaveChangesAsync();
+    }
     #endregion
     #region IUserRetrievalBuilder
-    public Task<User> Value => ValueFactory(false).ContinueWith(userTask =>
-    {
-        var entity = userTask.Result;
-        return new User(entity.Role.ToRole(), entity.Name.AsMemory(), entity.Password.AsMemory(), entity.Preferences, entity.Id);
-    });
-    public async Task<UserWithToken> WithToken()
+    Task<User> IUserRetrievalBuilder.Value => ValueFactory(false).ContinueWith(userTask => userTask.Result.Adapt<User>());
+    async Task<UserWithToken> IUserRetrievalBuilder.WithToken()
     {
         var entity = await ValueFactory(true);
-        var token = entity.Token;
 
-        return new UserWithToken
-        {
-            User = new User(entity.Role.ToRole(), entity.Name.AsMemory(), entity.Password.AsMemory(), entity.Preferences, entity.Id),
-            Token = token is null ? null : new Token(token.Value, token.OwnerId, token.IssuedAt, token.ExpiresIn)
-        };
+        return entity.Adapt<UserWithToken>();
     }
     #endregion
 

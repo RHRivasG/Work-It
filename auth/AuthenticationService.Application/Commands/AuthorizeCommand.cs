@@ -1,4 +1,3 @@
-using AuthenticationService.Application.Commands;
 using AuthenticationService.Application.Interfaces;
 using AuthenticationService.Domain.Token;
 
@@ -13,9 +12,7 @@ public class AuthorizeCommand : ICommand<Token>
     }
     public async Task<Token> Run()
     {
-        var token = await CredentialsService.GetTokenAsync(Hash); 
-        token.AssertValid();
-        return token;
+        return await CredentialsService.GetTokenAsync(Hash).Value; 
     }
     public Task Rollback() => Task.CompletedTask;
 }

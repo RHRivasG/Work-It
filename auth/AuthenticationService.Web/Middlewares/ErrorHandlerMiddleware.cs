@@ -25,6 +25,7 @@ public class ErrorHandlerMiddleware
             await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(err.Message));
         } catch(MemoryAccessException err) {
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            await Console.Error.WriteLineAsync(err.ToString());
             await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(err.Message));
         }  catch(Exception err) {
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;

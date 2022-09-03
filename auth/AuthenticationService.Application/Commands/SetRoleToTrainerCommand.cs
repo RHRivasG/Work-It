@@ -3,7 +3,8 @@ using AuthenticationService.Domain.User;
 
 namespace AuthenticationService.Application.Commands;
 
-public class SetRoleToTrainerCommand : ICommand {
+public class SetRoleToTrainerCommand : ICommand
+{
     private IUserRepository UserRepository { get; }
     private Guid OldId { get; }
     private Guid NewId { get; }
@@ -23,8 +24,8 @@ public class SetRoleToTrainerCommand : ICommand {
         if (user.Is(PreviousRole.Value)) return;
 
         user.Role = PreviousRole.Value;
-        
-        await UserRepository.SaveAsync(user);    
+
+        await UserRepository.SaveAsync(user);
     }
     public async Task Run()
     {

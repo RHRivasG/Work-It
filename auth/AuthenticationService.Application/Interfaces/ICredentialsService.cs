@@ -5,8 +5,8 @@ namespace AuthenticationService.Application.Interfaces;
 
 public interface ICredentialsService
 {
-    Task<Token> TokenForAsync(in User user);
+    Task<Token> TokenForAsync(User user);
     ITokenUserRetrieval GetTokenAsync(byte[] hash);
-    Task SaveTokenAsync(in Token token);
-    Task RemoveTokenAsync(in Token token);
+    Task SaveTokenAsync(Token token);
+    Task RemoveTokenAsync(Token token);
 }

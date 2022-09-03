@@ -1,4 +1,3 @@
-
 using AuthenticationService.Application.Models;
 using AuthenticationService.Application.Interfaces;
 using AuthenticationService.Domain.User;
@@ -8,13 +7,17 @@ namespace AuthenticationService.Application.Commands;
 class RegisterUserCommand : ICommand {
     private Guid? _savedId = null;
     private IUserRepository UserRepository { get; }
-    private UserCredentials Credentials { get; }
+    private ReadOnlyMemory<char> Username { get; }
+    private ReadOnlyMemory<char> Password { get; }
+    private UserRole? Role { get; }
     private string[] Preferences { get; }
-    public RegisterUserCommand(IUserRepository userContext, string[] preferences, in UserCredentials credentials)
+    public RegisterUserCommand(IUserRepository userContext, string[] preferences, UserCredentials credentials)
     {
         UserRepository = userContext;
-        Credentials = credentials;
         Preferences = preferences;
+        Username = credentials.Username;
+        Password = credentials.Password;
+        Role = credentials.Role;
     }
     public async Task Rollback()
     {
@@ -23,7 +26,7 @@ class RegisterUserCommand : ICommand {
         await UserRepository.DeleteAsync(_savedId.Value);
     }
     public async Task Run() {
-        var user = new User(Credentials.Role ?? UserRole.PARTICIPANT, Credentials.Username, Credentials.Password, Preferences);
+        var user = new User(Role ?? UserRole.PARTICIPANT, Username, Password, Preferences);
         await UserRepository.CreateAsync(user);
     }
 }

@@ -7,32 +7,38 @@ class UpdateUserCommand : ICommand
 {
     private IUserRepository UserRepository { get; }
     private Guid? _id;
-    private UserCredentials NewCredentials { get; }
-    private string[] Preferences { get; }
+    private ReadOnlyMemory<char> NewUsername { get; }
+    private ReadOnlyMemory<char> NewPassword { get; }
+    private UserRole? NewRole { get; }
+    private string[] NewPreferences { get; }
     private User? CurrentUser { get; set; } = null;
+
     public UpdateUserCommand(IUserRepository userRepository, Guid id, string[] preferences, UserCredentials newCredentials)
     {
         UserRepository = userRepository;
-        Preferences = preferences;
         _id = id;
-        NewCredentials = newCredentials;
+        NewUsername = newCredentials.Username;
+        NewPassword = newCredentials.Password;
+        NewRole = newCredentials.Role;
+        NewPreferences = preferences;
     }
     public async Task Rollback()
     {
-        if (!CurrentUser.HasValue) return;
+        if (CurrentUser is null) return;
 
-        await UserRepository.SaveAsync(CurrentUser.Value);
+        await UserRepository.SaveAsync(CurrentUser);
     }
     public async Task Run()
     {       
         if (!_id.HasValue) return;
 
         var user = await UserRepository.FindAsync(_id.Value).Value;
+
         CurrentUser = user;
 
-        user.Username = NewCredentials.Username;
-        user.Password = NewCredentials.Password;
-        user.Preferences = Preferences;
+        user.Username = NewUsername;
+        user.Password = NewPassword;
+        user.Preferences = NewPreferences;
 
         await UserRepository.SaveAsync(user);
     }

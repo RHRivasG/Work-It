@@ -1,3 +1,5 @@
+using AuthenticationService.Domain.Token.Exceptions;
+
 namespace AuthenticationService.Domain.User;
 
 [Flags]
@@ -13,7 +15,7 @@ public static class UserRoles {
             "trainer" => UserRole.TRAINER | UserRole.PARTICIPANT,
             "participant" => UserRole.PARTICIPANT,
             "admin" => UserRole.ADMIN,
-            _ => throw new InvalidUserRoleException(value)
+            _ => throw new InvalidUserRoleException()
         };
     }
     public static UserRole ToRole(this string[] values) {

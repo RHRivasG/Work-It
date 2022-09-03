@@ -6,33 +6,33 @@ using AuthenticationService.Domain.User;
 namespace AuthenticationService.Application.Commands;
 
 class AuthenticateAdminCommand : ICommand<Token> {
-    private UserCredentials Credentials { get; }
+    private ReadOnlyMemory<char> Username { get; }
+    private ReadOnlyMemory<char> Password { get; }
+    private UserRole? Role { get; }
     private string AdminSecret { get; }
     private string AdminUsername { get; }
     private ICredentialsService CredentialsService { get; }
-    public AuthenticateAdminCommand(ICredentialsService credentialsService, string adminSecret, string adminUsername, in UserCredentials credentials)
+    public AuthenticateAdminCommand(ICredentialsService credentialsService, string adminSecret, string adminUsername, UserCredentials credentials)
     {
         CredentialsService = credentialsService;
         AdminSecret = adminSecret;
         AdminUsername = adminUsername;
-        Credentials = credentials;
+        Username = credentials.Username;
+        Password = credentials.Password;
+        Role = credentials.Role;
     }
     public Task Rollback() {
         return Task.CompletedTask;
     }
     public Task<Token> Run()
     {
-        var password = Credentials.Password;
+        if (!Password.Span.SequenceEqual(AdminSecret))
+            throw new InvalidPasswordException(Password);
 
-        if (!password.Span.SequenceEqual(AdminSecret))
-            throw new InvalidPasswordException(password);
+        if (!Username.Span.SequenceEqual(AdminUsername))
+            throw new InvalidUsernameException(Username);
 
-        var username = Credentials.Username;
-
-        if (!username.Span.SequenceEqual(AdminUsername))
-            throw new InvalidUsernameException(username);
-
-        var user = new User(Credentials.Role ?? UserRole.ADMIN, username, password, Array.Empty<string>());
+        var user = new User(Role ?? UserRole.ADMIN, Username, Password, Array.Empty<string>());
 
         return CredentialsService.TokenForAsync(user);
     }

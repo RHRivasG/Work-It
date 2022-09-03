@@ -9,6 +9,7 @@ using AuthenticationService.Domain.Token;
 using AuthenticationService.Domain.User;
 using AuthenticationService.Web.Contexts;
 using AuthenticationService.Web.Contexts.Entities;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -21,29 +22,25 @@ public class JwtCredentialsService : ICredentialsService, ITokenUserRetrieval
     private TimeSpan Expiration { get; set; }
     private UserContext UserContext { get; set; }
     private byte[]? SearchHash { get; set; }
-    public ValueTask<UserWithToken> WithUser()
-    {
-        var token = FindToken();
-    }
-    public ValueTask<Token> Value { get => FindToken(); }
     public JwtCredentialsService(IConfiguration configuration, IOptionsMonitor<AuthenticationOptions> options, UserContext tokenContext)
     {
         SecretKey = configuration["Jwt:Key"];
+
         if (!options.CurrentValue.ExpiresIn.HasValue)
-            throw new AuthenticationOptionsNotProvidedException("Expiration value not provided");
+            throw new InvalidAuthenticationOptionsException(nameof(options.CurrentValue.ExpiresIn));
 
         Expiration = options.CurrentValue.ExpiresIn.Value;
         UserContext = tokenContext;
     }
-    public Task<Token> TokenForAsync(in User user)
+    public Task<Token> TokenForAsync(User user)
     {
         var symmetricKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
         var credentials = new SigningCredentials(symmetricKey, SecurityAlgorithms.HmacSha512);
 
         var claims = new List<Claim> {
-            new Claim("sub", user.Role is UserRole.ADMIN ? "admin" : user.Id.ToString()),
-            new Claim("roles", JsonSerializer.Serialize(user.Role.ToArray()), JsonClaimValueTypes.JsonArray),
-            new Claim("preferences", JsonSerializer.Serialize(user.Preferences), JsonClaimValueTypes.JsonArray)
+            new ("sub", user.Role is UserRole.ADMIN ? "admin" : user.Id.ToString()),
+            new ("roles", JsonSerializer.Serialize(user.Role.ToArray()), JsonClaimValueTypes.JsonArray),
+            new ("preferences", JsonSerializer.Serialize(user.Preferences), JsonClaimValueTypes.JsonArray)
         };
 
         var jwt = new JwtSecurityToken(signingCredentials: credentials, claims: claims);
@@ -58,7 +55,7 @@ public class JwtCredentialsService : ICredentialsService, ITokenUserRetrieval
         SearchHash = hash;
         return this;
     }
-    public Task RemoveTokenAsync(in Token token)
+    public Task RemoveTokenAsync(Token token)
     {
         if (!MemoryMarshal.TryGetArray(token.Hash.Value, out var hashSegment) || hashSegment.Array is null)
             throw new MemoryAccessException("Failed to access hash byte array");
@@ -66,21 +63,24 @@ public class JwtCredentialsService : ICredentialsService, ITokenUserRetrieval
         if (!MemoryMarshal.TryGetString(token.Inner.Value, out var tokenValue, out _, out _) || tokenValue is null)
             throw new MemoryAccessException("Failed to access hash byte array");
 
-        var entity = new TokenEntity()
-        {
-            Id = token.Id,
-            OwnerId = token.OwnerId,
-            Value = tokenValue,
-            Hash = hashSegment.Array,
-            ExpiresIn = token.ExpiresIn.Value,
-            IssuedAt = token.IssuedAt.Value
-        };
-
-        UserContext.Tokens.Remove(entity);
+        UserContext.Tokens.Remove(token.Adapt<TokenEntity>());
 
         return UserContext.SaveChangesAsync();
     }
-    public Task SaveTokenAsync(in Token token)
+    public async ValueTask<UserWithToken> WithUser()
+    {
+        var token = await FindTokenEntity()
+            .Join(
+                UserContext.Users, 
+                token => token.OwnerId,
+                user => user.Id,
+                (token, user) => new UserWithToken(user.Adapt<User>(), token.Adapt<Token>())
+            )
+            .FirstAsync();
+        return token;
+    }
+    public ValueTask<Token> Value { get => FindToken(); }
+    public Task SaveTokenAsync(Token token)
     {
         if (!MemoryMarshal.TryGetArray(token.Hash.Value, out var hashSegment) || hashSegment.Array is null)
             throw new MemoryAccessException("Failed to access hash byte array");
@@ -88,16 +88,7 @@ public class JwtCredentialsService : ICredentialsService, ITokenUserRetrieval
         if (!MemoryMarshal.TryGetString(token.Inner.Value, out var tokenValue, out _, out _) || tokenValue is null)
             throw new MemoryAccessException("Failed to access hash byte array");
 
-        var entity = new TokenEntity()
-        {
-            Id = token.Id,
-            OwnerId = token.OwnerId,
-            Value = tokenValue,
-            Hash = hashSegment.Array,
-            ExpiresIn = token.ExpiresIn.Value,
-            IssuedAt = token.IssuedAt.Value
-        };
-        return AddTokenAsync(entity);
+        return AddTokenAsync(token.Adapt<TokenEntity>());
     }
     private async Task AddTokenAsync(TokenEntity entity)
     {
@@ -109,16 +100,13 @@ public class JwtCredentialsService : ICredentialsService, ITokenUserRetrieval
 
         await UserContext.SaveChangesAsync();
     }
-    private async ValueTask<TokenEntity> FindTokenEntity() {
-        return await UserContext.Tokens.Where(token => token.Hash == SearchHash).FirstAsync();
-    }
+    private IQueryable<TokenEntity> FindTokenEntity() => UserContext.Tokens.Where(token => token.Hash == SearchHash);
     private async ValueTask<Token> FindToken()
     {
         if (SearchHash is null)
 #warning TODO: Implement invalid hash exception
             throw new Exception("Hash not set");
-        var tokenEntity = await FindTokenEntity();
 
-        return new(tokenEntity.Value, tokenEntity.OwnerId, tokenEntity.IssuedAt, tokenEntity.ExpiresIn, tokenEntity.Id);
+        return (await FindTokenEntity().FirstAsync()).Adapt<Token>();
     }
 }
