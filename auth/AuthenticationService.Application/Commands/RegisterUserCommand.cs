@@ -11,13 +11,15 @@ class RegisterUserCommand : ICommand {
     private ReadOnlyMemory<char> Password { get; }
     private UserRole? Role { get; }
     private string[] Preferences { get; }
-    public RegisterUserCommand(IUserRepository userContext, string[] preferences, UserCredentials credentials)
+    private Guid Id { get; }
+    public RegisterUserCommand(IUserRepository userContext, string[] preferences, UserCredentials credentials, Guid id)
     {
         UserRepository = userContext;
         Preferences = preferences;
         Username = credentials.Username;
         Password = credentials.Password;
         Role = credentials.Role;
+        Id = id;
     }
     public async Task Rollback()
     {
@@ -26,7 +28,7 @@ class RegisterUserCommand : ICommand {
         await UserRepository.DeleteAsync(_savedId.Value);
     }
     public async Task Run() {
-        var user = new User(Role ?? UserRole.PARTICIPANT, Username, Password, Preferences);
+        var user = new User(Role ?? UserRole.PARTICIPANT, Username, Password, Preferences, Id);
         await UserRepository.CreateAsync(user);
     }
 }

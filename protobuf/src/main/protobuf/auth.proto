@@ -31,12 +31,6 @@ message CompleteUserInformation {
     UserRole role = 2;
 }
 
-message AuthenticationResult {
-    int32 resultType = 1;
-    string errorMessage = 2;
-    string authenticationToken = 3;
-}
-
 message Void {}
 
 service Authenticator {

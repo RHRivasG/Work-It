@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using AspNetCore.RouteAnalyzer;
-// using AuthenticationService.Web.Grpc;
+using AuthenticationService.Web.Grpc;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using AuthenticationService.Web.Extensions;
@@ -80,19 +80,19 @@ builder.WebHost
         options.Listen(bindAddress, webApiPort, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1);
         options.Listen(bindAddress, grpcPort, o => {
             o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
-            o.UseHttps();
+            // o.UseHttps();
         });
     });
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseWorkItExceptionHandler();
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.MapGrpcReflectionService();
-}
+// if (app.Environment.IsDevelopment())
+// {
+app.UseSwagger();
+app.UseSwaggerUI();
+app.MapGrpcReflectionService();
+// }
 
 // Enable the use of CORS
 app.UseCors();
@@ -106,7 +106,7 @@ app.UseEndpoints(endpoints => {
     // Add WebAPI Controllers
     endpoints.MapControllers();
     // Add Grpc Event Handler
-    // endpoints.MapGrpcService<GrpcEventHandler>();
+    endpoints.MapGrpcService<GrpcEventListener>();
 });
 // Register and unregister to service aggregator
 // app.UseServiceAggregator();

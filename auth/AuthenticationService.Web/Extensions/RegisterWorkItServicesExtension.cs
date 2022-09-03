@@ -84,9 +84,9 @@ public static class RegisterWorkItServicesExtension
             .MapWith(entity => new UserWithToken(entity.Adapt<User>(), entity.Token == null ? null : entity.Token.Adapt<Token>()))
             .Compile();
 
-        services.AddSingleton<IUserRepository, UserContext>(services => services.GetRequiredService<UserContext>());
-        services.AddScoped<ICredentialsService, JwtCredentialsService>();
-        services.AddScoped<IUseCases, UseCases>(services =>
+        services.AddTransient<IUserRepository, UserContext>(services => services.GetRequiredService<UserContext>());
+        services.AddTransient<ICredentialsService, JwtCredentialsService>();
+        services.AddTransient<IUseCases, UseCases>(services =>
         {
             return new UseCases(
                     services.GetRequiredService<ICredentialsService>(),

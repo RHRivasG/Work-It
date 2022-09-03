@@ -51,7 +51,8 @@ public class UseCases : IUseCases
         return new RegisterUserCommand(
             UserRepository,
             form.Preferences,
-            credentials
+            credentials,
+            form.Id
           );
     }
 

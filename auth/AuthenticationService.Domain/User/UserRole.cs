@@ -19,7 +19,7 @@ public static class UserRoles {
         };
     }
     public static UserRole ToRole(this string[] values) {
-        if (values is { Length: 0 }) 
+        if (values is null or { Length: 0 }) 
             throw new InvalidUserRolesException();
 
         return values.Select(UserRoles.ToRole).Aggregate((a, b) => a | b);
