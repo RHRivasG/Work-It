@@ -1,4 +1,3 @@
-using Mapster;
 using AuthenticationService.Application.Interfaces;
 using AuthenticationService.Application.Models;
 using AuthenticationService.Domain.Token;
@@ -8,6 +7,7 @@ using AuthenticationService.Web.Contexts.Converters;
 using AuthenticationService.Web.Contexts.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using AuthenticationService.Web.Extensions;
 
 namespace AuthenticationService.Web.Contexts;
 
@@ -103,13 +103,13 @@ public partial class UserContext : DbContext, IUserRepository, IUserRetrievalBui
     }
     Task IUserRepository.SaveAsync(User user)
     {
-        Users.Update(user.Adapt<UserEntity>());
+        Users.Update(user.ToEntity());
 
         return SaveChangesAsync();
     }
     Task IUserRepository.CreateAsync(User user)
     {
-        return StoreAsync(user.Adapt<UserEntity>());
+        return StoreAsync(user.ToEntity());
     }
     async Task IUserRepository.DeleteAsync(Guid id)
     {
@@ -141,12 +141,12 @@ public partial class UserContext : DbContext, IUserRepository, IUserRetrievalBui
     }
     #endregion
     #region IUserRetrievalBuilder
-    Task<User> IUserRetrievalBuilder.Value => ValueFactory(false).ContinueWith(userTask => userTask.Result.Adapt<User>());
+    Task<User> IUserRetrievalBuilder.Value => ValueFactory(false).ContinueWith(userTask => userTask.Result.ToUser());
     async Task<UserWithToken> IUserRetrievalBuilder.WithToken()
     {
         var entity = await ValueFactory(true);
 
-        return entity.Adapt<UserWithToken>();
+        return entity.ToUserWithToken();
     }
     #endregion
 

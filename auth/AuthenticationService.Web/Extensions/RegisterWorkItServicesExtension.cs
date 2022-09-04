@@ -2,14 +2,9 @@ using AuthenticationService.Web.Contexts;
 using AuthenticationService.Web.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
-using AuthenticationService.Web.Contexts.Entities;
-using Mapster;
-using AuthenticationService.Domain.User;
-using AuthenticationService.Domain.Token;
 using AuthenticationService.Application.Interfaces;
 using AuthenticationService.Web.Services;
 using AuthenticationService.Application.Services;
-using AuthenticationService.Application.Models;
 
 namespace AuthenticationService.Web.Extensions;
 
@@ -44,47 +39,8 @@ public static class RegisterWorkItServicesExtension
                 options.UseSqlite(serviceOptions.CurrentValue.ConnectionString);
             });
 
-        TypeAdapterConfig<User, UserEntity>
-            .ForType()
-            .MapWith(user => new()
-            {
-                Id = user.Id,
-                Name = user.Username.ToString(),
-                Password = user.Password.ToString(),
-                Role = user.Role.ToArray(),
-                Preferences = user.Preferences
-            })
-            .Compile();
 
-        TypeAdapterConfig<UserEntity, User>
-            .ForType()
-            .MapWith(entity => new(entity.Role.ToRole(), entity.Name.AsMemory(), entity.Password.AsMemory(), entity.Preferences, entity.Id))
-            .Compile();
-
-        TypeAdapterConfig<Token, TokenEntity>
-            .ForType()
-            .MapWith(token => new()
-            {
-                Id = token.Id,
-                OwnerId = token.OwnerId,
-                Value = token.Inner.Value.ToString(),
-                ExpiresIn = token.ExpiresIn.Value,
-                IssuedAt = token.IssuedAt.Value,
-                Hash = token.Hash.Value.ToArray()
-            })
-            .Compile();
-
-        TypeAdapterConfig<TokenEntity, Token>
-            .ForType()
-            .MapWith(entity => new(entity.Value, entity.OwnerId, entity.IssuedAt, entity.ExpiresIn, entity.Id, entity.Hash))
-            .Compile();
-
-        TypeAdapterConfig<UserEntity, UserWithToken>
-            .ForType()
-            .MapWith(entity => new UserWithToken(entity.Adapt<User>(), entity.Token == null ? null : entity.Token.Adapt<Token>()))
-            .Compile();
-
-        services.AddTransient<IUserRepository, UserContext>(services => services.GetRequiredService<UserContext>());
+        services.AddScoped<IUserRepository, UserContext>(services => services.GetRequiredService<UserContext>());
         services.AddTransient<ICredentialsService, JwtCredentialsService>();
         services.AddTransient<IUseCases, UseCases>(services =>
         {

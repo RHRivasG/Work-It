@@ -10,7 +10,6 @@
     <PackageReference Include="AspNetCore.RouteAnalyzer" Version="0.5.3" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.46.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.46.0" />
-    <PackageReference Include="Mapster" Version="7.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

@@ -9,7 +9,7 @@ using AuthenticationService.Domain.Token;
 using AuthenticationService.Domain.User;
 using AuthenticationService.Web.Contexts;
 using AuthenticationService.Web.Contexts.Entities;
-using Mapster;
+using AuthenticationService.Web.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -63,7 +63,7 @@ public class JwtCredentialsService : ICredentialsService, ITokenUserRetrieval
         if (!MemoryMarshal.TryGetString(token.Inner.Value, out var tokenValue, out _, out _) || tokenValue is null)
             throw new MemoryAccessException("Failed to access hash byte array");
 
-        UserContext.Tokens.Remove(token.Adapt<TokenEntity>());
+        UserContext.Tokens.Remove(token.ToEntity());
 
         return UserContext.SaveChangesAsync();
     }
@@ -74,7 +74,7 @@ public class JwtCredentialsService : ICredentialsService, ITokenUserRetrieval
                 UserContext.Users, 
                 token => token.OwnerId,
                 user => user.Id,
-                (token, user) => new UserWithToken(user.Adapt<User>(), token.Adapt<Token>())
+                (token, user) => new UserWithToken(user.ToUser(), token.ToToken())
             )
             .FirstAsync();
         return token;
@@ -88,7 +88,7 @@ public class JwtCredentialsService : ICredentialsService, ITokenUserRetrieval
         if (!MemoryMarshal.TryGetString(token.Inner.Value, out var tokenValue, out _, out _) || tokenValue is null)
             throw new MemoryAccessException("Failed to access hash byte array");
 
-        return AddTokenAsync(token.Adapt<TokenEntity>());
+        return AddTokenAsync(token.ToEntity());
     }
     private async Task AddTokenAsync(TokenEntity entity)
     {
@@ -107,6 +107,6 @@ public class JwtCredentialsService : ICredentialsService, ITokenUserRetrieval
 #warning TODO: Implement invalid hash exception
             throw new Exception("Hash not set");
 
-        return (await FindTokenEntity().FirstAsync()).Adapt<Token>();
+        return (await FindTokenEntity().FirstAsync()).ToToken();
     }
 }
