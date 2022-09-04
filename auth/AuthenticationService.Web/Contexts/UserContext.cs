@@ -1,6 +1,5 @@
 using AuthenticationService.Application.Interfaces;
 using AuthenticationService.Application.Models;
-using AuthenticationService.Domain.Token;
 using AuthenticationService.Domain.User;
 using AuthenticationService.Web.Contexts.Comparers;
 using AuthenticationService.Web.Contexts.Converters;
@@ -54,6 +53,10 @@ public partial class UserContext : DbContext, IUserRepository, IUserRetrievalBui
             .HasConversion<string>();
 
         tokenEnitty.HasIndex(token => token.Hash);
+
+        tokenEnitty.HasIndex(token => token.Id);
+
+        tokenEnitty.HasKey(token => token.OwnerId);
     }
     #endregion
     #region IUserRepository part

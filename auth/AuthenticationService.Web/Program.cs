@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using AuthenticationService.Web.Extensions;
 using Microsoft.OpenApi.Models;
 using Microsoft.Net.Http.Headers;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,17 @@ builder.Services.AddCors(options => {
         policy.AllowCredentials();
     });
 });
+// Add Logging
+var logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.File("log/work-it.log")
+    .CreateLogger();
+builder.Logging.ClearProviders();
+if (builder.Environment.IsProduction())
+    builder.Logging.AddSerilog(logger);
+else
+    builder.Logging.AddConsole();
 // Add WorkIt Services
 builder.Services.AddWorkItServices(options => {
     options.ConnectionString = builder.Configuration.GetConnectionString("Sqlite");
@@ -80,19 +92,19 @@ builder.WebHost
         options.Listen(bindAddress, webApiPort, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1);
         options.Listen(bindAddress, grpcPort, o => {
             o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2;
-            // o.UseHttps();
+            o.UseHttps();
         });
     });
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseWorkItExceptionHandler();
-// if (app.Environment.IsDevelopment())
-// {
-app.UseSwagger();
-app.UseSwaggerUI();
-app.MapGrpcReflectionService();
-// }
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+    app.MapGrpcReflectionService();
+}
 
 // Enable the use of CORS
 app.UseCors();
