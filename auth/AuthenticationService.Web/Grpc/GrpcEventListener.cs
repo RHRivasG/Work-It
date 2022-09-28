@@ -15,7 +15,6 @@ public class GrpcEventListener : Authenticator.AuthenticatorBase
 
     public override Task<Void> RegisterParticipant(UserInformation information, ServerCallContext context)
     {
-        Console.WriteLine(JsonSerializer.Serialize(information));
         return RunCommand(UseCases.RegisterUser(new()
         {
             Id = Guid.Parse(information.Id),

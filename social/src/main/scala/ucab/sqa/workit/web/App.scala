@@ -32,7 +32,6 @@ import ucab.sqa.workit.application.trainers.TrainerCommand
 import ucab.sqa.workit.application.trainers.TrainerQuery
 import ucab.sqa.workit.web.trainers.TrainerStreamActor
 import ucab.sqa.workit.web.profile.ProfileRoutes
-import akka.discovery.Discovery
 
 object App {
   implicit val participantServiceKey: ServiceKey[Request[ParticipantCommand, ParticipantQuery, _]] = ServiceKey("Participants")
@@ -89,15 +88,15 @@ object App {
         "DeadLetterActor"
       )
 
-      val discovery = Discovery(system).discovery
+      // val discovery = Discovery(system).discovery
 
       implicit val authActor = context.spawn(
-        AuthDimensionService(discovery),
+        AuthDimensionService.apply,
         "AuthDimensionService"
       )
 
       implicit val fitnessActor = context.spawn(
-        FitnessDimensionService(discovery),
+        FitnessDimensionService.apply,
         "FitnessDimensionActor"
       )
 

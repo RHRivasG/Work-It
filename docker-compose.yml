@@ -3,47 +3,36 @@ services:
   work-it-server:
     container_name: server
     build: ./client
-    network_mode: "host"
     ports:
       - 443:443
       - 80:80
-  authentication-proxy:
+    networks:
+      - http_api
+  traefik-proxy:
     container_name: proxy
-    build: ./auth-proxy
+    image: traefik:v2.8
+    command: --api.insecure=true --providers.docker --accesslog=true
     ports:
-      - 3000:3000
-    depends_on:
-      - redis_proxy
-      - work-it-server
+      - 80:80
+      - 4500:8080
     volumes:
-      - ./auth-proxy/server_config.production.toml:/auth-proxy/src/server_config.toml
-    environment:
-      - DB_HOST=db.auth.proxy
-  redis_proxy:
-    container_name: db.auth.proxy
-    image: redis:6.2.6-alpine
-  service-aggregator-microservice:
-    container_name: aggregator 
-    build: 
-      context: ./
-      dockerfile: ./aggregator/Dockerfile
-    ports:
-      - 4500:4500
-    depends_on:
-      - mongodb
-  mongodb:
-    container_name: db.aggregator
-    image: mongo
+      - //var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - http_api
   authentication-microservice:
     container_name: auth 
     build: 
       context: ./
       dockerfile: ./auth/Dockerfile
-    depends_on:
-      - service-aggregator-microservice
     ports:
       - 5050:5050
       - 8080:8080
+    networks:
+      - http_api
+      - event_queue
+    labels:
+      - "traefik.http.routers.auth.rule=Host(`auth.service`) || PathPrefix(`/auth`)"
+      - "traefik.http.services.auth.loadbalancer.server.port=5050"
   training-service-microservice:
     container_name: training_service_microservice
     build: 
@@ -53,21 +42,26 @@ services:
       - "8082:8080"
     depends_on:
       - postgres_fitness_dimension
-      - service-aggregator-microservice
+    networks:
+      - http_api
+      - event_queue
   routine-service-microservice:
     container_name: routine_service_microservice
     build: 
       context: ./fitness/routine-service/
     ports:
-      - "3550:3000"
+      - 3550:3000
     depends_on:
       - postgres_fitness_dimension
-      - service-aggregator-microservice
+    networks:
+      - http_api
+      - event_queue
+      - db
   postgres_fitness_dimension:
     container_name: db.fitness.dimension
     build: './fitness/db'
     ports:
-      - "5432:5432"
+      - 5432:5432
     command: -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key
     volumes:
       - ./fitness/db/sql/work-it-db.sql:/docker-entrypoint-initdb.d/work-it-db.sql
@@ -75,8 +69,10 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=WorkItDB
-  social-dimension-microservice:
-    container_name: social_dimension_microservice
+    networks:
+      - db
+  social-dimension-service:
+    container_name: social_dimension_service
     build: 
       context: ./
       dockerfile: ./social/Dockerfile
@@ -84,18 +80,37 @@ services:
       - 5000:5000
     depends_on:
       - postgres_social_dimension
-      - service-aggregator-microservice
     volumes:
       - ./social/src/main/resources/application.prod.conf:/workit-social-dimension-microservice/social/src/main/resources/application.conf
+    networks:
+      - http_api
+      - event_queue
+      - db
+    labels:
+      - "traefik.http.routers.social_dimension_router.rule=Host(`social.service`) || PathPrefix(`/social`)"
+      - "traefik.http.services.social_dimension_microservice.loadbalancer.server.port=5000"
+      - "traefik.http.middlewares.social_dimension_forwardauth.forwardauth.address=http://auth.service/auth"
+      - "traefik.http.middlewares.social_dimension_forwardauth.forwardauth.authResponseHeaders=Authorization, Set-Cookie"
+      - "traefik.http.middlewares.social_dimension_forwardauth.forwardauth.authRequestHeaders=Cookie"
+      - "traefik.http.routers.social_dimension_router.middlewares=social_dimension_forwardauth"
   postgres_social_dimension:
     container_name: db.social.dimension
-    build: './social/db'
+    build: ./social/db
     command: -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key
     ports:
-      - "5433:5432"
+      - 5433:5432
     volumes:
       - ./social/db/sql/work-it-db.sql:/docker-entrypoint-initdb.d/work-it-db.sql
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=work-it
+    networks:
+      - db
+networks:
+  http_api: 
+    driver: bridge
+  event_queue:
+    driver: bridge
+  db:
+    driver: bridge
