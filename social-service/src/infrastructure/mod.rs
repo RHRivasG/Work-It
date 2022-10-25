@@ -1,3 +1,4 @@
+pub mod dependencies;
 pub mod mongodb;
 pub mod publisher;
 pub mod requests;

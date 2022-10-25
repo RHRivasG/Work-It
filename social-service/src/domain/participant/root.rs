@@ -18,12 +18,7 @@ pub struct Participant {
 }
 
 impl Participant {
-    pub fn unsafe_new(
-        id: UUID,
-        name: String,
-        password: String,
-        preferences: Vec<String>,
-    ) -> Self {
+    pub fn unsafe_new(id: UUID, name: String, password: String, preferences: Vec<String>) -> Self {
         let name = Name::new(name);
         let password = Password::new(password);
         let preferences = Preferences::new(preferences);
@@ -33,7 +28,7 @@ impl Participant {
             name,
             password,
             preferences,
-            events: vec![]
+            events: vec![],
         }
     }
 
@@ -47,13 +42,12 @@ impl Participant {
         let password: Password = password.try_into()?;
         let preferences: Preferences = preferences.try_into()?;
         let id: UUID = id.try_into().map_err(|_| ParticipantError::InvalidUUID)?;
-        let event = 
-            Participant::new_creation_event(
-                name.clone(),
-                password.clone(),
-                preferences.clone(),
-                id.clone(),
-            );
+        let event = Participant::new_creation_event(
+            name.clone(),
+            password.clone(),
+            preferences.clone(),
+            id,
+        );
 
         Ok(Participant {
             name,
@@ -74,13 +68,12 @@ impl Participant {
         let password: Password = password.try_into()?;
         let preferences: Preferences = preferences.try_into()?;
         let id: UUID = id.into();
-        let event = 
-            Participant::new_creation_event(
-                name.clone(),
-                password.clone(),
-                preferences.clone(),
-                id,
-            );
+        let event = Participant::new_creation_event(
+            name.clone(),
+            password.clone(),
+            preferences.clone(),
+            id,
+        );
 
         Ok(Participant {
             id,
@@ -100,13 +93,12 @@ impl Participant {
         let password: Password = password.try_into()?;
         let preferences: Preferences = preferences.try_into()?;
         let id: UUID = Default::default();
-        let event = 
-            Participant::new_creation_event(
-                name.clone(),
-                password.clone(),
-                preferences.clone(),
-                id,
-            );
+        let event = Participant::new_creation_event(
+            name.clone(),
+            password.clone(),
+            preferences.clone(),
+            id,
+        );
 
         Ok(Participant {
             name,
@@ -118,41 +110,54 @@ impl Participant {
     }
 
     pub fn set_name(&mut self, new_name: &str) -> Result<(), ParticipantError> {
+        let previous_name = self.name().clone();
         let new_name = new_name.try_into()?;
         self.name = new_name;
-        self.emit_update_event();
+        self.events.push(ParticipantEvent::ParticipantNameUpdated {
+            id: self.id(),
+            name: self.name().to_string(),
+            previous_name: previous_name.into()
+        });
 
         Ok(())
     }
 
     pub fn set_password(&mut self, new_password: &str) -> Result<(), ParticipantError> {
+        let previous_password = self.password().clone();
         let new_password = new_password.try_into()?;
         self.password = new_password;
-        self.emit_update_event();
+        self.events
+            .push(ParticipantEvent::ParticipantPasswordUpdated {
+                id: self.id(),
+                password: self.password().to_string(),
+                previous_password: previous_password.into()
+            });
 
         Ok(())
     }
 
-    pub fn set_preferences(
-        &mut self,
-        new_preferences: &[&str],
-    ) -> Result<(), ParticipantError> {
-        let new_preferences = new_preferences.try_into()?;
-        self.preferences = new_preferences;
-        self.emit_update_event();
+    pub fn set_preferences(&mut self, new_preferences: &[&str]) -> Result<(), ParticipantError> {
+        let new_preferences: Preferences = new_preferences.try_into()?;
+        let old_preferences = &self.preferences;
+
+        self.events
+            .push(ParticipantEvent::ParticipantPreferencesUpdated {
+                id: self.id(),
+                added_preferences: (&new_preferences - old_preferences).to_vec(),
+                removed_preferences: (old_preferences - &new_preferences).to_vec(),
+            });
+
         Ok(())
     }
 
     pub fn issue_transformation_request(&mut self) {
         self.events
-            .push(ParticipantEvent::ParticipantTransformationRequestIssued {
-                id: self.id().to_vec().into_boxed_slice(),
-            });
+            .push(ParticipantEvent::ParticipantTransformationRequestIssued { id: self.id() });
     }
 
     pub fn delete(&mut self) {
         self.events.push(ParticipantEvent::ParticipantDeleted {
-            id: self.id().to_vec().into_boxed_slice(),
+            id: self.id(),
         });
     }
 
@@ -176,20 +181,6 @@ impl Participant {
         self.events.borrow()
     }
 
-    fn emit_update_event(&mut self) {
-        self.events.push(ParticipantEvent::ParticipantUpdated {
-            id: self.id().to_vec().into_boxed_slice(),
-            name: self.name().to_string().into_boxed_str(),
-            password: self.password().to_string().into_boxed_str(),
-            preferences: self
-                .preferences()
-                .iter()
-                .map(|st| st.to_string().into_boxed_str())
-                .collect::<Vec<Box<str>>>()
-                .into_boxed_slice(),
-        });
-    }
-
     fn new_creation_event(
         name: Name,
         password: Password,
@@ -197,14 +188,10 @@ impl Participant {
         id: UUID,
     ) -> ParticipantEvent {
         ParticipantEvent::ParticipantCreated {
-            id: id.to_vec().into_boxed_slice(),
-            name: name.to_string().into_boxed_str(),
-            password: password.to_string().into_boxed_str(),
-            preferences: preferences
-                .iter()
-                .map(|st| st.to_string().into_boxed_str())
-                .collect::<Vec<Box<str>>>()
-                .into_boxed_slice(),
+            id,
+            name: name.to_string(),
+            password: password.to_string(),
+            preferences: preferences.to_vec(),
         }
     }
 }
@@ -228,7 +215,10 @@ mod tests {
 
         assert_eq!(participant.name().deref(), "Michael Nelo");
         assert_eq!(participant.password().deref(), "KHearts358/2");
-        assert_eq!(participant.preferences().deref(), ["legs", "arms", "body"]);
+        assert_eq!(
+            participant.preferences().to_vec(),
+            vec!["legs", "arms", "body"]
+        );
 
         let raw_uuid = participant.id().to_string();
 
@@ -253,7 +243,10 @@ mod tests {
 
         assert_eq!(participant.name().deref(), "Michael Nelo");
         assert_eq!(participant.password().deref(), "KHearts358/2");
-        assert_eq!(participant.preferences().deref(), ["legs", "arms", "body"]);
+        assert_eq!(
+            participant.preferences().to_vec(),
+            vec!["legs", "arms", "body"]
+        );
         assert_eq!(
             participant.id(),
             UUID::from([
@@ -278,7 +271,10 @@ mod tests {
 
         assert_eq!(participant.name().deref(), "Michael Nelo");
         assert_eq!(participant.password().deref(), "KHearts358/2");
-        assert_eq!(participant.preferences().deref(), ["legs", "arms", "body"]);
+        assert_eq!(
+            participant.preferences().to_vec(),
+            vec!["legs", "arms", "body"]
+        );
         assert_eq!(
             participant.id(),
             UUID::try_from("971f2a79a086-46b0-9c9c-dbc2fc74aff6").unwrap()
@@ -329,6 +325,9 @@ mod tests {
             .set_preferences(&["legs", "arms", "quads"])
             .unwrap();
 
-        assert_eq!(participant.preferences().deref(), ["legs", "arms", "quads"]);
+        assert_eq!(
+            participant.preferences().to_vec(),
+            vec!["legs", "arms", "quads"]
+        );
     }
 }

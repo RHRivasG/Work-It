@@ -5,6 +5,12 @@ use crate::domain::{trainer::errors::TrainerError, shared::validation_helper::va
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Password(String);
 
+impl Password {
+    pub fn recreate(value: &str) -> Self { 
+        Password(value.to_string())
+    }
+}
+
 impl<'a> TryFrom<&'a str> for Password {
     type Error = TrainerError;
 

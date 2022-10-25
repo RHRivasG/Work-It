@@ -1,0 +1,5 @@
+[database]
+url = "mongodb://localhost:27017"
+db = "work-it"
+participant_collection = "participants"
+request_collection = "request"

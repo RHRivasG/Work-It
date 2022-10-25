@@ -6,6 +6,13 @@ extern crate async_trait;
 extern crate mongodb;
 extern crate serde;
 extern crate base64;
+extern crate frunk;
+extern crate log;
+extern crate lazy_static;
+extern crate async_once;
+extern crate config;
+extern crate env_logger;
+extern crate log_err;
 
 pub mod domain;
 pub mod application;

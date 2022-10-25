@@ -1,11 +1,11 @@
-use std::fmt::Write;
+use std::fmt::{Write, Debug};
 use std::{convert::TryFrom, ops::Deref};
 
 use rand::{thread_rng, Rng};
 
 use super::errors::UUIDError;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub struct UUID([u8; 16]);
 
 impl UUID {
@@ -92,9 +92,7 @@ impl<'a> TryFrom<&'a [u8]> for UUID {
             return Err(UUIDError::StrFormatError);
         }
 
-        for index in 0..16 {
-            buffer[index] = value[index];
-        }
+        buffer[..16].copy_from_slice(&value[..16]);
 
         Ok(UUID(buffer))
     }
@@ -103,6 +101,12 @@ impl<'a> TryFrom<&'a [u8]> for UUID {
 impl From<[u8; 16]> for UUID {
     fn from(buf: [u8; 16]) -> Self {
         UUID(buf)
+    }
+}
+
+impl Debug for UUID {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(&self.to_string(), f)
     }
 }
 

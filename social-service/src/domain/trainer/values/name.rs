@@ -5,6 +5,12 @@ use crate::domain::{trainer::errors::TrainerError, shared::validation_helper::va
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Name(String);
 
+impl Name {
+    pub fn recreate(value: &str) -> Self {
+        Name(value.to_string())
+    }
+}
+
 impl<'a> TryFrom<&'a str> for Name {
     type Error = TrainerError;
 
@@ -17,7 +23,7 @@ impl<'a> TryFrom<&'a str> for Name {
     }
 }
 
-impl<'a> Deref for Name {
+impl Deref for Name {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {

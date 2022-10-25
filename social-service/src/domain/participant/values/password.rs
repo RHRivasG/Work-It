@@ -23,6 +23,13 @@ impl<'a> TryFrom<&'a str> for Password {
     }
 }
 
+#[allow(clippy::from_over_into)]
+impl Into<String> for Password {
+    fn into(self) -> String {
+        self.0
+    }
+}
+
 impl Deref for Password {
     type Target = str;
 

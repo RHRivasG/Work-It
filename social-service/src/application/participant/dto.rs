@@ -12,8 +12,9 @@ impl From<Participant> for ParticipantDto {
         let id = val.id().to_vec().into_boxed_slice();
         let preferences = val
             .preferences()
-            .iter()
-            .map(|tag| tag.to_string().into_boxed_str())
+            .to_vec()
+            .into_iter()
+            .map(|tag| tag.into_boxed_str())
             .collect::<Vec<Box<str>>>()
             .into_boxed_slice();
 

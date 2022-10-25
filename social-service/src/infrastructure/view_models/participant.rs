@@ -19,3 +19,19 @@ impl From<ParticipantDto> for ParticipantViewModel {
         }
     }
 }
+
+pub mod tide {
+    use tide::{Response, Body};
+
+    use super::ParticipantViewModel;
+
+    impl TryFrom<ParticipantViewModel> for Response {
+        type Error = tide::Error;
+
+        fn try_from(vm: ParticipantViewModel) -> Result<Self, Self::Error> {
+            let body = Body::from_json(&vm)?;
+
+            Ok(body.into())
+        }
+    }
+}

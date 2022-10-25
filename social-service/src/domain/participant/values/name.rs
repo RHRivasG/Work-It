@@ -23,6 +23,13 @@ impl<'a> TryFrom<&'a str> for Name {
     }
 }
 
+#[allow(clippy::from_over_into)]
+impl Into<String> for Name {
+    fn into(self) -> String {
+        self.0
+    }
+}
+
 impl Deref for Name {
     type Target = str;
 
@@ -48,7 +55,7 @@ mod tests {
     #[test]
     pub fn copy_modification_does_not_affect_original() {
         let name: Name = "A".try_into().unwrap();
-        let mut owned_name = name.clone().to_string();
+        let mut owned_name = name.to_string();
 
         owned_name.push('B');
 

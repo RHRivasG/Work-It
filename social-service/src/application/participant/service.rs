@@ -2,11 +2,15 @@ use async_trait::async_trait;
 
 use crate::{
     application::traits::publisher::Publisher,
-    domain::participant::{errors::ParticipantError, events::ParticipantEvent, root::Participant},
+    domain::{
+        participant::{events::ParticipantEvent, root::Participant},
+        shared::uuid::UUID,
+    },
 };
 
 use super::{
     dto::ParticipantDto,
+    errors::ApplicationError,
     traits::{repository::Repository, use_case::UseCase},
 };
 
@@ -18,7 +22,7 @@ pub struct ApplicationService<R, P> {
 impl<R, P> ApplicationService<R, P>
 where
     R: Repository,
-    P: Publisher<ParticipantEvent>,
+    P: Publisher<ParticipantEvent, ApplicationError>,
 {
     pub fn new(repository: R, publisher: P) -> ApplicationService<R, P> {
         ApplicationService {
@@ -29,14 +33,14 @@ where
 }
 
 impl<R, P> Clone for ApplicationService<R, P>
-where 
+where
     R: Clone,
-    P: Clone
+    P: Clone,
 {
     fn clone(&self) -> Self {
-        ApplicationService { 
-            repository: self.repository.clone(), 
-            publisher: self.publisher.clone() 
+        ApplicationService {
+            repository: self.repository.clone(),
+            publisher: self.publisher.clone(),
         }
     }
 }
@@ -45,9 +49,9 @@ where
 impl<R, P> UseCase for ApplicationService<R, P>
 where
     R: Repository + Send + Sync,
-    P: Publisher<ParticipantEvent> + Send + Sync,
+    P: Publisher<ParticipantEvent, ApplicationError> + Send + Sync,
 {
-    async fn delete(&self, id: &str) -> Result<Option<()>, ParticipantError> {
+    async fn delete(&self, id: UUID) -> Result<Option<()>, ApplicationError> {
         let participant = self.repository.find(id).await;
 
         if let Some(mut participant) = participant {
@@ -55,7 +59,7 @@ where
 
             self.publisher
                 .publish_all(participant.events().to_vec())
-                .await;
+                .await?;
 
             return Ok(().into());
         }
@@ -63,8 +67,8 @@ where
         Ok(None)
     }
 
-    async fn get(&self, id: &str) -> Option<ParticipantDto> {
-        self.repository.find(id).await.map(Into::into)
+    async fn get(&self, id: UUID) -> Result<Option<ParticipantDto>, ApplicationError> {
+        Ok(self.repository.find(id).await.map(Into::into))
     }
 
     async fn create<'a>(
@@ -72,35 +76,36 @@ where
         name: &'a str,
         password: &'a str,
         preferences: &'a [&'a str],
-    ) -> Result<(), ParticipantError> {
-        let participant = Participant::try_new(name, password, preferences)?;
+    ) -> Result<(), ApplicationError> {
+        let participant = Participant::try_new(name, password, preferences)
+            .map_err(ApplicationError::DomainError)?;
 
         self.publisher
             .publish_all(participant.events().to_vec())
-            .await;
+            .await?;
 
         Ok(())
     }
 
     async fn update<'a>(
         &self,
-        id: &'a str,
+        id: UUID,
         name: &'a str,
-        password: &'a str,
         preferences: &'a [&'a str],
-    ) -> Result<Option<()>, ParticipantError> {
+    ) -> Result<Option<()>, ApplicationError> {
         let participant = self.repository.find(id).await;
 
         if let Some(mut participant) = participant {
-            participant.set_name(name)?;
-
-            participant.set_password(password)?;
-
-            participant.set_preferences(preferences)?;
+            participant
+                .set_name(name)
+                .map_err(ApplicationError::DomainError)?;
+            participant
+                .set_preferences(preferences)
+                .map_err(ApplicationError::DomainError)?;
 
             self.publisher
                 .publish_all(participant.events().to_vec())
-                .await;
+                .await?;
 
             return Ok(Some(()));
         }
@@ -108,7 +113,27 @@ where
         Ok(None)
     }
 
-    async fn request_transformation(&self, id: &str) -> Result<Option<()>, ParticipantError> {
+    async fn update_password<'a>(
+        &self,
+        id: UUID,
+        password: &'a str
+    ) -> Result<Option<()>, ApplicationError> {
+        let participant = self.repository.find(id).await;
+
+        if let Some(mut participant) = participant {
+            participant
+                .set_password(password)
+                .map_err(ApplicationError::DomainError)?;
+
+            self.publisher.publish_all(participant.events().to_vec()).await?;
+
+            return Ok(Some(()));
+        }
+
+        Ok(None)
+    }
+
+    async fn request_transformation(&self, id: UUID) -> Result<Option<()>, ApplicationError> {
         let participant = self.repository.find(id).await;
 
         if let Some(mut participant) = participant {
@@ -116,18 +141,18 @@ where
 
             self.publisher
                 .publish_all(participant.events().to_vec())
-                .await;
+                .await?;
 
-            return Ok(().into())
+            return Ok(().into());
         }
 
-        return Ok(None)
+        return Ok(None);
     }
 
-    async fn get_all(&self) -> Vec<ParticipantDto> {
+    async fn get_all(&self) -> Result<Vec<ParticipantDto>, ApplicationError> {
         let vec = self.repository.get_all().await;
 
-        vec.into_iter().map(Into::into).collect()
+        Ok(vec.into_iter().map(Into::into).collect())
     }
 }
 
@@ -139,10 +164,16 @@ mod tests {
 
     use crate::{
         application::{
-            participant::traits::{repository::Repository, use_case::UseCase},
+            participant::{
+                errors::ApplicationError,
+                traits::{repository::Repository, use_case::UseCase},
+            },
             traits::publisher::Publisher,
         },
-        domain::participant::{events::ParticipantEvent, root::Participant},
+        domain::{
+            participant::{events::ParticipantEvent, root::Participant},
+            shared::uuid::UUID,
+        },
     };
 
     use super::ApplicationService;
@@ -151,31 +182,28 @@ mod tests {
         Dummy {}
 
         #[async_trait]
-        impl Publisher<ParticipantEvent> for Dummy {
-            async fn publish(&self, evt: ParticipantEvent);
-            async fn publish_all(&self, evts: Vec<ParticipantEvent>);
+        impl Publisher<ParticipantEvent, ApplicationError> for Dummy {
+            async fn publish(&self, evt: ParticipantEvent) -> Result<(), ApplicationError>;
+            async fn publish_all(&self, evts: Vec<ParticipantEvent>) -> Result<(), ApplicationError>;
         }
 
         #[async_trait]
         impl Repository for Dummy {
-            async fn find(&self, id: &str) -> Option<Participant>;
+            async fn find(&self, id: UUID) -> Option<Participant>;
             async fn get_all(&self) -> Vec<Participant>;
         }
     }
 
-    fn create_service(
-        repository: MockDummy,
-        publisher: MockDummy,
-    ) -> ApplicationService<MockDummy, MockDummy> {
-        ApplicationService::new(repository, publisher)
+    fn create_service() -> ApplicationService<MockDummy, MockDummy> {
+        ApplicationService::new(MockDummy::new(), MockDummy::new())
     }
 
     #[test]
     fn emits_created_event() {
-        let mut publisher = MockDummy::new();
-        let repo = MockDummy::new();
+        let mut service = create_service();
 
-        publisher
+        service
+            .publisher
             .expect_publish_all()
             .times(1)
             .withf(|slice| {
@@ -189,26 +217,19 @@ mod tests {
                 } = first_event
                 {
                     return slice.len() == 1
-                        && name.as_ref() == "Michael Nelo"
-                        && password.as_ref() == "KHearts358/2"
-                        && preferences.as_ref()
-                            == [
-                                "legs".to_string().into_boxed_str(),
-                                "arms".to_string().into_boxed_str(),
-                                "body".to_string().into_boxed_str(),
-                            ];
+                        && name == "Michael Nelo"
+                        && password == "KHearts358/2"
+                        && preferences.to_vec() == vec!["legs", "arms", "body"];
                 }
 
                 false
             })
-            .return_const(());
+            .returning(|_| Ok(()));
 
-        let result = block_on(create_service(repo, publisher).create(
-            "Michael Nelo",
-            "KHearts358/2",
-            &["legs", "arms", "body"],
-        ));
-        assert_eq!(result, Ok(()))
+        let result =
+            block_on(service.create("Michael Nelo", "KHearts358/2", &["legs", "arms", "body"]));
+
+        assert!(result.is_ok())
     }
 
     #[test]
@@ -216,19 +237,19 @@ mod tests {
         let participant =
             Participant::try_new("Michael Nelo", "KHearts358/2", &["legs", "arms", "body"])
                 .unwrap();
-        let id = participant.id();
+        let id: UUID = participant.id();
         let expected_id = id;
-        let id = id.to_string();
 
-        let publisher = MockDummy::new();
-        let mut repo = MockDummy::new();
+        let mut service = create_service();
 
-        repo.expect_find()
+        service
+            .repository
+            .expect_find()
             .times(1)
-            .withf(move |pid| pid == &*expected_id.to_string())
+            .withf(move |pid| *pid == expected_id)
             .return_const(participant);
 
-        let result = block_on(create_service(repo, publisher).get(&*id)).unwrap();
+        let result = block_on(service.get(id)).unwrap().unwrap();
 
         assert_eq!(&*result.id, &*expected_id);
         assert_eq!(&*result.name, "Michael Nelo");
